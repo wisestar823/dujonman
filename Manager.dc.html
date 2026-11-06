@@ -9,7 +9,7 @@
 <x-dc>
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
 <style>
 body{margin:0;font-family:'Noto Sans KR',sans-serif;background:#F5F3EE;color:#1B2333}
 button{font-family:inherit}
@@ -36,7 +36,7 @@ button{font-family:inherit}
   <!-- 헤더 -->
   <div style="background:#14213D;color:#fff;padding:22px 20px 20px">
     <div style="font-size:12px;color:#C8A24A;font-weight:700;letter-spacing:.5px">직영 현장소장 · 공사완료평가</div>
-    <div style="font-size:20px;font-weight:700;margin-top:6px">샘플 주소 11</div>
+    <div style="font-size:20px;font-weight:700;margin-top:6px">{{title}}</div>
     <div style="font-size:13px;color:#C9D0E2;margin-top:4px">{{headSub}}</div>
     <div style="font-size:11px;color:#AEB6C9;margin-top:10px">이 현장 전용 링크 · 현장 종료 후 평가 · 다른 현장은 별도 링크</div>
   </div>
@@ -192,8 +192,14 @@ button{font-family:inherit}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3000}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { mode: 'input', air: 115, waste: 805000, man: 3,
+  constructor(props) { super(props); this.state = { site: null, loadMsg: '', mode: 'input', air: 115, waste: 805000, man: 3,
     sc: [10, 10, 15, 5, 5, 5, 5], d3: [0, 0, 0], cnt: [0, 0, 0, 0, 0, 0, 0, 0] }; }
+  fromSite(site) { return { mode: site.stage === 0 ? 'input' : (site.stage >= 5 ? 'result' : 'wait') }; }
+  componentDidMount() { try { const q = new URLSearchParams(location.search).get('e') || ''; const tk = q.split('-')[0]; const id = (parseInt(tk.slice(1), 36) - 46656) / 7919; const h = location.hostname, owner = h.endsWith('.github.io') ? h.split('.')[0] : '', repo = location.pathname.split('/')[1] || '';
+    if (!q || !owner || !Number.isInteger(id)) return; this.setState({ loadMsg: '현장 정보를 불러오는 중…' });
+    fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/data/sites.json', { headers: { Accept: 'application/vnd.github.raw+json' }, cache: 'no-store' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(j => { const site = (j.sites || []).find(x => x.id === id); if (!site) throw new Error('nf'); this.setState({ site, loadMsg: '', ...this.fromSite(site) }); })
+      .catch(() => this.setState({ loadMsg: '현장 정보를 불러오지 못했습니다. 관리자가 GitHub 저장을 했는지 확인해 주세요.' })); } catch (e) {} }
   renderVals() {
     const s = this.state, ABS = 120, WB = 805000;
     const dAir = s.air - ABS;
@@ -228,8 +234,9 @@ class Component extends DCLogic {
       ['엔딩점검·건축주 만족도', 5, 5, '감리'], ['근태관리', 5, 4, '감리·공무'], ['어플근태관리', 5, 4, '감리·공무'],
       ['인력·잡자재·잔여자재', 10, 9, '공무'], ['공사완료확인서·기성·대관', 5, 5, '공무'], ['폐기물처리', 15, 14, '공무']];
     const rItems = ITEMS.map(([name, max, score, who]) => ({ name, max, score, who, pct: Math.round(score / max * 100) }));
-    const sub = { input: '소장 아 · 입력 마감 11/05 · 임시저장됨', wait: '소장 아 · 입력 제출 완료', result: '소장 아 · 평가 확정 완료' }[s.mode];
+    const nm = s.site ? s.site.mgr : '소장 아', sub = s.loadMsg || { input: nm + ' · 입력 마감 11/05 · 임시저장됨', wait: nm + ' · 입력 제출 완료', result: nm + ' · 평가 확정 완료' }[s.mode];
     return {
+      title: s.site ? s.site.addr : '샘플 주소 11',
       modes: MODES.map(([k, label]) => ({ label, pick: () => this.setState({ mode: k }),
         style: 'cursor:pointer;flex:1;height:36px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid ' + (s.mode === k ? '#C8A24A' : '#3A4A74') + ';background:' + (s.mode === k ? '#C8A24A' : 'transparent') + ';color:' + (s.mode === k ? '#14213D' : '#D7DCE8') })),
       isInput: s.mode === 'input', isWait: s.mode === 'wait', isResult: s.mode === 'result', headSub: sub,
