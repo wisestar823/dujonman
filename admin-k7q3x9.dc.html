@@ -1,4 +1,4 @@
-a<!doctype html>
+<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -43,6 +43,18 @@ button{font-family:inherit}
 }
 </style>
 </helmet>
+<sc-if value="{{locked}}" hint-placeholder-val="{{false}}">
+<div style="min-height:900px;display:flex;align-items:center;justify-content:center;background:#14213D;padding:24px">
+  <div style="background:#fff;border-radius:14px;padding:28px 26px;width:100%;max-width:340px;box-sizing:border-box">
+    <div style="font-weight:700;font-size:18px;margin-bottom:4px">소장평가 통합관리</div>
+    <div style="font-size:13px;color:#4A5163;margin-bottom:16px">관리자 전용 화면입니다. 비밀번호를 입력하세요.</div>
+    <input type="password" inputmode="numeric" autocomplete="off" aria-label="관리자 비밀번호" value="{{pw}}" onChange="{{onPw}}" onKeyDown="{{pwKey}}" style="width:100%;box-sizing:border-box;height:44px;border:1px solid #CFC9B8;border-radius:8px;padding:0 12px;font-size:16px;font-family:inherit">
+    <div style="min-height:20px;margin:6px 0 4px;font-size:12px;color:#8A1F17">{{pwErr}}</div>
+    <button onClick="{{pwGo}}" style="width:100%;height:44px;border-radius:8px;border:0;background:#C8A24A;color:#14213D;font-weight:700;font-size:15px;cursor:pointer">확인</button>
+  </div>
+</div>
+</sc-if>
+<sc-if value="{{unlocked}}" hint-placeholder-val="{{true}}">
 <div style="display:flex;flex-wrap:wrap;min-height:900px">
   <aside class="nav noprint" style="flex:0 0 232px;background:#14213D;padding:24px 16px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px">
     <div style="color:#fff;font-weight:700;font-size:17px;padding:4px 14px 2px">소장평가 통합관리</div>
@@ -430,6 +442,7 @@ button{font-family:inherit}
 
   </main>
 </div>
+</sc-if>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":2300}}'>
 class Component extends DCLogic {
@@ -441,7 +454,7 @@ class Component extends DCLogic {
     const INS = { 1: '김동완', 8: '김동완', 2: '임현규', 11: '임현규', 5: '이영빈', 3: '이영빈', 4: '최현균', 6: '최현균' };
     const mk = (id, addr, mgr, type, stage, sc, extra) => ({ id, addr, mgr, type, insp: INS[id], grade: G, sc, stage, links: L(stage), cGam: '', cGong: '', cBu: '', cCeo: '', ...extra });
     this.state = {
-      view: 'dash', next: 20, msg: '', sel: null, bulk: '', selMgr: null, lnk: null, bulkMode: '상세', viewer: 'ALL', gitMsg: '', auto: false, remember: false,
+      authed: false, pw: '', pwErr: '', view: 'dash', next: 20, msg: '', sel: null, bulk: '', selMgr: null, lnk: null, bulkMode: '상세', viewer: 'ALL', gitMsg: '', auto: false, remember: false,
       git: { owner: '', repo: '', branch: 'main', path: 'data', token: '' },
       reg: { open: false, step: 1, addr: '', mgr: '', type: '직영', insp: '김동완' },
       sites: [
@@ -464,7 +477,7 @@ class Component extends DCLogic {
       }
     };
   }
-  componentDidMount() { try { const t = localStorage.getItem('gh_token'); if (t) this.setState({ git: { ...this.state.git, token: t }, remember: true }); } catch (e) {} }
+  componentDidMount() { try { if (sessionStorage.getItem('adm_ok') === '1') this.setState({ authed: true }); } catch (e) {} try { const t = localStorage.getItem('gh_token'); if (t) this.setState({ git: { ...this.state.git, token: t }, remember: true }); } catch (e) {} }
   componentDidUpdate(prev) { const st = this.state; if (st.auto && st.git.token && (prev.sites !== st.sites || prev.set !== st.set)) { clearTimeout(this._t); this._t = setTimeout(() => this.gitSave(true), 1500); } }
   b64(str) { return btoa(unescape(encodeURIComponent(str))); }
   unb64(b) { return decodeURIComponent(escape(atob(b.replace(/\n/g, '')))); }
@@ -517,6 +530,8 @@ class Component extends DCLogic {
     const fb = () => { try { const t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;top:0;left:0;opacity:0'; document.body.appendChild(t); t.focus(); t.select(); t.setSelectionRange(0, text.length); const ok = document.execCommand('copy'); document.body.removeChild(t); if (!ok) window.prompt('아래 링크를 복사(Ctrl+C)하세요', text); } catch (e) { try { window.prompt('아래 링크를 복사(Ctrl+C)하세요', text); } catch (e2) {} } };
     try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(fb); else fb(); } catch (e) { fb(); }
   }
+  pwHash(s) { let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for (let i = 0, ch; i < s.length; i++) { ch = s.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return 4294967296 * (2097151 & h2) + (h1 >>> 0); }
+  pwTry(v) { if (this.pwHash(String(v || '').trim()) === 4970403443833395) { try { sessionStorage.setItem('adm_ok', '1'); } catch (e) {} this.setState({ authed: true, pw: '', pwErr: '' }); } else this.setState({ pwErr: '비밀번호가 맞지 않습니다.' }); }
   token(id, k) { return 'x' + (46656 + id * 7919).toString(36) + '-' + k; }
   link(id, k) { return 'https://wisestar823.github.io/dujonman/' + (k === 'in' ? 'Manager' : 'Eval') + '.dc.html?e=' + this.token(id, k); }
   incOf(type, score) {
@@ -617,6 +632,7 @@ class Component extends DCLogic {
         down: () => setS({ T: { ...S.T, [k]: S.T[k].map((x, j) => j === i ? Math.max(0, x - 50000) : x) } }) })) }));
     const onStyle = (on) => 'cursor:pointer;height:36px;padding:0 16px;border-radius:8px;font-size:13px;font-weight:700;border:2px solid ' + (on ? '#14213D' : '#D9D4C6') + ';background:' + (on ? '#14213D' : '#fff') + ';color:' + (on ? '#fff' : '#1B2333');
     return {
+      locked: !st.authed, unlocked: st.authed, pw: st.pw, pwErr: st.pwErr, onPw: (e) => this.setState({ pw: e.target.value }), pwKey: (e) => { if (e.key === 'Enter') this.pwTry(e.target.value); }, pwGo: () => this.pwTry(st.pw),
       isIns: !lead,
       modeBtns: ['상세', '간편'].map(k => ({ label: k + ' 출력', pick: () => this.setState({ bulkMode: k }),
         style: 'cursor:pointer;height:44px;padding:0 16px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (st.bulkMode === k ? '#C8A24A' : '#D9D4C6') + ';background:' + (st.bulkMode === k ? '#FFF7E0' : '#fff') + ';color:#1B2333' })),
