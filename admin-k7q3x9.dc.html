@@ -198,7 +198,7 @@ button{font-family:inherit}
                   </td>
                   <td style="font-weight:700">{{r.score}}</td><td>{{r.inc}}</td>
                   <td><div style="display:flex;gap:6px"><button onClick="{{r.openLink}}" style="cursor:pointer;height:34px;padding:0 14px;border-radius:8px;border:0;background:#C8A24A;color:#14213D;font-size:13px;font-weight:700">평가 요청 링크</button>
-                    <button class="open" onClick="{{r.open}}">상세 보기</button></div></td>
+                    <button class="open" onClick="{{r.open}}">상세 보기</button><button onClick="{{r.delGo}}" style="{{r.delStyle}}">{{r.delLabel}}</button></div></td>
                 </tr>
               </sc-for>
             </tbody>
@@ -283,6 +283,7 @@ button{font-family:inherit}
           <div style="font-weight:700;font-size:18px">평가 상세 · {{sel.addr}}</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button onClick="{{doPrint}}" style="height:44px;padding:0 20px;border-radius:8px;border:0;background:#14213D;color:#fff;font-weight:700;font-size:14px;cursor:pointer">PDF 출력 (인쇄)</button>
+            <button onClick="{{selDelGo}}" style="{{selDelStyle}}">{{selDelLabel}}</button>
             <button onClick="{{closeSel}}" style="height:44px;padding:0 18px;border-radius:8px;border:1px solid #14213D;background:#fff;color:#14213D;font-size:14px;cursor:pointer">닫기</button>
           </div>
         </div>
@@ -441,6 +442,7 @@ button{font-family:inherit}
   </sc-if>
 
   </main>
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{false}}"><div class="noprint" role="status" style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#14583A;color:#fff;padding:12px 20px;border-radius:999px;font-size:14px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:50">{{toast}}</div></sc-if>
 </div>
 </sc-if>
 </x-dc>
@@ -454,18 +456,11 @@ class Component extends DCLogic {
     const INS = { 1: '김동완', 8: '김동완', 2: '임현규', 11: '임현규', 5: '이영빈', 3: '이영빈', 4: '최현균', 6: '최현균' };
     const mk = (id, addr, mgr, type, stage, sc, extra) => ({ id, addr, mgr, type, insp: INS[id], grade: G, sc, stage, links: L(stage), cGam: '', cGong: '', cBu: '', cCeo: '', ...extra });
     this.state = {
-      authed: false, pw: '', pwErr: '', view: 'dash', next: 20, msg: '', sel: null, bulk: '', selMgr: null, lnk: null, bulkMode: '상세', viewer: 'ALL', gitMsg: '', auto: false, remember: false,
+      del: null, flash: '', toast: '', authed: false, pw: '', pwErr: '', view: 'dash', next: 20, msg: '', sel: null, bulk: '', selMgr: null, lnk: null, bulkMode: '상세', viewer: 'ALL', gitMsg: '', auto: false, remember: false,
       git: { owner: '', repo: '', branch: 'main', path: 'data', token: '' },
       reg: { open: false, step: 1, addr: '', mgr: '', type: '직영', insp: '김동완' },
       sites: [
         mk(1, '샘플 주소 1', '소장 가', '직영', 5, [19,9,9,14,5,4,4,9,5,14], { cGam: '현장 관리 양호, 지적사항 신속 조치.', cGong: '기성·정산 서류 적정.', cBu: '정산·인력 운영 적정.', cCeo: '확정.', selfScore: 93, buScore: 22, ceoAdj: 0 }),
-        mk(8, '샘플 주소 8', '소장 가', '직영', 1, [17,null,null,null,null,null,null,null,null,null]),
-        mk(2, '샘플 주소 2', '소장 나', '직영', 2, [18,9,8,12,4,4,4,null,null,null], { cGam: '안전서류 일부 보완 필요.' }),
-        mk(11, '샘플 주소 11', '소장 아', '직영', 3, [19,9,9,14,5,4,4,9,5,14], { cGam: '양호.', cGong: '정산 적정.' }),
-        mk(5, '샘플 주소 5', '소장 마', '직영', 0, B),
-        mk(3, '샘플 주소 3', '소장 다', '관리소장', 1, [16,null,null,null,null,null,null,null,null,null]),
-        mk(4, '샘플 주소 4', '소장 라', '관리소장', 0, B),
-        mk(6, '샘플 주소 6', '소장 바', '관리소장', 5, [18,9,8,13,4,4,4,8,4,14], { cGam: '품질 양호.', cGong: '폐기물 정산 기준 이내.', cBu: '적정.', cCeo: '확정.', selfScore: 88, buScore: 20, ceoAdj: 0 })
       ],
       set: {
         w: { in: 10, gam: 30, gong: 25, bu: 15, ceo: 20 },
@@ -532,6 +527,7 @@ class Component extends DCLogic {
   }
   pwHash(s) { let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for (let i = 0, ch; i < s.length; i++) { ch = s.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return 4294967296 * (2097151 & h2) + (h1 >>> 0); }
   pwTry(v) { if (this.pwHash(String(v || '').trim()) === 4970403443833395) { try { sessionStorage.setItem('adm_ok', '1'); } catch (e) {} this.setState({ authed: true, pw: '', pwErr: '' }); } else this.setState({ pwErr: '비밀번호가 맞지 않습니다.' }); }
+  showToast(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '', flash: '' }), 2200); }
   token(id, k) { return 'x' + (46656 + id * 7919).toString(36) + '-' + k; }
   link(id, k) { return 'https://wisestar823.github.io/dujonman/' + (k === 'in' ? 'Manager' : 'Eval') + '.dc.html?e=' + this.token(id, k); }
   incOf(type, score) {
@@ -558,6 +554,11 @@ class Component extends DCLogic {
     const STEPS = ['소장 입력', '감리 평가', '공무 평가', '공사 부장 평가', '부사장 확정', '완료'];
     const STCLS = ['wait', 'prog', 'prog', 'prog', 'prog', 'done'];
     const upd = (id, fn) => this.setState({ sites: st.sites.map(r => r.id === id ? fn(r) : r) });
+    const delOf = (r) => { const ask = st.del === r.id; return { delLabel: ask ? '정말 삭제?' : '삭제',
+      delStyle: 'cursor:pointer;height:34px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #8A1F17;background:' + (ask ? '#8A1F17' : '#fff') + ';color:' + (ask ? '#fff' : '#8A1F17'),
+      delGo: () => { if (!ask) { this.setState({ del: r.id }); setTimeout(() => { if (this.state.del === r.id) this.setState({ del: null }); }, 4000); return; }
+        const left = st.sites.filter(x => x.id !== r.id); this.setState({ sites: left, del: null, sel: st.sel === r.id ? null : st.sel, lnk: st.lnk === r.id ? null : st.lnk, selMgr: left.some(x => x.mgr === (st.selMgr || '').split('|').pop()) ? st.selMgr : null, bulk: '' });
+        this.showToast(r.addr + ' 평가가 삭제되었습니다.'); } }; };
     const rowOf = (r) => {
       const t = fin(r);
       return { ...r, stText: STEPS[r.stage], stCls: STCLS[r.stage],
@@ -565,7 +566,8 @@ class Component extends DCLogic {
         score: t === null ? '—' : t + '점', inc: t === null ? '—' : this.inc(r.type, t),
         addrStyle: 'cursor:pointer;border:0;background:transparent;padding:0;font-size:14px;font-weight:700;color:#14213D;text-decoration:underline;text-align:left;font-family:inherit',
         openLink: () => { this.setState({ lnk: st.lnk === r.id ? null : r.id, sel: null, bulk: '' }); setTimeout(() => { try { const el = document.getElementById('lnkpanel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }, 120); },
-        open: () => this.setState({ sel: r.id, bulk: '' }) };
+        open: () => this.setState({ sel: r.id, bulk: '' }),
+        ...delOf(r) };
     };
     const typeList = (type) => vis.filter(r => r.type === type);
     const mgrCards = (type) => { const m = new Map(); typeList(type).forEach(r => { if (!m.has(r.mgr)) m.set(r.mgr, []); m.get(r.mgr).push(r); });
@@ -632,7 +634,7 @@ class Component extends DCLogic {
         down: () => setS({ T: { ...S.T, [k]: S.T[k].map((x, j) => j === i ? Math.max(0, x - 50000) : x) } }) })) }));
     const onStyle = (on) => 'cursor:pointer;height:36px;padding:0 16px;border-radius:8px;font-size:13px;font-weight:700;border:2px solid ' + (on ? '#14213D' : '#D9D4C6') + ';background:' + (on ? '#14213D' : '#fff') + ';color:' + (on ? '#fff' : '#1B2333');
     return {
-      locked: !st.authed, unlocked: st.authed, pw: st.pw, pwErr: st.pwErr, onPw: (e) => this.setState({ pw: e.target.value }), pwKey: (e) => { if (e.key === 'Enter') this.pwTry(e.target.value); }, pwGo: () => this.pwTry(st.pw),
+      hasToast: !!st.toast, toast: st.toast, locked: !st.authed, unlocked: st.authed, pw: st.pw, pwErr: st.pwErr, onPw: (e) => this.setState({ pw: e.target.value }), pwKey: (e) => { if (e.key === 'Enter') this.pwTry(e.target.value); }, pwGo: () => this.pwTry(st.pw),
       isIns: !lead,
       modeBtns: ['상세', '간편'].map(k => ({ label: k + ' 출력', pick: () => this.setState({ bulkMode: k }),
         style: 'cursor:pointer;height:44px;padding:0 16px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (st.bulkMode === k ? '#C8A24A' : '#D9D4C6') + ';background:' + (st.bulkMode === k ? '#FFF7E0' : '#fff') + ';color:#1B2333' })),
@@ -676,12 +678,12 @@ class Component extends DCLogic {
       bulkD: () => this.setState({ bulk: '직영', sel: null }), bulkM: () => this.setState({ bulk: '관리소장', sel: null }), bulkA: () => this.setState({ bulk: '전체', sel: null }),
       bulkOpen: !!st.bulk, bulkTitle: st.bulk.startsWith('ins:') ? st.bulk.slice(4) + ' 담당' : st.bulk, bulkCount: st.bulk ? confirmed(st.bulk).length : 0, bulkSheets: st.bulk ? confirmed(st.bulk).map(mkSheet) : [], closeBulk: () => this.setState({ bulk: '' }),
       hasLnk: !!lnkSite, lnkAddr: lnkSite ? lnkSite.addr : '', closeLnk: () => this.setState({ lnk: null }),
-      lnkRows: lnkSite ? ROLES.map(([k, label]) => { const sent = lnkSite.links[k]; return { label, url: this.link(lnkSite.id, k), btn: sent ? '✓ 복사됨 · 다시 복사' : '링크 복사',
-        style: 'cursor:pointer;height:34px;padding:0 14px;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #14213D;background:' + (sent ? '#14213D' : '#fff') + ';color:' + (sent ? '#fff' : '#14213D'),
-        click: () => { this.copy('더존평가시스템(' + label + ')\n' + lnkSite.addr + '\n' + this.link(lnkSite.id, k)); upd(lnkSite.id, x => ({ ...x, links: { ...x.links, [k]: true } })); this.setState({ msg: lnkSite.addr + ' · ' + label + ' 링크 복사됨 → 카카오톡·문자에 붙여넣으세요.' }); } }; }) : [],
+      lnkRows: lnkSite ? ROLES.map(([k, label]) => { const sent = lnkSite.links[k]; return { label, url: this.link(lnkSite.id, k), btn: st.flash === lnkSite.id + k ? '✓ 복사됨' : (sent ? '✓ 복사됨 · 다시 복사' : '링크 복사'),
+        style: 'cursor:pointer;height:34px;padding:0 14px;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #14213D;background:' + (st.flash === lnkSite.id + k ? '#14583A' : (sent ? '#14213D' : '#fff')) + ';color:' + ((st.flash === lnkSite.id + k || sent) ? '#fff' : '#14213D') + ';transition:background .15s',
+        click: () => { this.copy('더존평가시스템(' + label + ')\n' + lnkSite.addr + '\n' + this.link(lnkSite.id, k)); upd(lnkSite.id, x => ({ ...x, links: { ...x.links, [k]: true } })); this.setState({ msg: lnkSite.addr + ' · ' + label + ' 링크 복사됨 → 카카오톡·문자에 붙여넣으세요.', flash: lnkSite.id + k }); this.showToast('✓ ' + label + ' 링크가 복사되었습니다'); } }; }) : [],
       lnkAll: () => { if (!lnkSite) return; this.copy(lnkSite.addr + ' 평가 요청 링크\n' + ROLES.map(([k, l]) => l + ': ' + this.link(lnkSite.id, k)).join('\n')); upd(lnkSite.id, x => ({ ...x, links: { in: true, gam: true, gong: true, bu: true, ceo: true } })); this.setState({ msg: lnkSite.addr + ' · 링크 5개를 한 번에 복사했습니다.' }); },
       hasMgr: !!st.selMgr, mgrName: mn, mgrType: mt, mgrTypeCls: mt === '직영' ? 't-d' : 't-m', mgrCount: mgrRows.length, mgrRows, closeMgr: () => this.setState({ selMgr: null }),
-      hasSel: !!cur, sel, sheetRows, closeSel: () => this.setState({ sel: null }), doPrint: () => { try { window.print(); } catch (e) {} },
+      hasSel: !!cur, ...(cur ? (() => { const d = delOf(cur); return { selDelLabel: d.delLabel === '삭제' ? '이 평가 삭제' : '정말 삭제?', selDelStyle: d.delStyle.replace('height:34px', 'height:44px').replace('padding:0 12px', 'padding:0 16px'), selDelGo: d.delGo }; })() : { selDelLabel: '', selDelStyle: 'display:none', selDelGo: () => {} }), sel, sheetRows, closeSel: () => this.setState({ sel: null }), doPrint: () => { try { window.print(); } catch (e) {} },
       wRows: WL.map(([k, label]) => ({ label, val: W[k], up: () => setS({ w: { ...W, [k]: Math.min(100, W[k] + 5) } }), down: () => setS({ w: { ...W, [k]: Math.max(0, W[k] - 5) } }) })),
       wStatus: wSum === 100 ? '합계 100% 정상' : '합계 ' + wSum + '% · 100%로 맞춰 주세요', wCls: wSum === 100 ? 'done' : 'wait',
       wPrev: WL.map(([k, label]) => ({ label, score: SAMPLE[k], val: W[k] })),
