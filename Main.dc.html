@@ -1,4 +1,4 @@
-<!doctype html>
+a<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -513,7 +513,10 @@ class Component extends DCLogic {
       this.setState({ sites: j.sites, set, gitMsg: '불러오기 완료 · 현장 ' + j.sites.length + '곳 · ' + (j.updatedAt || '') });
     } catch (e) { this.setState({ gitMsg: '오류: ' + e.message }); }
   }
-  copy(text) { try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(() => {}); } catch (e) {} }
+  copy(text) {
+    const fb = () => { try { const t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;top:0;left:0;opacity:0'; document.body.appendChild(t); t.focus(); t.select(); t.setSelectionRange(0, text.length); const ok = document.execCommand('copy'); document.body.removeChild(t); if (!ok) window.prompt('아래 링크를 복사(Ctrl+C)하세요', text); } catch (e) { try { window.prompt('아래 링크를 복사(Ctrl+C)하세요', text); } catch (e2) {} } };
+    try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(fb); else fb(); } catch (e) { fb(); }
+  }
   token(id, k) { return 'x' + (46656 + id * 7919).toString(36) + '-' + k; }
   link(id, k) { return 'https://wisestar823.github.io/dujonman/' + (k === 'in' ? 'Manager' : 'Eval') + '.dc.html?e=' + this.token(id, k); }
   incOf(type, score) {
@@ -659,7 +662,7 @@ class Component extends DCLogic {
       hasLnk: !!lnkSite, lnkAddr: lnkSite ? lnkSite.addr : '', closeLnk: () => this.setState({ lnk: null }),
       lnkRows: lnkSite ? ROLES.map(([k, label]) => { const sent = lnkSite.links[k]; return { label, url: this.link(lnkSite.id, k), btn: sent ? '✓ 복사됨 · 다시 복사' : '링크 복사',
         style: 'cursor:pointer;height:34px;padding:0 14px;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #14213D;background:' + (sent ? '#14213D' : '#fff') + ';color:' + (sent ? '#fff' : '#14213D'),
-        click: () => { this.copy(this.link(lnkSite.id, k)); upd(lnkSite.id, x => ({ ...x, links: { ...x.links, [k]: true } })); this.setState({ msg: lnkSite.addr + ' · ' + label + ' 링크 복사됨 → 카카오톡·문자에 붙여넣으세요.' }); } }; }) : [],
+        click: () => { this.copy('더존평가시스템(' + label + ')\n' + lnkSite.addr + '\n' + this.link(lnkSite.id, k)); upd(lnkSite.id, x => ({ ...x, links: { ...x.links, [k]: true } })); this.setState({ msg: lnkSite.addr + ' · ' + label + ' 링크 복사됨 → 카카오톡·문자에 붙여넣으세요.' }); } }; }) : [],
       lnkAll: () => { if (!lnkSite) return; this.copy(lnkSite.addr + ' 평가 요청 링크\n' + ROLES.map(([k, l]) => l + ': ' + this.link(lnkSite.id, k)).join('\n')); upd(lnkSite.id, x => ({ ...x, links: { in: true, gam: true, gong: true, bu: true, ceo: true } })); this.setState({ msg: lnkSite.addr + ' · 링크 5개를 한 번에 복사했습니다.' }); },
       hasMgr: !!st.selMgr, mgrName: mn, mgrType: mt, mgrTypeCls: mt === '직영' ? 't-d' : 't-m', mgrCount: mgrRows.length, mgrRows, closeMgr: () => this.setState({ selMgr: null }),
       hasSel: !!cur, sel, sheetRows, closeSel: () => this.setState({ sel: null }), doPrint: () => { try { window.print(); } catch (e) {} },
