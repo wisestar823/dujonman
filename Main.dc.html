@@ -9,7 +9,7 @@
 <x-dc>
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
 <style>
 body{margin:0;font-family:'Noto Sans KR',sans-serif;background:#F5F3EE;color:#1B2333}
 .nav button{display:block;width:100%;text-align:left;padding:11px 14px;border-radius:8px;border:0;background:transparent;color:#D7DCE8;font-size:14px;cursor:pointer}
@@ -515,7 +515,7 @@ class Component extends DCLogic {
   }
   copy(text) { try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(() => {}); } catch (e) {} }
   token(id, k) { return 'x' + (46656 + id * 7919).toString(36) + '-' + k; }
-  link(id, k) { return '[서비스 주소]/e/' + this.token(id, k); }
+  link(id, k) { return 'https://wisestar823.github.io/dujonman/' + (k === 'in' ? 'Manager' : 'Eval') + '.dc.html?e=' + this.token(id, k); }
   incOf(type, score) {
     const S = this.state.set, SC = [100, 95, 90, 85, 80], T = S.T[type + '|달성'];
     if (score < S.minScore) return null;
