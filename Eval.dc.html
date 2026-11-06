@@ -28,13 +28,6 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
 </style>
 </helmet>
 <div style="display:flex;flex-wrap:wrap;min-height:1080px">
-  <aside class="nav" style="flex:0 0 232px;background:#14213D;padding:24px 16px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px">
-    <div style="color:#fff;font-weight:700;font-size:17px;padding:4px 14px 2px">소장평가 통합관리</div>
-    <div style="color:#AEB6C9;font-size:12px;padding:0 14px 18px">더존하우징 · 2026년 4분기</div>
-    <a href="Main.dc.html">대시보드</a>
-    <a href="Main.dc.html">설정</a>
-  </aside>
-
   <main style="flex:999 1 560px;min-width:0;padding:28px 32px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px">
     <!-- 블록 A: 현장 헤더 -->
     <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
@@ -173,7 +166,7 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1300}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { sc: [18,9,8,12,4,4,4,8,4,12], adj: { profit: 1, inner: 2 }, role: '감리', ceo: [0, 0, 0, 0, 0], reason: '', area: 32.2, contract: 300000000, bu: [3, 4, 4, 4, 4], done: false, type: '직영', self: [19, 10, 9, 14, 5, 5, 5, 9, 5, 14], budget: 270000000, spent: 262000000, op: { '감리': '', '공무': '', '공사 부장': '' } }; }
+  constructor(props) { super(props); this.state = { sc: [18,9,8,12,4,4,4,8,4,12], adj: { profit: 1, inner: 2 }, role: (() => { try { const t = new URLSearchParams(location.search).get('e') || ''; return { gam: '감리', gong: '공무', bu: '공사 부장', ceo: '경영진' }[t.split('-').pop()] || '감리'; } catch (e) { return '감리'; } })(), ceo: [0, 0, 0, 0, 0], reason: '', area: 32.2, contract: 300000000, bu: [3, 4, 4, 4, 4], done: false, type: '직영', self: [19, 10, 9, 14, 5, 5, 5, 9, 5, 14], budget: 270000000, spent: 262000000, op: { '감리': '', '공무': '', '공사 부장': '' } }; }
   renderVals() {
     const s = this.state;
     const ITEMS = [
@@ -234,7 +227,7 @@ class Component extends DCLogic {
       showTable: !isCeo, isGam: R === '감리', isGong: R === '공무', rightStyle: isCeo || R === '감리' || R === '공무' ? 'flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:20px' : 'display:none',
       confirmLabel: s.done ? '✓ 부사장 확정 완료 (소장에게 결과 공개)' : '최종 점수 ' + final + '점 · ' + amount + ' 확인 후 부사장 확정', confirmGo: () => this.setState({ done: !s.done }),
       confirmStyle: 'margin-top:14px;width:100%;min-height:48px;border-radius:10px;border:0;background:' + (s.done ? '#14583A' : '#C8A24A') + ';color:' + (s.done ? '#fff' : '#14213D') + ';font-weight:700;font-size:15px;cursor:pointer;padding:8px 12px',
-      items: shown, roleLabel: isCeo ? '통합' : (R === '소장' ? '소장 자가평가' : R + ' 평가표'), roleSum, roleMax, roleNote: NOTE[R], isCeo, roleBtns: ['소장', '감리', '공무', '공사 부장', '경영진'].map(roleBtn), base, merged,
+      items: shown, roleLabel: isCeo ? '통합' : (R === '소장' ? '소장 자가평가' : R + ' 평가표'), roleSum, roleMax, roleNote: NOTE[R], isCeo, roleBtns: (() => { try { if (/^[^-]+-(gam|gong|bu|ceo)$/.test(new URLSearchParams(location.search).get('e') || '')) return []; } catch (e) {} return ['소장', '감리', '공무', '공사 부장', '경영진'].map(roleBtn); })(), base, merged,
       area: s.area, contract: s.contract.toLocaleString('ko-KR'), dgRate: rate.toFixed(1) + '%', dgAmt: dg.toLocaleString('ko-KR'),
       areaUp: () => this.setState({ area: +(s.area + 1).toFixed(1) }), areaDown: () => this.setState({ area: Math.max(1, +(s.area - 1).toFixed(1)) }),
       conUp: () => this.setState({ contract: s.contract + 10000000 }), conDown: () => this.setState({ contract: Math.max(0, s.contract - 10000000) }),
