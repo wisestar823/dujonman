@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>소장 입력·결과 화면</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Noto Sans KR',sans-serif;background:#F5F3EE;color:#1B2333}
+button{font-family:inherit}
+.card{background:#fff;border:1px solid #E2DED3;border-radius:14px;padding:16px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;font-size:14px}
+.lab{color:#4A5163}
+.stp{display:flex;align-items:center;gap:8px}
+.stp button{width:44px;height:44px;border-radius:10px;border:1px solid #14213D;background:#fff;color:#14213D;font-size:20px;cursor:pointer}
+.pt{display:inline-block;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:700;background:#E3F3EA;color:#14583A}
+.pt.neg{background:#FBE5E3;color:#8A1F17}
+@media print{.noprint{display:none!important} body{background:#fff}}
+</style>
+</helmet>
+<div style="width:390px;height:3000px;box-sizing:border-box;display:flex;flex-direction:column;background:#F5F3EE">
+
+  <!-- 시연용 상태 전환 (실제 서비스에서는 서버가 상태로 결정) -->
+  <div class="noprint" style="background:#0B1328;padding:10px 12px;display:flex;flex-direction:column;gap:6px">
+    <div style="font-size:11px;color:#AEB6C9">시안용 · 같은 링크가 상태에 따라 바뀌는 모습</div>
+    <div style="display:flex;gap:6px">
+      <sc-for list="{{modes}}" as="m" hint-placeholder-count="3"><button onClick="{{m.pick}}" style="{{m.style}}">{{m.label}}</button></sc-for>
+    </div>
+  </div>
+
+  <!-- 헤더 -->
+  <div style="background:#14213D;color:#fff;padding:22px 20px 20px">
+    <div style="font-size:12px;color:#C8A24A;font-weight:700;letter-spacing:.5px">직영 현장소장 · 공사완료평가</div>
+    <div style="font-size:20px;font-weight:700;margin-top:6px">샘플 주소 11</div>
+    <div style="font-size:13px;color:#C9D0E2;margin-top:4px">{{headSub}}</div>
+    <div style="font-size:11px;color:#AEB6C9;margin-top:10px">이 현장 전용 링크 · 현장 종료 후 평가 · 다른 현장은 별도 링크</div>
+  </div>
+
+  <!-- 모드 1: 입력 -->
+  <sc-if value="{{isInput}}" hint-placeholder-val="{{true}}">
+  <div style="padding:16px;display:flex;flex-direction:column;gap:14px;flex-grow:1">
+    <div class="card" style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;font-size:14px"><b>입력 진행</b><span>자가평가 10개 항목 + 가감점</span></div>
+      <div style="height:8px;background:#ECEAE3;border-radius:999px;overflow:hidden"><div style="height:8px;background:#C8A24A;width:75%"></div></div>
+    </div>
+
+    <section class="card">
+      <div style="font-weight:700;font-size:16px;margin-bottom:6px">① 현장 정보 (확인)</div>
+      <div class="row"><span class="lab">구조</span><b>목구조</b></div>
+      <div class="row"><span class="lab">연면적</span><b>32.2평</b></div>
+      <div class="row"><span class="lab">등급(기준)</span><b>24년 4분기/32.2PY/프1/모2/</b></div>
+    </section>
+
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700;font-size:16px">② 공기 <span style="font-weight:400;font-size:13px;color:#4A5163">20점</span></div><span class="pt {{airCls}}">{{airPt}}</span></div>
+      <div class="row"><span class="lab">절대공기(일)</span><b>{{abs}}일</b></div>
+      <div class="row"><span class="lab">완료공기(일)</span>
+        <div class="stp"><button aria-label="완료공기 1일 감소" onClick="{{airDown}}">−</button><b style="min-width:48px;text-align:center">{{air}}일</b><button aria-label="완료공기 1일 증가" onClick="{{airUp}}">+</button></div>
+      </div>
+      <div class="row"><span class="lab">공기차이</span><b>{{airDiff}}</b></div>
+      <div style="font-size:12px;color:#4A5163">준공청소~잔손보기 완료 기준 · 5일 단축 +1 / 3일 초과 −1</div>
+      <div class="row" style="border-top:1px solid #EFEBE1;margin-top:6px;padding-top:10px"><span style="flex:1;line-height:1.35"><b>자가 점수</b><br><span style="font-size:12px;color:#4A5163">{{aMax}}점 만점 · <b style="color:{{aLostColor}}">{{aLost}}</b></span></span>
+        <div class="stp"><button aria-label="감점" onClick="{{aSDown}}">−</button><b style="min-width:34px;text-align:center">{{aScore}}</b><button aria-label="점수 증가" onClick="{{aSUp}}" style="{{aPlusStyle}}">+</button></div></div>
+
+    </section>
+
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700;font-size:16px">③ 폐기물처리 <span style="font-weight:400;font-size:13px;color:#4A5163">15점</span></div><span class="pt {{wCls}}">{{wPt}}</span></div>
+      <div class="row"><span class="lab">기준액 (목조 평당 2.5만원)</span><b>{{wBase}}원</b></div>
+      <div class="row"><span class="lab">실제 처리비</span>
+        <div class="stp"><button aria-label="처리비 10만원 감소" onClick="{{wDown}}">−</button><b style="min-width:92px;text-align:center">{{wAct}}원</b><button aria-label="처리비 10만원 증가" onClick="{{wUp}}">+</button></div>
+      </div>
+      <div class="row"><span class="lab">기준 대비</span><b>{{wDiff}}</b></div>
+      <button style="margin-top:6px;width:100%;height:44px;border-radius:10px;border:1px dashed #8A8366;background:#FAF8F3;color:#3B4457;font-size:14px;cursor:pointer">+ 폐기물 영수증·증빙 사진 첨부</button>
+      <div style="font-size:12px;color:#4A5163;margin-top:8px">기준 이상 청구 10만원당 −1점 · 기준 미만 정산 10만원당 +1점</div>
+      <div class="row" style="border-top:1px solid #EFEBE1;margin-top:6px;padding-top:10px"><span style="flex:1;line-height:1.35"><b>자가 점수</b><br><span style="font-size:12px;color:#4A5163">{{wMax}}점 만점 · <b style="color:{{wLostColor}}">{{wLost}}</b></span></span>
+        <div class="stp"><button aria-label="감점" onClick="{{wSDown}}">−</button><b style="min-width:34px;text-align:center">{{wScore}}</b><button aria-label="점수 증가" onClick="{{wSUp}}" style="{{wPlusStyle}}">+</button></div></div>
+
+    </section>
+
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700;font-size:16px">④ 인력·잔여자재 <span style="font-weight:400;font-size:13px;color:#4A5163">10점</span></div><span class="pt {{mCls}}">{{mPt}}</span></div>
+      <div class="row"><span class="lab">기준 인력 (10평당 1품)</span><b>3품</b></div>
+      <div class="row"><span class="lab">실제 사용 인력</span>
+        <div class="stp"><button aria-label="인력 1품 감소" onClick="{{mDown}}">−</button><b style="min-width:48px;text-align:center">{{man}}품</b><button aria-label="인력 1품 증가" onClick="{{mUp}}">+</button></div>
+      </div>
+      <button style="margin-top:6px;width:100%;height:44px;border-radius:10px;border:1px dashed #8A8366;background:#FAF8F3;color:#3B4457;font-size:14px;cursor:pointer">+ 잔여자재 회수 증빙 첨부</button>
+      <div style="font-size:12px;color:#4A5163;margin-top:8px">1인 추가 사용 −2점 · 1인 미사용 +2점</div>
+      <div class="row" style="border-top:1px solid #EFEBE1;margin-top:6px;padding-top:10px"><span style="flex:1;line-height:1.35"><b>자가 점수</b><br><span style="font-size:12px;color:#4A5163">{{mMax}}점 만점 · <b style="color:{{mLostColor}}">{{mLost}}</b></span></span>
+        <div class="stp"><button aria-label="감점" onClick="{{mSDown}}">−</button><b style="min-width:34px;text-align:center">{{mScore}}</b><button aria-label="점수 증가" onClick="{{mSUp}}" style="{{mPlusStyle}}">+</button></div></div>
+
+    </section>
+
+    <section class="card">
+      <div style="font-weight:700;font-size:16px;margin-bottom:2px">⑤ 나머지 항목 자가평가</div>
+      <div style="font-size:12px;color:#4A5163;margin-bottom:6px">각 항목을 스스로 평가해 점수를 입력하세요. (− / + 로 1점씩)</div>
+      <sc-for list="{{selfItems}}" as="it" hint-placeholder-count="7">
+        <div class="row" style="border-bottom:1px solid #EFEBE1">
+          <span style="flex:1;min-width:0;line-height:1.35">{{it.name}}<br><span style="font-size:12px;color:#4A5163">{{it.max}}점 만점 · <b style="color:{{it.lostColor}}">{{it.lost}}</b></span></span>
+          <div class="stp"><button aria-label="감점 (점수 감소)" onClick="{{it.down}}">−</button><b style="min-width:34px;text-align:center">{{it.score}}</b><button aria-label="점수 증가" onClick="{{it.up}}" style="{{it.plusStyle}}">+</button></div>
+        </div>
+      </sc-for>
+    </section>
+
+    <section class="card">
+      <div style="font-weight:700;font-size:16px;margin-bottom:2px">⑥ 가점 · 감점 (건수 입력)</div>
+      <div style="font-size:12px;color:#4A5163;margin-bottom:6px">해당 건수만큼 올려주세요. 건수 × 건당 점수로 자동 계산됩니다.</div>
+      <sc-for list="{{adjItems}}" as="a" hint-placeholder-count="8">
+        <div class="row" style="border-bottom:1px solid #EFEBE1">
+          <span style="flex:1;min-width:0;line-height:1.35">{{a.name}}<br><span style="font-size:12px;color:#4A5163">{{a.unit}} · 합계 <b style="color:{{a.color}}">{{a.sub}}</b></span></span>
+          <div class="stp"><button aria-label="건수 감소" onClick="{{a.down}}">−</button><b style="min-width:30px;text-align:center">{{a.n}}건</b><button aria-label="건수 증가" onClick="{{a.up}}">+</button></div>
+        </div>
+      </sc-for>
+      <div class="row" style="padding-top:12px"><b>가점·감점 합계</b><span class="pt {{adjCls}}">{{adjTotal}}</span></div>
+    </section>
+
+    <div style="background:#FFF7E0;border:1px solid #E9D69A;border-radius:12px;padding:12px 14px;font-size:13px;color:#5A4300;line-height:1.55">
+      모든 항목을 소장이 먼저 자가평가하고, 감리·공무 담당이 검토해 최종 점수를 확정합니다. (최종 점수는 담당자 평가 기준)
+    </div>
+
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;justify-content:space-between;font-size:14px"><span class="lab">자가평가 합계 (가감점 포함)</span><b style="font-size:18px">{{selfTotal}}</b></div>
+      <button style="height:52px;border-radius:12px;border:0;background:#14213D;color:#fff;font-weight:700;font-size:16px;cursor:pointer">제출하기</button>
+      <button style="height:44px;border-radius:12px;border:1px solid #14213D;background:#fff;color:#14213D;font-size:14px;cursor:pointer">임시저장</button>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- 모드 2: 평가 진행 중 (결과 비공개) -->
+  <sc-if value="{{isWait}}" hint-placeholder-val="{{false}}">
+  <div style="padding:16px;display:flex;flex-direction:column;gap:14px;flex-grow:1">
+    <div class="card" style="text-align:center;padding:28px 18px">
+      <div style="font-size:34px;line-height:1;color:#C8A24A;font-weight:700">···</div>
+      <div style="font-weight:700;font-size:18px;margin-top:12px">평가가 진행 중입니다</div>
+      <div style="font-size:14px;color:#4A5163;line-height:1.6;margin-top:8px">경영진(부사장) 확정 후<br>이 링크에서 결과를 확인할 수 있습니다.</div>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;font-size:15px;margin-bottom:8px">진행 단계</div>
+      <div class="row"><span>소장 입력</span><span class="pt">완료</span></div>
+      <div class="row"><span>감리 평가</span><span class="pt">완료</span></div>
+      <div class="row"><span>공무 평가</span><span class="pt" style="background:#E5EDFA;color:#1B438A">진행 중</span></div>
+      <div class="row"><span>공사 부장 평가</span><span class="pt" style="background:#FFF0D1;color:#6B4200">대기</span></div>
+      <div class="row"><span>경영진(부사장) 확정</span><span class="pt" style="background:#FFF0D1;color:#6B4200">대기</span></div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- 모드 3: 확정 후 결과 -->
+  <sc-if value="{{isResult}}" hint-placeholder-val="{{false}}">
+  <div style="padding:16px;display:flex;flex-direction:column;gap:14px;flex-grow:1">
+    <div class="card" style="text-align:center;padding:22px 18px">
+      <span class="pt">경영진(부사장) 확정 완료</span>
+      <div style="font-size:13px;color:#4A5163;margin-top:14px">최종 점수</div>
+      <div style="font-size:48px;font-weight:700;line-height:1.1;margin-top:2px">{{rTotal}}<span style="font-size:20px">점</span></div>
+      <div style="height:1px;background:#EFEBE1;margin:16px 0"></div>
+      <div style="font-size:13px;color:#4A5163">인센티브</div>
+      <div style="font-size:30px;font-weight:700;margin-top:4px;color:#14583A">{{rInc}}</div>
+      <div style="font-size:12px;color:#4A5163;margin-top:6px">직영 기준표 · 기준 이윤 달성 적용</div>
+    </div>
+
+    <section class="card">
+      <div style="font-weight:700;font-size:16px;margin-bottom:6px">평가표 (항목별 점수)</div>
+      <sc-for list="{{rItems}}" as="it" hint-placeholder-count="10">
+        <div style="padding:9px 0;border-bottom:1px solid #EFEBE1">
+          <div style="display:flex;justify-content:space-between;gap:10px;font-size:14px"><span>{{it.name}}</span><b>{{it.score}} / {{it.max}}</b></div>
+          <div style="height:6px;background:#ECEAE3;border-radius:999px;margin-top:6px;overflow:hidden"><div style="height:6px;background:#C8A24A;width:{{it.pct}}%"></div></div>
+          <div style="font-size:11px;color:#4A5163;margin-top:4px">평가자: {{it.who}}</div>
+        </div>
+      </sc-for>
+      <div style="display:flex;justify-content:space-between;padding-top:12px;font-size:15px"><b>합계</b><b>{{rTotal}} / 100점</b></div>
+    </section>
+
+    <section class="card">
+      <div style="font-weight:700;font-size:16px;margin-bottom:6px">평가 의견</div>
+      <div class="row" style="align-items:flex-start"><span class="lab" style="flex:0 0 96px">감리</span><span>현장 관리 양호, 지적사항 신속 조치.</span></div>
+      <div class="row" style="align-items:flex-start"><span class="lab" style="flex:0 0 96px">공무</span><span>기성·정산 서류 적정.</span></div>
+      <div class="row" style="align-items:flex-start"><span class="lab" style="flex:0 0 96px">경영진(부사장)</span><span>확정.</span></div>
+    </section>
+
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px" class="noprint">
+      <button onClick="{{doPrint}}" style="height:52px;border-radius:12px;border:0;background:#14213D;color:#fff;font-weight:700;font-size:16px;cursor:pointer">평가표 PDF 저장</button>
+      <div style="font-size:12px;color:#4A5163;text-align:center">결과는 읽기 전용이며 수정할 수 없습니다.</div>
+    </div>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3000}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { mode: 'input', air: 115, waste: 805000, man: 3,
+    sc: [10, 10, 15, 5, 5, 5, 5], d3: [0, 0, 0], cnt: [0, 0, 0, 0, 0, 0, 0, 0] }; }
+  renderVals() {
+    const s = this.state, ABS = 120, WB = 805000;
+    const dAir = s.air - ABS;
+    const airPt = dAir <= -5 ? 1 : (dAir >= 3 ? -1 : 0);
+    const dW = s.waste - WB;
+    const wPt = dW > 0 ? -Math.floor(dW / 100000) : Math.floor(-dW / 100000);
+    const dM = s.man - 3;
+    const mPt = dM > 0 ? -2 * dM : (dM < 0 ? 2 * (-dM) : 0);
+    const f = (n) => (n > 0 ? '+' : '') + n + '점';
+    const fmt = (n) => n.toLocaleString('ko-KR');
+    const cls = (n) => (n < 0 ? 'neg' : '');
+    const sum = airPt + wPt + mPt;
+    const SELF = [['안전관리', 10], ['안전서류 작성', 10], ['감리보고서', 15], ['엔딩점검·건축주 만족도', 5], ['근태관리', 5], ['어플근태관리', 5], ['공사완료확인서·기성·대관', 5]];
+    const selfItems = SELF.map(([name, max], i) => ({ name, max, score: s.sc[i], lost: s.sc[i] === max ? '감점 없음' : '감점 −' + (max - s.sc[i]), lostColor: s.sc[i] === max ? '#4A5163' : '#8A1F17', plusStyle: s.sc[i] >= max ? 'opacity:.35;cursor:not-allowed' : '',
+      up: () => this.setState({ sc: s.sc.map((v, j) => j === i ? Math.min(max, v + 1) : v) }),
+      down: () => this.setState({ sc: s.sc.map((v, j) => j === i ? Math.max(0, v - 1) : v) }) }));
+    const ADJ = [['공사이윤 달성', '1%당 +1점', 1], ['홍보', '건당 +3점', 3], ['현장소개건', '건당 +3점', 3],
+      ['근로복지공단 지적', '건당 −5점', -5], ['적발 범칙금', '건당 −20점', -20], ['내부감리 지적', '건당 −2점', -2],
+      ['경미한 안전사고', '건당 −5점', -5], ['중대 안전사고 발생 시', '건당 −20점', -20]];
+    const adjItems = ADJ.map(([name, unit, p], i) => { const n = s.cnt[i], v = n * p; return { name, unit, n,
+      sub: f(v), color: v < 0 ? '#8A1F17' : (v > 0 ? '#14583A' : '#4A5163'),
+      up: () => this.setState({ cnt: s.cnt.map((c, j) => j === i ? c + 1 : c) }),
+      down: () => this.setState({ cnt: s.cnt.map((c, j) => j === i ? Math.max(0, c - 1) : c) }) }; });
+    const adjSum = ADJ.reduce((a, [, , p], i) => a + s.cnt[i] * p, 0);
+    const calc = (max, auto, i) => { const raw = Math.max(0, Math.min(max, max + auto + s.d3[i])); const setTo = (v) => this.setState({ d3: s.d3.map((d, k) => k === i ? v - (max + auto) : d) }); return {
+      max, score: raw, lost: raw >= max ? '감점 없음' : '감점 −' + (max - raw), lostColor: raw >= max ? '#4A5163' : '#8A1F17', plus: raw >= max ? 'opacity:.35;cursor:not-allowed' : '',
+      up: () => { if (raw < max) setTo(raw + 1); }, down: () => { if (raw > 0) setTo(raw - 1); } }; };
+    const cA = calc(20, airPt, 0), cW = calc(15, wPt, 1), cM = calc(10, mPt, 2);
+    const selfTotal = cA.score + cW.score + cM.score + s.sc.reduce((a, b) => a + b, 0) + adjSum;
+    const MODES = [['input', '입력 중'], ['wait', '평가 진행 중'], ['result', '확정 후 결과']];
+    const ITEMS = [['공기', 20, 19, '감리'], ['안전관리', 10, 9, '감리'], ['안전서류 작성', 10, 9, '감리'], ['감리보고서', 15, 14, '감리'],
+      ['엔딩점검·건축주 만족도', 5, 5, '감리'], ['근태관리', 5, 4, '감리·공무'], ['어플근태관리', 5, 4, '감리·공무'],
+      ['인력·잡자재·잔여자재', 10, 9, '공무'], ['공사완료확인서·기성·대관', 5, 5, '공무'], ['폐기물처리', 15, 14, '공무']];
+    const rItems = ITEMS.map(([name, max, score, who]) => ({ name, max, score, who, pct: Math.round(score / max * 100) }));
+    const sub = { input: '소장 아 · 입력 마감 11/05 · 임시저장됨', wait: '소장 아 · 입력 제출 완료', result: '소장 아 · 평가 확정 완료' }[s.mode];
+    return {
+      modes: MODES.map(([k, label]) => ({ label, pick: () => this.setState({ mode: k }),
+        style: 'cursor:pointer;flex:1;height:36px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid ' + (s.mode === k ? '#C8A24A' : '#3A4A74') + ';background:' + (s.mode === k ? '#C8A24A' : 'transparent') + ';color:' + (s.mode === k ? '#14213D' : '#D7DCE8') })),
+      isInput: s.mode === 'input', isWait: s.mode === 'wait', isResult: s.mode === 'result', headSub: sub,
+      abs: ABS, air: s.air, airDiff: (dAir > 0 ? '+' : '') + dAir + '일', airPt: f(airPt), airCls: cls(airPt),
+      airUp: () => this.setState({ air: s.air + 1 }), airDown: () => this.setState({ air: s.air - 1 }),
+      wBase: fmt(WB), wAct: fmt(s.waste), wDiff: (dW > 0 ? '+' : '') + fmt(dW) + '원', wPt: f(wPt), wCls: cls(wPt),
+      wUp: () => this.setState({ waste: s.waste + 100000 }), wDown: () => this.setState({ waste: Math.max(0, s.waste - 100000) }),
+      man: s.man, mPt: f(mPt), mCls: cls(mPt),
+      mUp: () => this.setState({ man: s.man + 1 }), mDown: () => this.setState({ man: Math.max(0, s.man - 1) }),
+      aMax: cA.max, aScore: cA.score, aLost: cA.lost, aLostColor: cA.lostColor, aPlusStyle: cA.plus, aSUp: cA.up, aSDown: cA.down,
+      wMax: cW.max, wScore: cW.score, wLost: cW.lost, wLostColor: cW.lostColor, wPlusStyle: cW.plus, wSUp: cW.up, wSDown: cW.down,
+      mMax: cM.max, mScore: cM.score, mLost: cM.lost, mLostColor: cM.lostColor, mPlusStyle: cM.plus, mSUp: cM.up, mSDown: cM.down,
+      selfItems, adjItems, adjTotal: f(adjSum), adjCls: cls(adjSum), selfTotal: selfTotal + '점',
+      rItems, rTotal: rItems.reduce((a, b) => a + b.score, 0), rInc: '750,000원',
+      doPrint: () => { try { window.print(); } catch (e) {} }
+    };
+  }
+}
+</script>
+</body>
+</html>
