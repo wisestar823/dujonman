@@ -9,7 +9,7 @@
 <x-dc>
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
 <style>
 body{margin:0;font-family:'Noto Sans KR',sans-serif;background:#F5F3EE;color:#1B2333}
 a{color:inherit;text-decoration:none}
@@ -32,14 +32,11 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
     <!-- 블록 A: 현장 헤더 -->
     <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
       <div>
-        <h1 style="margin:0;font-size:24px;font-weight:700">샘플 주소 2 · 소장 나</h1>
-        <div style="color:#4A5163;font-size:13px;margin-top:4px">등급(기준) 24년 4분기/32.2PY/프1/모2/ · 샘플 데이터</div>
+        <h1 style="margin:0;font-size:24px;font-weight:700">{{title}}</h1>
+        <div style="color:#4A5163;font-size:13px;margin-top:4px">{{subtitle}}</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <span class="chip s-in" style="padding:6px 12px">소장 입력 완료</span>
-        <span class="chip s-gam" style="padding:6px 12px">감리 평가 완료</span>
-        <span class="chip s-gong" style="padding:6px 12px">공무 평가 진행</span>
-        <span class="chip s-gong" style="padding:6px 12px">공사 부장 평가 대기</span>
+        <sc-for list="{{chips}}" as="c" hint-placeholder-count="5"><span class="chip {{c.cls}}" style="padding:6px 12px">{{c.text}}</span></sc-for>
       </div>
     </div>
 
@@ -166,7 +163,13 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1300}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { sc: [18,9,8,12,4,4,4,8,4,12], adj: { profit: 1, inner: 2 }, role: (() => { try { const t = new URLSearchParams(location.search).get('e') || ''; return { gam: '감리', gong: '공무', bu: '공사 부장', ceo: '경영진' }[t.split('-').pop()] || '감리'; } catch (e) { return '감리'; } })(), ceo: [0, 0, 0, 0, 0], reason: '', area: 32.2, contract: 300000000, bu: [3, 4, 4, 4, 4], done: false, type: '직영', self: [19, 10, 9, 14, 5, 5, 5, 9, 5, 14], budget: 270000000, spent: 262000000, op: { '감리': '', '공무': '', '공사 부장': '' } }; }
+  constructor(props) { super(props); this.state = { site: null, loadMsg: '', sc: [18,9,8,12,4,4,4,8,4,12], adj: { profit: 1, inner: 2 }, role: (() => { try { const t = new URLSearchParams(location.search).get('e') || ''; return { gam: '감리', gong: '공무', bu: '공사 부장', ceo: '경영진' }[t.split('-').pop()] || '감리'; } catch (e) { return '감리'; } })(), ceo: [0, 0, 0, 0, 0], reason: '', area: 32.2, contract: 300000000, bu: [3, 4, 4, 4, 4], done: false, type: '직영', self: [19, 10, 9, 14, 5, 5, 5, 9, 5, 14], budget: 270000000, spent: 262000000, op: { '감리': '', '공무': '', '공사 부장': '' } }; }
+  fromSite(site) { return { sc: (site.sc || []).map(v => v == null ? 0 : v), type: site.type || '직영', op: { '감리': site.cGam || '', '공무': site.cGong || '', '공사 부장': site.cBu || '' }, reason: site.cCeo || '' }; }
+  componentDidMount() { try { const q = new URLSearchParams(location.search).get('e') || ''; const tk = q.split('-')[0]; const id = (parseInt(tk.slice(1), 36) - 46656) / 7919; const h = location.hostname, owner = h.endsWith('.github.io') ? h.split('.')[0] : '', repo = location.pathname.split('/')[1] || '';
+    if (!q || !owner || !Number.isInteger(id)) return; this.setState({ loadMsg: '현장 정보를 불러오는 중…' });
+    fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/data/sites.json', { headers: { Accept: 'application/vnd.github.raw+json' }, cache: 'no-store' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(j => { const site = (j.sites || []).find(x => x.id === id); if (!site) throw new Error('nf'); this.setState({ site, loadMsg: '', ...this.fromSite(site) }); })
+      .catch(() => this.setState({ loadMsg: '현장 정보를 불러오지 못했습니다. 관리자가 GitHub 저장을 했는지 확인해 주세요.' })); } catch (e) {} }
   renderVals() {
     const s = this.state;
     const ITEMS = [
@@ -223,7 +226,11 @@ class Component extends DCLogic {
     else if (final < 70) { if (s.type === '관리소장') { const pct = Math.max(1, 70 - final); amount = '도급액 감액 −' + Math.round(dg * pct / 100).toLocaleString('ko-KR') + '원'; note = '70점 미만: 도급액 ' + dg.toLocaleString('ko-KR') + '원 × ' + pct + '% (70점 1%, 1점 낮아질 때마다 +1%)'; } else { amount = '페널티 대상'; note = '70점 미만: 시말서 · 상여금 미지급'; } }
     else { for (const [sc, v] of table) { if (final >= sc) { amount = v.toLocaleString('ko-KR') + '원'; color = '#14583A'; note = s.type + ' · 기준 이윤 ' + profit + ' 기준표 적용 · R.C 현장은 100% 추가 적용'; break; } } }
     const seg = (on) => 'cursor:pointer;height:40px;padding:0 16px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (on ? '#14213D' : '#D9D4C6') + ';background:' + (on ? '#14213D' : '#fff') + ';color:' + (on ? '#fff' : '#1B2333');
+    const site = s.site, STG = ['소장 입력', '감리 평가', '공무 평가', '공사 부장 평가', '부사장 확정'], g = site ? site.stage : 2;
+    const chips = STG.map((t, i) => ({ text: t + (i < g ? ' 완료' : (i === g ? ' 진행' : ' 대기')), cls: i < g ? 's-gam' : (i === g ? 's-in' : 's-gong') }));
     return {
+      title: site ? site.addr + ' · ' + site.mgr : '샘플 주소 2 · 소장 나', chips,
+      subtitle: s.loadMsg || (site ? site.type + ' · ' + (site.grade || '') : '샘플 데이터 (링크로 접속하면 해당 현장이 표시됩니다)'),
       showTable: !isCeo, isGam: R === '감리', isGong: R === '공무', rightStyle: isCeo || R === '감리' || R === '공무' ? 'flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:20px' : 'display:none',
       confirmLabel: s.done ? '✓ 부사장 확정 완료 (소장에게 결과 공개)' : '최종 점수 ' + final + '점 · ' + amount + ' 확인 후 부사장 확정', confirmGo: () => this.setState({ done: !s.done }),
       confirmStyle: 'margin-top:14px;width:100%;min-height:48px;border-radius:10px;border:0;background:' + (s.done ? '#14583A' : '#C8A24A') + ';color:' + (s.done ? '#fff' : '#14213D') + ';font-weight:700;font-size:15px;cursor:pointer;padding:8px 12px',
