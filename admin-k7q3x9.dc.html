@@ -452,7 +452,7 @@ class Component extends DCLogic {
     super(props);
     const G = '24년 4분기/32.2PY/프1/모2/', B = [null,null,null,null,null,null,null,null,null,null];
     const R = ['in', 'gam', 'gong', 'bu', 'ceo'];
-    const L = (n) => R.reduce((o, k, i) => ({ ...o, [k]: i <= n }), {});
+    const L = (n) => R.reduce((o, k) => ({ ...o, [k]: false }), {});
     const INS = { 1: '김동완', 8: '김동완', 2: '임현규', 11: '임현규', 5: '이영빈', 3: '이영빈', 4: '최현균', 6: '최현균' };
     const mk = (id, addr, mgr, type, stage, sc, extra) => ({ id, addr, mgr, type, insp: INS[id], grade: G, sc, stage, links: L(stage), cGam: '', cGong: '', cBu: '', cCeo: '', ...extra });
     this.state = {
