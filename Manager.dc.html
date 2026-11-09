@@ -83,7 +83,6 @@ button{font-family:inherit}
         <div class="stp"><button aria-label="처리비 10만원 감소" onClick="{{wDown}}">−</button><b style="min-width:92px;text-align:center">{{wAct}}원</b><button aria-label="처리비 10만원 증가" onClick="{{wUp}}">+</button></div>
       </div>
       <div class="row"><span class="lab">기준 대비</span><b>{{wDiff}}</b></div>
-      <button style="margin-top:6px;width:100%;height:44px;border-radius:10px;border:1px dashed #8A8366;background:#FAF8F3;color:#3B4457;font-size:14px;cursor:pointer">+ 폐기물 영수증·증빙 사진 첨부</button>
       <div style="font-size:12px;color:#4A5163;margin-top:8px">기준 이상 청구 10만원당 −1점 · 기준 미만 정산 10만원당 +1점</div>
       <div class="row" style="border-top:1px solid #EFEBE1;margin-top:6px;padding-top:10px"><span style="flex:1;line-height:1.35"><b>자가 점수</b><br><span style="font-size:12px;color:#4A5163">{{wMax}}점 만점 · <b style="color:{{wLostColor}}">{{wLost}}</b></span></span>
         <div class="stp"><button aria-label="감점" onClick="{{wSDown}}">−</button><b style="min-width:34px;text-align:center">{{wScore}}</b><button aria-label="점수 증가" onClick="{{wSUp}}" style="{{wPlusStyle}}">+</button></div></div>
@@ -96,7 +95,6 @@ button{font-family:inherit}
       <div class="row"><span class="lab">실제 사용 인력</span>
         <div class="stp"><button aria-label="인력 1품 감소" onClick="{{mDown}}">−</button><b style="min-width:48px;text-align:center">{{man}}품</b><button aria-label="인력 1품 증가" onClick="{{mUp}}">+</button></div>
       </div>
-      <button style="margin-top:6px;width:100%;height:44px;border-radius:10px;border:1px dashed #8A8366;background:#FAF8F3;color:#3B4457;font-size:14px;cursor:pointer">+ 잔여자재 회수 증빙 첨부</button>
       <div style="font-size:12px;color:#4A5163;margin-top:8px">1인 추가 사용 −2점 · 1인 미사용 +2점</div>
       <div class="row" style="border-top:1px solid #EFEBE1;margin-top:6px;padding-top:10px"><span style="flex:1;line-height:1.35"><b>자가 점수</b><br><span style="font-size:12px;color:#4A5163">{{mMax}}점 만점 · <b style="color:{{mLostColor}}">{{mLost}}</b></span></span>
         <div class="stp"><button aria-label="감점" onClick="{{mSDown}}">−</button><b style="min-width:34px;text-align:center">{{mScore}}</b><button aria-label="점수 증가" onClick="{{mSUp}}" style="{{mPlusStyle}}">+</button></div></div>
@@ -199,8 +197,8 @@ button{font-family:inherit}
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3000}}'>
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { site: null, cfg: null, loadMsg: '', saveMsg: '', saveOk: true, busy: false, confirming: false, start: '', end: '', mode: 'input', kind: '', air: null, waste: null, man: null,
-    sc: [10, 10, 15, 5, 5, 5, 5], d3: [0, 0, 0], cnt: [0, 0, 0, 0, 0, 0, 0, 0] }; }
-  fromSite(site) { const m = site.selfIn || {}; return { mode: site.stage === 0 ? 'input' : (site.stage >= 5 ? 'result' : 'wait'), ...(m.kind === 'RC' || m.kind === '목조' ? { kind: m.kind } : {}), ...(typeof m.air === 'number' ? { air: m.air } : {}), ...(typeof m.start === 'string' ? { start: m.start } : {}), ...(typeof m.end === 'string' ? { end: m.end } : {}), ...(typeof m.waste === 'number' ? { waste: m.waste } : {}), ...(typeof m.man === 'number' ? { man: m.man } : {}), ...(Array.isArray(m.sc) && m.sc.length === 7 ? { sc: m.sc } : {}), ...(Array.isArray(m.d3) && m.d3.length === 3 ? { d3: m.d3 } : {}), ...(Array.isArray(m.cnt) && m.cnt.length === 8 ? { cnt: m.cnt } : {}) }; }
+    sc: [10, 10, 15, 5, 5, 5, 5], d3: [0, 0, 0], cnt: [0, 0, 0, 0, 0, 0] }; }
+  fromSite(site) { const m = site.selfIn || {}; return { mode: site.stage === 0 ? 'input' : (site.stage >= 5 ? 'result' : 'wait'), ...(m.kind === 'RC' || m.kind === '목조' ? { kind: m.kind } : {}), ...(typeof m.air === 'number' ? { air: m.air } : {}), ...(typeof m.start === 'string' ? { start: m.start } : {}), ...(typeof m.end === 'string' ? { end: m.end } : {}), ...(typeof m.waste === 'number' ? { waste: m.waste } : {}), ...(typeof m.man === 'number' ? { man: m.man } : {}), ...(Array.isArray(m.sc) && m.sc.length === 7 ? { sc: m.sc } : {}), ...(Array.isArray(m.d3) && m.d3.length === 3 ? { d3: m.d3 } : {}), ...(Array.isArray(m.cnt) && m.cnt.length === 6 ? { cnt: m.cnt } : {}) }; }
   async call(body, get) { const api = this.api; if (!api) throw new Error('cfg'); let r; if (get) r = await fetch(api + '?' + new URLSearchParams(body).toString(), { cache: 'no-store' }); else r = await fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }); if (!r.ok) throw new Error('서버 응답 오류 (' + r.status + ')'); const j = await r.json(); if (!j.ok) throw new Error(j.err || '요청 실패'); return j; }
   componentDidMount() { try { const q = new URLSearchParams(location.search).get('e') || ''; const id = (parseInt(q.split('-')[0].slice(1), 36) - 46656) / 7919; if (!q || !Number.isInteger(id)) return; this.q = q; this.id = id; this.setState({ loadMsg: '현장 정보를 불러오는 중…' });
     fetch('config.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(c => { if (!c || !c.api) throw new Error('cfg'); this.api = c.api; return this.call({ a: 'get', id, t: q }, true); })
@@ -217,7 +215,7 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state, site0 = s.site, py = (site0 && site0.pyung) || 32.2;
     const kind = s.kind || ((site0 && site0.struct === 'RC') ? 'RC' : '목조'), rc = kind === 'RC';
-    const ABS = Math.round(120 * (rc ? 1.2 : 1)), WB = Math.round(py * (rc ? 35000 : 25000)), MB = Math.max(1, Math.round(py / 10 * (rc ? 2 : 1)));
+    const ABS = Math.round((py + 20) * (rc ? 1.2 : 1)), WB = Math.round(py * (rc ? 35000 : 25000)), MB = Math.max(1, Math.round(py / 10 * (rc ? 2 : 1)));
     const air = s.air == null ? ABS : s.air, waste = s.waste == null ? WB : s.waste, man = s.man == null ? MB : s.man;
     const dAir = air - ABS;
     const airPt = dAir <= -5 ? 1 : (dAir >= 3 ? -1 : 0);
@@ -233,8 +231,8 @@ class Component extends DCLogic {
     const selfItems = SELF.map(([name, max], i) => ({ name, max, score: s.sc[i], lost: s.sc[i] === max ? '감점 없음' : '감점 −' + (max - s.sc[i]), lostColor: s.sc[i] === max ? '#4A5163' : '#8A1F17', plusStyle: s.sc[i] >= max ? 'opacity:.35;cursor:not-allowed' : '',
       up: () => this.setState({ sc: s.sc.map((v, j) => j === i ? Math.min(max, v + 1) : v) }),
       down: () => this.setState({ sc: s.sc.map((v, j) => j === i ? Math.max(0, v - 1) : v) }) }));
-    const ADJ = [['공사이윤 달성', '1%당 +1점', 1], ['홍보', '건당 +3점', 3], ['현장소개건', '건당 +3점', 3],
-      ['근로복지공단 지적', '건당 −5점', -5], ['적발 범칙금', '건당 −20점', -20], ['내부감리 지적', '건당 −2점', -2],
+    const ADJ = [['현장소개건', '건당 +3점', 3],
+      ['근로복지공단 지적', '건당 −5점', -5], ['적발 범칙금', '건당 −20점', -20], ['내부 감리 품질·안전 지적', '건당 −2점', -2],
       ['경미한 안전사고', '건당 −5점', -5], ['중대 안전사고 발생 시', '건당 −20점', -20]];
     const adjItems = ADJ.map(([name, unit, p], i) => { const n = s.cnt[i], v = n * p; return { name, unit, n,
       sub: f(v), color: v < 0 ? '#8A1F17' : (v > 0 ? '#14583A' : '#4A5163'),
@@ -246,7 +244,7 @@ class Component extends DCLogic {
       up: () => { if (raw < max) setTo(raw + 1); }, down: () => { if (raw > 0) setTo(raw - 1); } }; };
     const airBonus = airPt > 0 ? airPt : 0, cA = calc(20, Math.min(0, airPt), 0), cW = calc(15, wPt, 1), cM = calc(10, mPt, 2);
     const selfTotal = cA.score + cW.score + cM.score + s.sc.reduce((a, b) => a + b, 0) + adjSum + airBonus;
-    const AK = ['profit', 'pr', 'intro', 'wcomp', 'fine', 'inner', 'acc', 'as'], selfAdj = {}; AK.forEach((k, i) => { if (s.cnt[i]) selfAdj[k] = s.cnt[i]; }); if (airBonus) selfAdj.air = airBonus;
+    const AK = ['intro', 'wcomp', 'fine', 'inner', 'acc', 'as'], selfAdj = {}; AK.forEach((k, i) => { if (s.cnt[i]) selfAdj[k] = s.cnt[i]; }); if (airBonus) selfAdj.air = airBonus;
     const payload = { self: [cA.score, s.sc[0], s.sc[1], s.sc[2], s.sc[3], s.sc[4], s.sc[5], cM.score, s.sc[6], cW.score], selfScore: selfTotal, selfAdj, selfIn: { kind, start: s.start, end: s.end, air: s.air, waste: s.waste, man: s.man, sc: s.sc, d3: s.d3, cnt: s.cnt } };
     const MODES = [['input', '입력 중'], ['wait', '평가 진행 중'], ['result', '확정 후 결과']];
     const ITEMS = [['공기', 20, 19, '감리'], ['안전관리', 10, 9, '감리'], ['안전서류 작성', 10, 9, '감리'], ['감리보고서', 15, 14, '감리'],
@@ -256,7 +254,7 @@ class Component extends DCLogic {
     const rItems = ITEMS.map(([name, max, score, who], i) => { const sc = real ? site.sc[i] : score; return { name, max, score: sc, who, pct: Math.round(sc / max * 100) }; });
     let rTotal = rItems.reduce((a, b) => a + b.score, 0), rInc = '750,000원';
     if (real) {
-      const P = { profit: 1, air: 1, pr: 3, intro: 3, wcomp: -5, fine: -20, inner: -2, acc: -5, as: -20 };
+      const P = { air: 1, intro: 3, wcomp: -5, fine: -20, inner: -2, acc: -5, as: -20 };
       rTotal += Object.entries(site.adj || {}).reduce((a, [k, n]) => a + (P[k] || 0) * (n || 0), 0) + (site.structPt || 0) + (site.regionPt || 0) + (cfg.useCeo !== false ? (site.ceoAdj || 0) : 0);
       const minScore = typeof cfg.minScore === 'number' ? cfg.minScore : 80, penScore = typeof cfg.penScore === 'number' ? cfg.penScore : 70, SCL = [100, 95, 90, 85, 80];
       const dflt = { '관리소장': [3000000, 2200000, 1500000, 1100000, 750000], '직영': [1500000, 1200000, 750000, 600000, 450000] };
@@ -283,7 +281,7 @@ class Component extends DCLogic {
       wUp: () => this.setState({ waste: waste + 100000 }), wDown: () => this.setState({ waste: Math.max(0, waste - 100000) }),
       man, mPt: f(mPt), mCls: cls(mPt),
       mUp: () => this.setState({ man: man + 1 }), mDown: () => this.setState({ man: Math.max(0, man - 1) }),
-      mBase: MB, absNote: rc ? ' (RC: 목조 120일 +20%)' : '', wRule: '기준액 (' + kind + ' 평당 ' + (rc ? '3.5' : '2.5') + '만원 × ' + py + '평)', mRule: '기준 인력 (' + (rc ? 'RC · 10평당 2품' : '10평당 1품') + ')',
+      mBase: MB, absNote: ' (기본면적 ' + py + '평 + 20' + (rc ? ' · RC +20%' : '') + ')', wRule: '기준액 (' + kind + ' 평당 ' + (rc ? '3.5' : '2.5') + '만원 × ' + py + '평)', mRule: '기준 인력 (' + (rc ? 'RC · 10평당 2품' : '10평당 1품') + ')',
       kindBtns: ['목조', 'RC'].map(k => ({ label: k, pick: () => this.setState({ kind: k }), style: 'cursor:pointer;height:36px;padding:0 18px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (kind === k ? '#14213D' : '#D9D4C6') + ';background:' + (kind === k ? '#14213D' : '#fff') + ';color:' + (kind === k ? '#fff' : '#1B2333') })),
       aMax: cA.max, aScore: cA.score, aLost: cA.lost, aLostColor: cA.lostColor, aPlusStyle: cA.plus, aSUp: cA.up, aSDown: cA.down,
       wMax: cW.max, wScore: cW.score, wLost: cW.lost, wLostColor: cW.lostColor, wPlusStyle: cW.plus, wSUp: cW.up, wSDown: cW.down,
