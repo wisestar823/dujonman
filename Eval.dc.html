@@ -185,7 +185,7 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1300}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { site: null, cfg: null, loadMsg: '', saveMsg: '', saveOk: true, busy: false, confirming: false, submitted: false, sc: [18,9,8,12,4,4,4,8,4,12], adj: { profit: 1, inner: 2 }, role: (() => { try { const t = new URLSearchParams(location.search).get('e') || ''; return { gam: '감리', gong: '공무', bu: '공사 부장', ceo: '경영진' }[t.split('-').pop()] || '감리'; } catch (e) { return '감리'; } })(), ceo: [0, 0, 0, 0, 0], reason: '', area: 32.2, contract: 300000000, bu: [3, 4, 4, 4, 4], done: false, type: '직영', self: [19, 10, 9, 14, 5, 5, 5, 9, 5, 14], target: 20, struct: '', region: '', structPt: 0, regionPt: 0, budget: 0, spent: 230000000, op: { '감리': '', '공무': '', '공사 부장': '' } }; }
+  constructor(props) { super(props); this.state = { site: null, cfg: null, loadMsg: '', saveMsg: '', saveOk: true, busy: false, confirming: false, submitted: false, sc: [18,9,8,12,4,4,4,8,4,12], adj: { inner: 2 }, role: (() => { try { const t = new URLSearchParams(location.search).get('e') || ''; return { gam: '감리', gong: '공무', bu: '공사 부장', ceo: '경영진' }[t.split('-').pop()] || '감리'; } catch (e) { return '감리'; } })(), ceo: [0, 0, 0, 0, 0], reason: '', area: 32.2, contract: 300000000, bu: [3, 4, 4, 4, 4], done: false, type: '직영', self: [19, 10, 9, 14, 5, 5, 5, 9, 5, 14], target: 20, struct: '', region: '', structPt: 0, regionPt: 0, budget: 0, spent: 230000000, op: { '감리': '', '공무': '', '공사 부장': '' } }; }
   fromSite(site) { return { adj: { ...(site.adj || {}) }, struct: site.struct || '', region: site.region || '', structPt: site.structPt || 0, regionPt: site.regionPt || 0, ...(site.pyung ? { area: site.pyung } : {}), ...(site.cost ? { contract: site.cost } : {}), sc: [20, 10, 10, 15, 5, 5, 5, 10, 5, 15].map((mx, i) => site.sc && site.sc[i] != null ? site.sc[i] : mx), type: site.type || '직영', op: { '감리': site.cGam || '', '공무': site.cGong || '', '공사 부장': site.cBu || '' }, reason: site.cCeo || '', bu: Array.isArray(site.bu) ? site.bu : [5, 5, 5, 5, 5], ...(Array.isArray(site.ceo) ? { ceo: site.ceo } : {}), ...(site.spent != null ? { spent: site.spent } : {}), done: site.stage >= 5 }; }
   async call(body, get) { const api = this.api; if (!api) throw new Error('cfg'); let r; if (get) r = await fetch(api + '?' + new URLSearchParams(body).toString(), { cache: 'no-store' }); else r = await fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }); if (!r.ok) throw new Error('서버 응답 오류 (' + r.status + ')'); const j = await r.json(); if (!j.ok) throw new Error(j.err || '요청 실패'); return j; }
   componentDidMount() { try { const q = new URLSearchParams(location.search).get('e') || ''; const id = (parseInt(q.split('-')[0].slice(1), 36) - 46656) / 7919; if (!q || !Number.isInteger(id)) return; this.q = q; this.id = id; this.setState({ loadMsg: '현장 정보를 불러오는 중…' });
@@ -227,10 +227,10 @@ class Component extends DCLogic {
     const roleBtn = (k) => ({ label: (k === '경영진' ? '경영진(부사장)' : k) + ' 링크', pick: () => this.setState({ role: k }),
       style: 'cursor:pointer;height:38px;padding:0 14px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (R === k ? '#14213D' : '#D9D4C6') + ';background:' + (R === k ? '#14213D' : '#fff') + ';color:' + (R === k ? '#fff' : '#1B2333') });
     const ADJ = [
-      ['profit', '공사이윤 기준 이상 (1%당 +1)', 1], ['air', '공기달성 5일 단축', 1], ['pr', '홍보 (인터뷰·오픈하우스·영상)', 3], ['intro', '현장소개건 (계약 시)', 3],
-      ['wcomp', '근로복지공단 지적', -5], ['fine', '적발 범칙금 부과', -20], ['inner', '내부감리 지적 (건당)', -2], ['acc', '경미한 안전사고', -5], ['as', '중대 안전사고 발생 시', -20]
+      ['air', '공기달성 5일 단축', 1], ['intro', '현장소개건 (계약 시)', 3],
+      ['wcomp', '근로복지공단 지적', -5], ['fine', '적발 범칙금 부과', -20], ['inner', '내부 감리 품질·안전 지적 (건당)', -2], ['acc', '경미한 안전사고', -5], ['as', '중대 안전사고 발생 시', -20]
     ];
-    const SELFN = { profit: 1, pr: 1, inner: 2 };
+    const SELFN = { inner: 2 };
     const adj = ADJ.map(([k, label, p]) => {
       const n = s.adj[k] || 0, v = n * p;
       return { label, pts: (p > 0 ? '+' : '') + p + '점', n, self: SELFN[k] || 0,
