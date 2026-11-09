@@ -597,7 +597,7 @@ class Component extends DCLogic {
     for (let i = 0; i < SC.length; i++) { if (score >= SC[i]) return T[i]; }
     return null;
   }
-  adjOf(r) { const P = { profit: 1, air: 1, pr: 3, intro: 3, wcomp: -5, fine: -20, inner: -2, acc: -5, as: -20 }; return Object.entries(r.adj || {}).reduce((a, [k, n]) => a + (P[k] || 0) * (n || 0), 0); }
+  adjOf(r) { const P = { air: 1, intro: 3, wcomp: -5, fine: -20, inner: -2, acc: -5, as: -20 }; return Object.entries(r.adj || {}).reduce((a, [k, n]) => a + (P[k] || 0) * (n || 0), 0); }
   zeroHit(r) { return !!(this.state.set.zeroOut && r.sc.some(v => v === 0)); }
   incR(r, score) { if (this.zeroHit(r)) return null; return this.incOf(r.type, score); }
   incT(r, score) {
