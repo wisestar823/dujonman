@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>관리자 통합 대시보드</title>
 <script src="./support.js"></script>
 </head>
@@ -41,6 +42,7 @@ button{font-family:inherit}
   .pb:last-child{page-break-after:auto}
   @page{size:A4;margin:12mm}
 }
+@media(max-width:760px){aside.nav{flex:0 0 100% !important;flex-direction:row !important;flex-wrap:wrap !important;padding:12px !important}main{padding:16px !important}}
 </style>
 </helmet>
 <sc-if value="{{locked}}" hint-placeholder-val="{{false}}">
@@ -85,7 +87,7 @@ button{font-family:inherit}
     <sc-if value="{{reg.open}}" hint-placeholder-val="{{false}}">
       <section class="card noprint" style="padding:20px 22px">
         <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
-          <sc-for list="{{regSteps}}" as="g" hint-placeholder-count="3">
+          <sc-for list="{{regSteps}}" as="g" hint-placeholder-count="4">
             <span style="{{g.style}}">{{g.label}}</span>
           </sc-for>
         </div>
@@ -102,9 +104,25 @@ button{font-family:inherit}
           <div style="margin-top:14px"><label>담당 감리</label><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{inspBtns}}" as="b" hint-placeholder-count="4"><button onClick="{{b.pick}}" style="{{b.style}}">{{b.label}}</button></sc-for></div></div>
         </sc-if>
         <sc-if value="{{reg.s3}}" hint-placeholder-val="{{false}}">
+          <div style="display:flex;flex-direction:column;gap:16px;max-width:620px">
+            <div><label>지역 (선택)</label><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{regionBtns}}" as="b" hint-placeholder-count="2"><button onClick="{{b.pick}}" style="{{b.style}}">{{b.label}}</button></sc-for></div></div>
+            <div><label>건축 종류 (선택)</label><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{structBtns}}" as="b" hint-placeholder-count="4"><button onClick="{{b.pick}}" style="{{b.style}}">{{b.label}}</button></sc-for></div></div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap">
+              <div style="flex:1 1 200px;min-width:0"><label for="r3">실평형수 (평)</label><input id="r3" inputmode="decimal" value="{{reg.pyung}}" onChange="{{onPyung}}" placeholder="예: 32.2"></div>
+              <div style="flex:1 1 200px;min-width:0"><label for="r4">총 공사 금액 (원)</label><input id="r4" inputmode="numeric" value="{{reg.costTxt}}" onChange="{{onCost}}" placeholder="예: 300,000,000"></div>
+            </div>
+            <div><label>건축 등급 (선택)</label><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><sc-for list="{{archBtns}}" as="b" hint-placeholder-count="0"><button onClick="{{b.pick}}" style="{{b.style}}">{{b.label}}</button></sc-for><span style="font-size:12px;color:#8A8F9C">{{archEmpty}}</span></div></div>
+            <div><label>인테리어 등급 (선택)</label><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><sc-for list="{{intBtns}}" as="b" hint-placeholder-count="0"><button onClick="{{b.pick}}" style="{{b.style}}">{{b.label}}</button></sc-for><span style="font-size:12px;color:#8A8F9C">{{intEmpty}}</span></div></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{reg.s4}}" hint-placeholder-val="{{false}}">
           <div style="display:flex;flex-direction:column;gap:6px;font-size:14px">
             <div><span style="color:#4A5163">현장 주소</span> · <b>{{reg.addr}}</b></div>
             <div><span style="color:#4A5163">구분 / 소장</span> · <b>{{reg.type}} / {{reg.mgr}}</b></div>
+            <div><span style="color:#4A5163">지역</span> · <b>{{reg.region}}</b></div>
+            <div><span style="color:#4A5163">건축 종류 / 실평형수</span> · <b>{{reg.sumTxt}}</b></div>
+            <div><span style="color:#4A5163">건축 · 인테리어 등급</span> · <b>{{reg.gradeTxt}}</b></div>
+            <div><span style="color:#4A5163">총 공사 금액</span> · <b>{{reg.costTxt}}원</b></div>
             <div><span style="color:#4A5163">담당 감리</span> · <b>{{reg.insp}}</b></div>
             <div style="color:#4A5163;font-size:13px">{{placeMsg}}</div>
           </div>
@@ -193,7 +211,7 @@ button{font-family:inherit}
                   <td>
                     <div style="display:flex;gap:4px;align-items:center">
                       <sc-for list="{{r.dots}}" as="d" hint-placeholder-count="5"><span title="{{d.t}}" style="{{d.style}}"></span></sc-for>
-                      <span class="chip {{r.stCls}}" style="margin-left:6px">{{r.stText}}</span>
+                      <span class="chip {{r.stCls}}" style="margin-left:6px">{{r.stText}}</span><span style="margin-left:6px;font-size:12px;color:#8A6D1F;font-weight:700">{{r.waitTxt}}</span>
                     </div>
                   </td>
                   <td style="font-weight:700">{{r.score}}</td><td>{{r.inc}}</td>
@@ -240,6 +258,9 @@ button{font-family:inherit}
             <div style="text-align:center;font-weight:700;font-size:19px;padding:6px 0 10px">현장소장 공사완료평가 및 인센티브지급 기준안 <span style="font-size:14px">({{b.type}})</span></div>
             <table class="sh" style="border-collapse:collapse;width:100%">
               <tr><th style="width:14%">현장 주소</th><td style="width:46%">{{b.addr}}</td><th style="width:12%">현장소장</th><td>{{b.mgr}}</td></tr>
+              <tr><th>건축 종류</th><td>{{b.struct}}</td><th>지역</th><td>{{b.region}}</td></tr>
+              <tr><th>실평형수</th><td>{{b.pyung}}</td><th>총 공사 금액</th><td>{{b.cost}}</td></tr>
+              <tr><th>건축 등급</th><td>{{b.arch}}</td><th>인테리어 등급</th><td>{{b.interior}}</td></tr>
               <tr><th>등급(기준)</th><td>{{b.grade}}</td><th>담당 감리</th><td>{{b.insp}}</td></tr>
             </table>
             <table class="sh" style="border-collapse:collapse;width:100%;margin-top:6px">
@@ -291,7 +312,10 @@ button{font-family:inherit}
           <div style="text-align:center;font-weight:700;font-size:19px;padding:6px 0 10px">현장소장 공사완료평가 및 인센티브지급 기준안 <span style="font-size:14px">({{sel.type}})</span></div>
           <table class="sh" style="border-collapse:collapse;width:100%">
             <tr><th style="width:14%">현장 주소</th><td style="width:46%">{{sel.addr}}</td><th style="width:12%">현장소장</th><td>{{sel.mgr}}</td></tr>
-            <tr><th>등급(기준)</th><td>{{sel.grade}}</td><th>담당 감리</th><td>{{sel.insp}}</td></tr>
+            <tr><th>건축 종류</th><td>{{sel.struct}}</td><th>지역</th><td>{{sel.region}}</td></tr>
+              <tr><th>실평형수</th><td>{{sel.pyung}}</td><th>총 공사 금액</th><td>{{sel.cost}}</td></tr>
+              <tr><th>건축 등급</th><td>{{sel.arch}}</td><th>인테리어 등급</th><td>{{sel.interior}}</td></tr>
+              <tr><th>등급(기준)</th><td>{{sel.grade}}</td><th>담당 감리</th><td>{{sel.insp}}</td></tr>
           </table>
           <table class="sh" style="border-collapse:collapse;width:100%;margin-top:6px">
             <tr><th style="width:6%">배점</th><th style="width:24%">평가 항목</th><th style="width:16%">평가자</th><th style="width:9%">점수</th><th>상세 내용</th></tr>
@@ -382,16 +406,12 @@ button{font-family:inherit}
     <section class="card" style="padding:18px 20px">
       <div style="font-weight:700;font-size:16px;margin-bottom:8px">③ 기준·페널티</div>
       <div style="display:flex;flex-direction:column">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EFEBE1"><span style="font-size:14px">수익률 달성 기준<br><span style="font-size:12px;color:#4A5163">공무 평가의 실행 입력에서 수익률 = (총계약금 − 실행금액) ÷ 총계약금 이 이 값 이상이면 '달성' 기준표 적용</span></span>
+          <div class="stp"><button aria-label="감소" onClick="{{ptDown}}">−</button><b style="min-width:52px;text-align:center">{{profitTarget}}%</b><button aria-label="증가" onClick="{{ptUp}}">+</button></div></div>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EFEBE1"><span style="font-size:14px">인센티브 최소 점수<br><span style="font-size:12px;color:#4A5163">미만이면 지급 대상 아님 (대시보드 반영)</span></span>
           <div class="stp"><button aria-label="감소" onClick="{{minDown}}">−</button><b style="min-width:52px;text-align:center">{{minScore}}점</b><button aria-label="증가" onClick="{{minUp}}">+</button></div></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EFEBE1"><span style="font-size:14px">페널티 기준 점수<br><span style="font-size:12px;color:#4A5163">미만이면 직영 시말서·상여금 미지급 · 관리소장 도급액 × 감액률</span></span>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EFEBE1"><span style="font-size:14px">페널티 기준 점수<br><span style="font-size:12px;color:#4A5163">미만이면 직영 시말서·상여금 미지급</span></span>
           <div class="stp"><button aria-label="감소" onClick="{{penDown}}">−</button><b style="min-width:52px;text-align:center">{{penScore}}점</b><button aria-label="증가" onClick="{{penUp}}">+</button></div></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EFEBE1"><span style="font-size:14px">도급액 비율 · {{dgCut}}평 이하<br><span style="font-size:12px;color:#4A5163">총계약금 × 비율 = 도급액 (관리소장 페널티 산정 기준)</span></span>
-          <div class="stp"><button aria-label="감소" onClick="{{dgSDown}}">−</button><b style="min-width:60px;text-align:center">{{dgSmall}}%</b><button aria-label="증가" onClick="{{dgSUp}}">+</button></div></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EFEBE1"><span style="font-size:14px">도급액 비율 · {{dgCut}}평 초과</span>
-          <div class="stp"><button aria-label="감소" onClick="{{dgBDown}}">−</button><b style="min-width:60px;text-align:center">{{dgBig}}%</b><button aria-label="증가" onClick="{{dgBUp}}">+</button></div></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EFEBE1"><span style="font-size:14px">도급액 비율 구분 평수</span>
-          <div class="stp"><button aria-label="감소" onClick="{{dgCDown}}">−</button><b style="min-width:60px;text-align:center">{{dgCut}}평</b><button aria-label="증가" onClick="{{dgCUp}}">+</button></div></div>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0"><span style="font-size:14px">최저점수 항목 있으면 인센티브 제외<br><span style="font-size:12px;color:#4A5163">항목 점수가 0점이면 지급 제외</span></span>
           <button onClick="{{toggleZero}}" style="{{zeroStyle}}">{{zeroLabel}}</button></div>
       </div>
@@ -421,23 +441,44 @@ button{font-family:inherit}
     </section>
 
     <section class="card" style="padding:18px 20px">
-      <div style="font-weight:700;font-size:16px;margin-bottom:4px">⑥ GitHub 저장소 연동 (메인 서버)</div>
-      <div style="font-size:12px;color:#4A5163;margin-bottom:12px;line-height:1.6">평가표와 현장·링크 정보를 GitHub 저장소에 JSON으로 저장하고 불러옵니다.<br>저장 위치: <b>{{gitPath}}/sites.json</b> · <b>{{gitPath}}/settings.json</b> · <b>{{gitPath}}/evals/현장번호.json</b> (현장별 평가표)</div>
-      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
-        <div><label>소유자(계정/조직)</label><input value="{{git.owner}}" onChange="{{gOwner}}" placeholder="예: dujon-housing"></div>
-        <div><label>저장소 이름</label><input value="{{git.repo}}" onChange="{{gRepo}}" placeholder="예: site-eval-data"></div>
-        <div><label>브랜치</label><input value="{{git.branch}}" onChange="{{gBranch}}"></div>
-        <div><label>저장 폴더</label><input value="{{git.path}}" onChange="{{gPath}}"></div>
-        <div style="grid-column:span 2"><label>접근 토큰 (Fine-grained PAT · Contents 읽기/쓰기)</label><input type="password" value="{{git.token}}" onChange="{{gToken}}" placeholder="github_pat_..."></div>
-      </div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:4px">⑥ 구글 시트 연동 (저장 서버)</div>
+      <div style="font-size:12px;color:#4A5163;margin-bottom:12px;line-height:1.6">현장·평가·설정 데이터를 구글 시트에 저장합니다. 소장·감리·공무·공사 부장·부사장이 링크에서 입력한 내용도 같은 시트에 저장되고, 이 화면에 자동 반영됩니다.</div>
+      <label>Apps Script 웹 앱 URL</label>
+      <input value="{{gsUrl}}" onChange="{{gsUrlChange}}" placeholder="https://script.google.com/macros/s/…/exec" style="width:100%;box-sizing:border-box">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center">
-        <button onClick="{{gitSave}}" style="height:42px;padding:0 18px;border-radius:8px;border:0;background:#14213D;color:#fff;font-weight:700;font-size:14px;cursor:pointer">GitHub에 저장</button>
-        <button onClick="{{gitLoad}}" style="height:42px;padding:0 18px;border-radius:8px;border:1px solid #14213D;background:#fff;color:#14213D;font-weight:700;font-size:14px;cursor:pointer">GitHub에서 불러오기</button>
+        <button onClick="{{gsSaveGo}}" style="height:42px;padding:0 18px;border-radius:8px;border:0;background:#14213D;color:#fff;font-weight:700;font-size:14px;cursor:pointer">시트에 저장</button>
+        <button onClick="{{gsLoadGo}}" style="height:42px;padding:0 18px;border-radius:8px;border:1px solid #14213D;background:#fff;color:#14213D;font-weight:700;font-size:14px;cursor:pointer">시트에서 불러오기</button>
         <button onClick="{{toggleAuto}}" style="{{autoStyle}}">자동 저장 {{autoLabel}}</button>
-        <button onClick="{{toggleRemember}}" style="{{remStyle}}">이 브라우저에 토큰 기억 {{remLabel}}</button>
       </div>
-      <div style="font-size:13px;margin-top:10px;color:#14583A;font-weight:700;min-height:18px">{{gitMsg}}</div>
-      <div style="font-size:12px;color:#8A1F17;margin-top:6px;line-height:1.6">보안: 토큰은 파일에 저장되지 않고 이 브라우저에만 남습니다. 소장·감리·공무 링크에서 직접 저장하려면 토큰을 넣을 수 없으므로, 실제 운영에서는 토큰을 서버(Cloud Run 등)에 두고 그 서버가 GitHub에 기록해야 합니다.</div>
+      <div style="font-size:13px;margin-top:10px;color:{{gsMsgColor}};font-weight:700;min-height:18px">{{gsMsg}}</div>
+      <div style="background:#FAF8F3;border-radius:10px;padding:12px 14px;margin-top:12px;font-size:12px;line-height:1.7;color:#4A5163">
+        <b style="color:#1B2333">링크 화면 연결 (한 번만)</b><br>평가 링크 화면이 같은 시트를 쓰려면 GitHub 저장소 맨 위(<b>Eval.dc.html</b>과 같은 폴더)에 <b>config.json</b> 파일을 만들고 아래 내용을 넣어 주세요.
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap"><code style="flex:1 1 260px;min-width:0;word-break:break-all;background:#fff;border:1px solid #E2DED3;border-radius:8px;padding:8px 10px;color:#1B2333">{{cfgText}}</code><button onClick="{{cfgCopy}}" style="height:36px;padding:0 14px;border-radius:8px;border:1px solid #14213D;background:#fff;color:#14213D;font-weight:700;font-size:13px;cursor:pointer">내용 복사</button></div>
+      </div>
+      <div style="font-size:12px;color:#4A5163;margin-top:8px;line-height:1.6">다른 기기·다른 사람이 관리자 화면에서 고친 내용과 평가자 입력은 약 20초마다 자동으로 가져옵니다. 저장하지 않은 수정이 있으면 가져오기는 잠시 멈춥니다.</div>
+    </section>
+
+    <section class="card" style="padding:18px 20px">
+      <div style="font-weight:700;font-size:16px;margin-bottom:4px">⑦ 현장 등급 항목 (건축 · 인테리어)</div>
+      <div style="font-size:12px;color:#4A5163;margin-bottom:12px;line-height:1.6">현장 등록 시 선택할 건축 등급·인테리어 등급 목록입니다. 항목을 추가하거나 × 로 삭제할 수 있고, 저장된 목록이 등록 화면의 토글 선택지로 쓰입니다. (등급 내용은 추후 확정 · 현재는 비어 있습니다)</div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div>
+          <label style="font-size:13px;font-weight:700">건축 등급</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;min-height:34px;align-items:center">
+            <sc-for list="{{gradeBItems}}" as="g" hint-placeholder-count="0"><span style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 6px 0 12px;border-radius:999px;background:#14213D;color:#fff;font-size:13px;font-weight:700">{{g.label}}<button aria-label="{{g.label}} 삭제" onClick="{{g.del}}" style="width:24px;height:24px;border-radius:50%;border:0;background:#3A4A74;color:#fff;cursor:pointer;font-size:14px;line-height:1">×</button></span></sc-for>
+            <span style="font-size:12px;color:#8A8F9C">{{gradeBEmpty}}</span>
+          </div>
+          <div style="display:flex;gap:8px"><input value="{{gb}}" onChange="{{onGb}}" onKeyDown="{{keyGb}}" placeholder="건축 등급 이름 입력 (예: A등급)" style="flex:1;min-width:0"><button onClick="{{addGb}}" style="height:42px;padding:0 16px;border-radius:8px;border:0;background:#14213D;color:#fff;font-weight:700;cursor:pointer">추가</button></div>
+        </div>
+        <div>
+          <label style="font-size:13px;font-weight:700">인테리어 등급</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;min-height:34px;align-items:center">
+            <sc-for list="{{gradeIItems}}" as="g" hint-placeholder-count="0"><span style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 6px 0 12px;border-radius:999px;background:#14213D;color:#fff;font-size:13px;font-weight:700">{{g.label}}<button aria-label="{{g.label}} 삭제" onClick="{{g.del}}" style="width:24px;height:24px;border-radius:50%;border:0;background:#3A4A74;color:#fff;cursor:pointer;font-size:14px;line-height:1">×</button></span></sc-for>
+            <span style="font-size:12px;color:#8A8F9C">{{gradeIEmpty}}</span>
+          </div>
+          <div style="display:flex;gap:8px"><input value="{{gi}}" onChange="{{onGi}}" onKeyDown="{{keyGi}}" placeholder="인테리어 등급 이름 입력 (예: 프리미엄)" style="flex:1;min-width:0"><button onClick="{{addGi}}" style="height:42px;padding:0 16px;border-radius:8px;border:0;background:#14213D;color:#fff;font-weight:700;cursor:pointer">추가</button></div>
+        </div>
+      </div>
     </section>
   </sc-if>
 
@@ -456,11 +497,10 @@ class Component extends DCLogic {
     const INS = { 1: '김동완', 8: '김동완', 2: '임현규', 11: '임현규', 5: '이영빈', 3: '이영빈', 4: '최현균', 6: '최현균' };
     const mk = (id, addr, mgr, type, stage, sc, extra) => ({ id, addr, mgr, type, insp: INS[id], grade: G, sc, stage, links: L(stage), cGam: '', cGong: '', cBu: '', cCeo: '', ...extra });
     this.state = {
-      del: null, flash: '', toast: '', authed: false, pw: '', pwErr: '', view: 'dash', next: 20, msg: '', sel: null, bulk: '', selMgr: null, lnk: null, bulkMode: '상세', viewer: 'ALL', gitMsg: '', auto: false, remember: false,
-      git: { owner: '', repo: '', branch: 'main', path: 'data', token: '' },
-      reg: { open: false, step: 1, addr: '', mgr: '', type: '직영', insp: '김동완' },
+      gb: '', gi: '', del: null, flash: '', toast: '', authed: false, pw: '', pwErr: '', view: 'dash', next: 20, msg: '', sel: null, bulk: '', selMgr: null, lnk: null, bulkMode: '상세', viewer: 'ALL', gsMsg: '', gsOk: true, gsUrl: '', auto: true,
+      reg: { open: false, step: 1, addr: '', mgr: '', type: '직영', insp: '김동완', struct: '', region: '일반 지역', pyung: '', arch: '', interior: '', cost: 0 },
       sites: [
-        mk(1, '샘플 주소 1', '소장 가', '직영', 5, [19,9,9,14,5,4,4,9,5,14], { cGam: '현장 관리 양호, 지적사항 신속 조치.', cGong: '기성·정산 서류 적정.', cBu: '정산·인력 운영 적정.', cCeo: '확정.', selfScore: 93, buScore: 22, ceoAdj: 0 }),
+        mk(1, '샘플 주소 1', '소장 가', '직영', 5, [19,9,9,14,5,4,4,9,5,14], { cGam: '현장 관리 양호, 지적사항 신속 조치.', cGong: '기성·정산 서류 적정.', cBu: '정산·인력 운영 적정.', cCeo: '확정.', selfScore: 93, buScore: 22, ceoAdj: 0, struct: '목조', region: '일반 지역', pyung: 32.2, cost: 300000000, structPt: 0, regionPt: 0, adj: {} }),
       ],
       set: {
         w: { in: 10, gam: 30, gong: 25, bu: 15, ceo: 20 },
@@ -468,75 +508,105 @@ class Component extends DCLogic {
           '직영|달성': [1500000, 1200000, 750000, 600000, 450000], '직영|미달': [750000, 600000, 450000, 300000, 150000],
           '관리소장|달성': [3000000, 2200000, 1500000, 1100000, 750000], '관리소장|미달': [1500000, 1100000, 750000, 600000, 450000]
         },
-        lead: '김동완', insp: ['김동완', '임현규', '이영빈', '최현균'], dg: { small: 4.5, big: 4.0, cut: 60 }, minScore: 80, penScore: 70, zeroOut: true, due: 7, ceoRange: 5, useBu: true, useCeo: true
+        lead: '김동완', insp: ['김동완', '임현규', '이영빈', '최현균'], profitTarget: 20, gradeB: [], gradeI: [], minScore: 80, penScore: 70, zeroOut: true, due: 7, ceoRange: 5, useBu: true, useCeo: true
       }
     };
   }
-  componentDidMount() { try { if (sessionStorage.getItem('adm_ok') === '1') this.setState({ authed: true }); } catch (e) {} try { const t = localStorage.getItem('gh_token'); if (t) this.setState({ git: { ...this.state.git, token: t }, remember: true }); } catch (e) {} }
-  componentDidUpdate(prev) { const st = this.state; if (st.auto && st.git.token && (prev.sites !== st.sites || prev.set !== st.set)) { clearTimeout(this._t); this._t = setTimeout(() => this.gitSave(true), 1500); } }
-  b64(str) { return btoa(unescape(encodeURIComponent(str))); }
-  unb64(b) { return decodeURIComponent(escape(atob(b.replace(/\n/g, '')))); }
-  ghUrl(p) { const g = this.state.git; return 'https://api.github.com/repos/' + g.owner + '/' + g.repo + '/contents/' + p.split('/').map(encodeURIComponent).join('/'); }
-  ghHead() { return { 'Authorization': 'Bearer ' + this.state.git.token, 'Accept': 'application/vnd.github+json' }; }
-  async ghPut(p, obj, msg) {
-    const g = this.state.git, text = JSON.stringify(obj, null, 2);
-    this.cache = this.cache || {};
-    if (this.cache[p] === text) return 'skip';
-    let sha; const r0 = await fetch(this.ghUrl(p) + '?ref=' + encodeURIComponent(g.branch), { headers: this.ghHead() });
-    if (r0.ok) { sha = (await r0.json()).sha; } else if (r0.status !== 404) { throw new Error(p + ' 조회 실패 (' + r0.status + ')'); }
-    const r = await fetch(this.ghUrl(p), { method: 'PUT', headers: { ...this.ghHead(), 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, content: this.b64(text), branch: g.branch, ...(sha ? { sha } : {}) }) });
-    if (!r.ok) throw new Error(p + ' 저장 실패 (' + r.status + ')');
-    this.cache[p] = text; return 'ok';
+  componentDidMount() {
+    let url = ''; try { url = localStorage.getItem('adm_api') || ''; } catch (e) {}
+    try { if (sessionStorage.getItem('adm_ok') === '1') this.setState({ authed: true }); } catch (e) {}
+    let patch = {};
+    try { const d = JSON.parse(localStorage.getItem('adm_data') || 'null'); if (d && Array.isArray(d.sites)) patch = { sites: d.sites, set: d.set || this.state.set, next: d.next || this.state.next }; } catch (e) {}
+    this.setState({ ...patch, gsUrl: url }, () => {
+      if (url) { this.gsStart(); return; }
+      fetch('config.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(c => { if (c && c.api) { this.setState({ gsUrl: c.api }, () => this.gsStart()); } }).catch(() => {});
+    });
+    this._poll = setInterval(() => { try { if (!document.hidden) this.gsPoll(); } catch (e) {} }, 20000);
+    try { document.addEventListener('visibilitychange', this._vis = () => { if (!document.hidden) this.gsPoll(); }); } catch (e) {}
   }
-  async gitSave(silent) {
-    const st = this.state, g = st.git;
-    if (!g.owner || !g.repo || !g.token) { this.setState({ gitMsg: '소유자·저장소·토큰을 입력해 주세요.' }); return; }
-    this.setState({ gitMsg: '저장 중…' });
-    try {
-      const names = ['공기','안전관리','안전서류 작성','감리보고서','엔딩점검·건축주 만족도','근태관리','어플근태관리','인력·잡자재·잔여자재','공사완료확인서·기성·대관','폐기물처리'];
-      const now = new Date().toISOString(); let n = 0;
-      const msg = '평가 데이터 저장 ' + now;
-      if (await this.ghPut(g.path + '/sites.json', { updatedAt: now, sites: st.sites }, msg) === 'ok') n++;
-      if (await this.ghPut(g.path + '/settings.json', st.set, msg) === 'ok') n++;
-      for (const r of st.sites) {
-        const ev = { id: r.id, addr: r.addr, mgr: r.mgr, type: r.type, inspector: r.insp, stage: r.stage, scores: names.map((nm, i) => ({ item: nm, score: r.sc[i] })), comments: { 감리: r.cGam, 공무: r.cGong, 공사부장: r.cBu, 부사장: r.cCeo } };
-        if (await this.ghPut(g.path + '/evals/' + r.id + '.json', ev, msg) === 'ok') n++;
-      }
-      try { if (st.remember) localStorage.setItem('gh_token', g.token); } catch (e) {}
-      this.setState({ gitMsg: (silent ? '자동 저장 완료' : '저장 완료') + ' · 변경된 파일 ' + n + '개 · ' + new Date().toLocaleTimeString('ko-KR') });
-    } catch (e) { this.setState({ gitMsg: '오류: ' + e.message }); }
+  componentWillUnmount() { clearInterval(this._poll); clearTimeout(this._t); try { document.removeEventListener('visibilitychange', this._vis); } catch (e) {} }
+  componentDidUpdate(prev) {
+    const st = this.state;
+    try { if (prev.sites !== st.sites || prev.set !== st.set || prev.next !== st.next) localStorage.setItem('adm_data', JSON.stringify({ sites: st.sites, set: st.set, next: st.next })); } catch (e) {}
+    if (st.auto && this.loaded && st.authed && (prev.sites !== st.sites || prev.set !== st.set) && this.gsDirty()) { clearTimeout(this._t); this._t = setTimeout(() => this.gsSave(true), 1500); }
   }
-  async gitLoad() {
-    const st = this.state, g = st.git;
-    if (!g.owner || !g.repo || !g.token) { this.setState({ gitMsg: '소유자·저장소·토큰을 입력해 주세요.' }); return; }
-    this.setState({ gitMsg: '불러오는 중…' });
+  /* ---- 구글 시트 연동 ---- */
+  canon(v) { if (Array.isArray(v)) return '[' + v.map(x => this.canon(x)).join(',') + ']'; if (v && typeof v === 'object') return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + this.canon(v[k])).join(',') + '}'; return JSON.stringify(v === undefined ? null : v); }
+  gsKey(s) { const o = {}; for (const k in s) if (k !== '_ts') o[k] = s[k]; return this.canon(o); }
+  gsText(sites, set) { return JSON.stringify([sites.map(x => this.gsKey(x) + '|' + (x._ts || 0)), set]); }
+  gsDirty() { const st = this.state; return this.gsText(st.sites, st.set) !== this.lastText; }
+  gsPw() { try { return sessionStorage.getItem('adm_pw') || ''; } catch (e) { return ''; } }
+  async gsPost(body) {
+    const url = this.state.gsUrl; if (!url) throw new Error('Apps Script URL을 먼저 입력해 주세요.');
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ ...body, pw: this.gsPw() }) });
+    if (!r.ok) throw new Error('서버 응답 오류 (' + r.status + ')');
+    const j = await r.json(); if (!j.ok) throw new Error(j.err || '요청 실패'); return j;
+  }
+  gsStart() { if (this.state.authed && this.gsPw()) this.gsLoad(true); }
+  gsPoll() { if (!this.state.authed || !this.loaded || this._busy || this.gsDirty()) return; this.gsLoad(true, true); }
+  gsAdopt(j, sentKeys) {
+    const cur = this.state.sites, curMap = {}; cur.forEach(x => { curMap[x.id] = x; });
+    const srvIds = {}; const merged = j.sites.map(s => { srvIds[s.id] = 1; const loc = curMap[s.id]; if (sentKeys && loc && sentKeys[s.id] !== undefined && this.gsKey(loc) !== sentKeys[s.id]) return { ...loc, _ts: s._ts }; return s; });
+    cur.forEach(x => { if (!srvIds[x.id] && sentKeys && sentKeys[x.id] === undefined) merged.push(x); });
+    merged.sort((p, q) => p.id - q.id);
+    const set = (j.set && !(sentKeys && this.gsKey(this.state.set) !== sentKeys.__set)) ? { ...this.state.set, ...j.set } : this.state.set;
+    this.syncIds = j.sites.map(s => s.id);
+    this.lastText = this.gsText(merged, set);
+    this.setState({ sites: merged, set, next: Math.max(this.state.next, j.next || 0) });
+  }
+  async gsLoad(silent, quiet) {
+    if (this._busy) return; this._busy = true;
+    if (!quiet) this.setState({ gsMsg: '불러오는 중…', gsOk: true });
     try {
-      const r = await fetch(this.ghUrl(g.path + '/sites.json') + '?ref=' + encodeURIComponent(g.branch), { headers: this.ghHead() });
-      if (!r.ok) throw new Error('sites.json 없음 또는 접근 불가 (' + r.status + ')');
-      const j = JSON.parse(this.unb64((await r.json()).content));
-      let set = st.set;
-      const r2 = await fetch(this.ghUrl(g.path + '/settings.json') + '?ref=' + encodeURIComponent(g.branch), { headers: this.ghHead() });
-      if (r2.ok) set = JSON.parse(this.unb64((await r2.json()).content));
-      this.cache = {};
-      this.setState({ sites: j.sites, set, gitMsg: '불러오기 완료 · 현장 ' + j.sites.length + '곳 · ' + (j.updatedAt || '') });
-    } catch (e) { this.setState({ gitMsg: '오류: ' + e.message }); }
+      const j = await this.gsPost({ a: 'admin_get' });
+      if (!j.sites.length && !j.set && this.state.sites.length) { this.loaded = true; this._busy = false; this.setState({ gsMsg: '시트가 비어 있어 현재 내용으로 저장을 시작합니다.', gsOk: true }); this.gsSave(true); return; }
+      if (quiet && this.gsDirty()) { this._busy = false; return; }
+      const before = this.gsText(this.state.sites, this.state.set);
+      this.gsAdopt({ ...j, set: j.set || this.state.set });
+      this.loaded = true;
+      const changed = before !== this.lastText;
+      if (!quiet || changed) this.setState({ gsMsg: (quiet ? '시트 변경 사항 반영 · ' : '불러오기 완료 · ') + '현장 ' + j.sites.length + '곳 · ' + new Date().toLocaleTimeString('ko-KR'), gsOk: true });
+    } catch (e) { if (!quiet) this.setState({ gsMsg: '오류: ' + e.message, gsOk: false }); }
+    this._busy = false;
+  }
+  async gsSave(silent) {
+    if (this._busy) { clearTimeout(this._t); this._t = setTimeout(() => this.gsSave(silent), 1200); return; }
+    this._busy = true; const st = this.state, sentKeys = { __set: this.gsKey(st.set) }; st.sites.forEach(x => { sentKeys[x.id] = this.gsKey(x); });
+    const ids = new Set(st.sites.map(x => x.id)), deleted = (this.syncIds || []).filter(i => !ids.has(i));
+    if (!silent) this.setState({ gsMsg: '저장 중…', gsOk: true });
+    try {
+      const j = await this.gsPost({ a: 'admin_save', sites: st.sites, set: st.set, deleted });
+      this.gsAdopt(j, sentKeys); this.loaded = true;
+      this.setState({ gsMsg: (silent ? '자동 저장 완료' : '저장 완료') + ' · ' + new Date().toLocaleTimeString('ko-KR') + (j.conflicts ? ' · ⚠ ' + j.conflicts + '곳은 평가자가 방금 수정해 시트 내용을 유지했습니다' : ''), gsOk: !j.conflicts });
+    } catch (e) { this.setState({ gsMsg: '오류: ' + e.message + ' (수정 내용은 이 브라우저에 보관되어 있습니다)', gsOk: false }); }
+    this._busy = false;
+    if (this.state.auto && this.gsDirty()) { clearTimeout(this._t); this._t = setTimeout(() => this.gsSave(true), 1500); }
   }
   copy(text) {
     const fb = () => { try { const t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;top:0;left:0;opacity:0'; document.body.appendChild(t); t.focus(); t.select(); t.setSelectionRange(0, text.length); const ok = document.execCommand('copy'); document.body.removeChild(t); if (!ok) window.prompt('아래 링크를 복사(Ctrl+C)하세요', text); } catch (e) { try { window.prompt('아래 링크를 복사(Ctrl+C)하세요', text); } catch (e2) {} } };
     try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(fb); else fb(); } catch (e) { fb(); }
   }
   pwHash(s) { let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for (let i = 0, ch; i < s.length; i++) { ch = s.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return 4294967296 * (2097151 & h2) + (h1 >>> 0); }
-  pwTry(v) { if (this.pwHash(String(v || '').trim()) === 4970403443833395) { try { sessionStorage.setItem('adm_ok', '1'); } catch (e) {} this.setState({ authed: true, pw: '', pwErr: '' }); } else this.setState({ pwErr: '비밀번호가 맞지 않습니다.' }); }
+  pwTry(v) { if (this.pwHash(String(v || '').trim()) === 4970403443833395) { try { sessionStorage.setItem('adm_ok', '1'); sessionStorage.setItem('adm_pw', String(v || '').trim()); } catch (e) {} this.setState({ authed: true, pw: '', pwErr: '' }, () => { if (this.state.gsUrl) this.gsLoad(true); }); } else this.setState({ pwErr: '비밀번호가 맞지 않습니다.' }); }
   showToast(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '', flash: '' }), 2200); }
   token(id, k) { return 'x' + (46656 + id * 7919).toString(36) + '-' + k; }
   link(id, k) { return 'https://wisestar823.github.io/dujonman/' + (k === 'in' ? 'Manager' : 'Eval') + '.dc.html?e=' + this.token(id, k); }
-  incOf(type, score) {
+  incOf(type, score, struct, region) {
     const S = this.state.set, SC = [100, 95, 90, 85, 80], T = S.T[type + '|달성'];
     if (score < S.minScore) return null;
     for (let i = 0; i < SC.length; i++) { if (score >= SC[i]) return T[i]; }
     return null;
   }
-  inc(type, score) { const v = this.incOf(type, score); return v === null ? '대상 아님' : v.toLocaleString('ko-KR') + '원'; }
+  adjOf(r) { const P = { profit: 1, air: 1, pr: 3, intro: 3, wcomp: -5, fine: -20, inner: -2, acc: -5, as: -20 }; return Object.entries(r.adj || {}).reduce((a, [k, n]) => a + (P[k] || 0) * (n || 0), 0); }
+  zeroHit(r) { return !!(this.state.set.zeroOut && r.sc.some(v => v === 0)); }
+  incR(r, score) { if (this.zeroHit(r)) return null; return this.incOf(r.type, score); }
+  incT(r, score) {
+    const S = this.state.set;
+    if (this.zeroHit(r)) return '대상 아님 (최저점 항목)';
+    const v = this.incOf(r.type, score); if (v !== null) return v.toLocaleString('ko-KR') + '원';
+    if (score < S.penScore) { return '페널티 (시말서·상여금 미지급)'; }
+    return '대상 아님';
+  }
   renderVals() {
     const st = this.state, S = st.set;
     const lead = st.viewer === 'ALL';
@@ -544,10 +614,10 @@ class Component extends DCLogic {
     const nsites = st.sites.map(norm);
     const vis = lead ? nsites : nsites.filter(r => r.insp === st.viewer);
     const total = (sc) => sc.every(v => v !== null) ? sc.reduce((a, b) => a + b, 0) : null;
-    const fin = (r) => { const t = total(r.sc); return t === null ? null : t + (S.useCeo ? (r.ceoAdj || 0) : 0); };
+    const fin = (r) => { const t = total(r.sc); return t === null ? null : t + this.adjOf(r) + (r.structPt || 0) + (r.regionPt || 0) + (S.useCeo ? (r.ceoAdj || 0) : 0); };
     const part = (r, idx) => idx.every(i => r.sc[i] !== null) ? idx.reduce((a, i) => a + r.sc[i], 0) : null;
     const evOf = (r) => { const all = (() => { const sg = (v, mx) => v === null ? '—' : v + ' / ' + mx + '점', a = part(r, [0,1,2,3,4]), g = part(r, [7,8,9]), c = part(r, [5,6]);
-      return [{ label: '소장 (자가평가)', score: r.selfScore == null ? '—' : r.selfScore + '점', note: '' }, { label: '감리', score: sg(a, 60), note: r.cGam || '—' }, { label: '공무', score: sg(g, 30), note: r.cGong || '—' },
+      return [{ label: '소장 (자가평가)', score: r.selfScore == null ? '—' : r.selfScore + '점', note: '' }, { label: '감리', score: sg(a, 60), note: r.cGam || '—' }, { label: '가점·감점 (감리 확인)', score: (this.adjOf(r) > 0 ? '+' : '') + this.adjOf(r) + '점', note: '' }, { label: '현장 조건 가산점 (감리)', score: ((r.structPt || 0) + (r.regionPt || 0)) > 0 ? '+' + ((r.structPt || 0) + (r.regionPt || 0)) + '점' : '0점', note: [r.struct && (r.struct + ' +' + (r.structPt || 0)), r.region && (r.region + ' +' + (r.regionPt || 0))].filter(Boolean).join(' · ') || '—' }, { label: '공무', score: sg(g, 30), note: r.cGong || '—' },
         { label: '감리·공무 공동 (근태)', score: sg(c, 10), note: '' }, { label: '공사 부장 (참고)', score: r.buScore == null ? '—' : r.buScore + ' / 25점', note: r.cBu || '—' },
         { label: '부사장 (추가평가)', score: r.stage === 5 ? ((r.ceoAdj || 0) > 0 ? '+' : '') + (r.ceoAdj || 0) + '점' : '—', note: r.cCeo || '—' }]; })(); return all.filter(e => !(e.label.startsWith('공사 부장') && !S.useBu) && !(e.label.startsWith('부사장') && !S.useCeo)); };
     const ROLES = [['in', '소장'], ['gam', '감리'], ['gong', '공무'], ['bu', '공사 부장'], ['ceo', '부사장']].filter(([k]) => !(k === 'bu' && !S.useBu) && !(k === 'ceo' && !S.useCeo));
@@ -561,9 +631,9 @@ class Component extends DCLogic {
         this.showToast(r.addr + ' 평가가 삭제되었습니다.'); } }; };
     const rowOf = (r) => {
       const t = fin(r);
-      return { ...r, stText: STEPS[r.stage], stCls: STCLS[r.stage],
+      return { ...r, stText: STEPS[r.stage], stCls: STCLS[r.stage], waitTxt: (r.stage < 5 && r._ts) ? (Math.floor((Date.now() - r._ts) / 86400000) >= 1 ? Math.floor((Date.now() - r._ts) / 86400000) + '일째 대기' : '오늘 변경') : '',
         dots: [0, 1, 2, 3, 4].filter(i => !(i === 3 && !S.useBu) && !(i === 4 && !S.useCeo)).map(i => ({ t: STEPS[i], style: 'display:inline-block;width:12px;height:12px;border-radius:50%;background:' + (i < r.stage ? '#14583A' : (i === r.stage ? '#C8A24A' : '#DDD8C8')) })),
-        score: t === null ? '—' : t + '점', inc: t === null ? '—' : this.inc(r.type, t),
+        score: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(r, t),
         addrStyle: 'cursor:pointer;border:0;background:transparent;padding:0;font-size:14px;font-weight:700;color:#14213D;text-decoration:underline;text-align:left;font-family:inherit',
         openLink: () => { this.setState({ lnk: st.lnk === r.id ? null : r.id, sel: null, bulk: '' }); setTimeout(() => { try { const el = document.getElementById('lnkpanel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }, 120); },
         open: () => this.setState({ sel: r.id, bulk: '' }),
@@ -577,7 +647,7 @@ class Component extends DCLogic {
     const summary = (type) => { const m = new Map(); typeList(type).forEach(r => { if (!m.has(r.mgr)) m.set(r.mgr, []); m.get(r.mgr).push(r); });
       return [...m].map(([mgr, rs]) => { const done = rs.filter(r => r.stage === 5), ts = done.map(r => fin(r));
         const avg = ts.length ? Math.round(ts.reduce((a, b) => a + b, 0) / ts.length * 10) / 10 : null;
-        const amt = done.reduce((a, r) => a + (this.incOf(r.type, fin(r)) || 0), 0);
+        const amt = done.reduce((a, r) => a + (this.incR(r, fin(r)) || 0), 0);
         return { mgr, avg: avg === null ? '—' : avg + '점', amt: done.length ? amt.toLocaleString('ko-KR') + '원' : '—', cls: done.length === rs.length ? 'done' : 'prog', stat: done.length + ' / ' + rs.length }; }); };
     const confirmed = (k) => vis.filter(r => r.stage === 5 && (k === '전체' || (k.startsWith('ins:') ? r.insp === k.slice(4) : r.type === k)));
     const ITEMS = [
@@ -592,16 +662,17 @@ class Component extends DCLogic {
       ['공사완료확인서·기성·대관', 5, '공무담당', '내역 외 공사 10만원당 −2점'],
       ['폐기물처리', 15, '공무담당', '목조 평당 2.5만원 · RC 평당 3.5만원 기준, ±10만원당 1점']
     ];
-    const mkSheet = (r) => { const t = fin(r); return { type: r.type, addr: r.addr, mgr: r.mgr, insp: r.insp, grade: r.grade,
+    const infoOf = (r) => ({ struct: r.struct || '—', region: r.region || '—', pyung: r.pyung ? r.pyung + '평' : '—', cost: r.cost ? Number(r.cost).toLocaleString('ko-KR') + '원' : '—', arch: r.arch || '—', interior: r.interior || '—' });
+    const mkSheet = (r) => { const t = fin(r); return { ...infoOf(r), type: r.type, addr: r.addr, mgr: r.mgr, insp: r.insp, grade: r.grade,
       rows: ITEMS.map((it, i) => ({ max: it[1], name: it[0], who: it[2], detail: it[3], score: r.sc[i] === null ? '—' : r.sc[i] })),
-      ev: evOf(r), finalScore: t === null ? '—' : t + '점', total: t === null ? '—' : t + '점', inc: t === null ? '—' : this.inc(r.type, t), cGam: r.cGam || '—', cGong: r.cGong || '—', cBu: r.cBu || '—', cCeo: r.cCeo || '—' }; };
+      ev: evOf(r), finalScore: t === null ? '—' : t + '점', total: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(r, t), cGam: r.cGam || '—', cGong: r.cGong || '—', cBu: r.cBu || '—', cCeo: r.cCeo || '—' }; };
     const cur = nsites.find(r => r.id === st.sel) || null;
     let sheetRows = [], sel = {};
     if (cur) {
       sheetRows = ITEMS.map((it, i) => ({ max: it[1], name: it[0], who: it[2], detail: it[3], score: cur.sc[i] === null ? '—' : cur.sc[i] }));
       const t = fin(cur), pub = cur.stage === 5;
-      sel = { ...cur, insp: cur.insp, ev: evOf(cur), finalScore: (fin(cur) === null ? '—' : fin(cur) + '점'), total: t === null ? '집계 중' : t + '점', totalNote: t === null ? '모든 평가 완료 후 자동 합산' : '',
-        final: t === null ? '—' : t + '점', inc: t === null ? '—' : this.inc(cur.type, t),
+      sel = { ...cur, ...infoOf(cur), insp: cur.insp, ev: evOf(cur), finalScore: (fin(cur) === null ? '—' : fin(cur) + '점'), total: t === null ? '집계 중' : t + '점', totalNote: t === null ? '모든 평가 완료 후 자동 합산' : '',
+        final: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(cur, t),
         cGam: cur.cGam || '—', cGong: cur.cGong || '—', cBu: cur.cBu || '—', cCeo: cur.cCeo || '—',
         pubCls: pub ? 'done' : 'wait', pubText: pub ? '공개됨' : '비공개 (확정 대기)', hasViews: pub, noViews: !pub,
         views: [{ at: '10/27 09:12', who: cur.mgr, what: '결과 조회' }, { at: '10/27 09:15', who: cur.mgr, what: '평가표 PDF 저장' }] };
@@ -617,9 +688,10 @@ class Component extends DCLogic {
     const regNext = () => {
       if (rg.step === 1) { if (!rg.addr.trim()) { this.setState({ msg: '현장 주소를 입력해 주세요.' }); return; } if (st.sites.some(r => r.addr === rg.addr.trim())) { this.setState({ msg: '이미 등록된 현장 주소입니다.' }); return; } setReg({ step: 2 }); return; }
       if (rg.step === 2) { if (!rg.mgr.trim()) { this.setState({ msg: '현장소장을 입력해 주세요.' }); return; } setReg({ step: 3 }); return; }
+      if (rg.step === 3) { setReg({ step: 4 }); return; }
       const mgr = rg.mgr.trim(), addr = rg.addr.trim();
-      this.setState({ sites: [...st.sites, { id: st.next, addr, mgr, type: rg.type, insp: lead ? rg.insp : st.viewer, grade: '[등급 기준 입력]', sc: [null,null,null,null,null,null,null,null,null,null], stage: 0, links: { in: false, gam: false, gong: false, bu: false, ceo: false }, cGam: '', cGong: '', cBu: '', cCeo: '' }],
-        next: st.next + 1, reg: { open: false, step: 1, addr: '', mgr: '', type: rg.type, insp: rg.insp }, selMgr: lead ? null : rg.type + '|' + mgr, lnk: lead ? null : st.next, sel: null, bulk: '',
+      this.setState({ sites: [...st.sites, { id: st.next, addr, mgr, type: rg.type, insp: lead ? rg.insp : st.viewer, grade: [rg.arch && ('건축 ' + rg.arch), rg.interior && ('인테리어 ' + rg.interior)].filter(Boolean).join(' / ') || '[등급 기준 입력]', struct: rg.struct, region: rg.region || '일반 지역', pyung: parseFloat(rg.pyung) || 0, arch: rg.arch, interior: rg.interior, cost: rg.cost, sc: [null,null,null,null,null,null,null,null,null,null], stage: 0, links: { in: false, gam: false, gong: false, bu: false, ceo: false }, cGam: '', cGong: '', cBu: '', cCeo: '' }],
+        next: st.next + 1, reg: { open: false, step: 1, addr: '', mgr: '', type: rg.type, insp: rg.insp, struct: '', region: '일반 지역', pyung: '', arch: '', interior: '', cost: 0 }, selMgr: lead ? null : rg.type + '|' + mgr, lnk: lead ? null : st.next, sel: null, bulk: '',
         msg: addr + ' 등록 완료 · ' + mgr + ' (' + rg.type + ') 소장 묶음에 자동 배치됨. ' + (lead ? '담당 감리(' + rg.insp + ') 계정에서 현장별 링크를 복사해 전달하세요.' : '아래에서 현장별 링크를 복사해 전달하세요.') });
     };
     const W = S.w, wSum = Object.entries(W).filter(([k]) => !(k === 'bu' && !S.useBu) && !(k === 'ceo' && !S.useCeo)).reduce((a, [, b]) => a + b, 0);
@@ -639,11 +711,11 @@ class Component extends DCLogic {
       modeBtns: ['상세', '간편'].map(k => ({ label: k + ' 출력', pick: () => this.setState({ bulkMode: k }),
         style: 'cursor:pointer;height:44px;padding:0 16px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (st.bulkMode === k ? '#C8A24A' : '#D9D4C6') + ';background:' + (st.bulkMode === k ? '#FFF7E0' : '#fff') + ';color:#1B2333' })),
       bulkDetail: st.bulkMode === '상세', bulkSimple: st.bulkMode === '간편', modeNote: st.bulkMode === '상세' ? '상세: 현장별 1페이지' : '간편: 소장·주소·점수·인센티브 1장',
-      simpleRows: st.bulk ? confirmed(st.bulk).map((r, i) => ({ no: i + 1, mgr: r.mgr, addr: r.addr, score: fin(r) + '점', inc: this.inc(r.type, fin(r)) })) : [],
-      simpleTotal: st.bulk ? confirmed(st.bulk).reduce((a, r) => a + (this.incOf(r.type, fin(r)) || 0), 0).toLocaleString('ko-KR') + '원' : '',
+      simpleRows: st.bulk ? confirmed(st.bulk).map((r, i) => ({ no: i + 1, mgr: r.mgr, addr: r.addr, score: fin(r) + '점', inc: this.incT(r, fin(r)) })) : [],
+      simpleTotal: st.bulk ? confirmed(st.bulk).reduce((a, r) => a + (this.incR(r, fin(r)) || 0), 0).toLocaleString('ko-KR') + '원' : '',
       catRows: [['직영', 't-d'], ['관리소장', 't-m']].map(([k, cls]) => { const rs = vis.filter(r => r.type === k), dn = rs.filter(r => r.stage === 5), ts = dn.map(r => fin(r));
         return { name: k, cls, sites: rs.length, done: dn.length, avg: ts.length ? Math.round(ts.reduce((a, b) => a + b, 0) / ts.length * 10) / 10 + '점' : '—',
-          amt: dn.length ? dn.reduce((a, r) => a + (this.incOf(r.type, fin(r)) || 0), 0).toLocaleString('ko-KR') + '원' : '—', print: () => this.setState({ bulk: k, sel: null }) }; }),
+          amt: dn.length ? dn.reduce((a, r) => a + (this.incR(r, fin(r)) || 0), 0).toLocaleString('ko-KR') + '원' : '—', print: () => this.setState({ bulk: k, sel: null }) }; }),
       isDash: st.view === 'dash', isSet: st.view === 'set' && lead, isLead: lead,
       dashTitle: lead ? '완료현장 평가 대시보드 · 통합 (감리팀장)' : '소장 평가 대시보드 · 감리 ' + st.viewer + ' 담당',
       accounts: [['ALL', '통합 (감리팀장)'], ...S.insp.map(n => [n, '감리 ' + n])].map(([k, label]) => ({ label, pick: () => this.setState({ viewer: k, selMgr: null, sel: null, bulk: '', view: 'dash', msg: '' }),
@@ -654,23 +726,26 @@ class Component extends DCLogic {
       inspBtns: S.insp.map(n => ({ label: n, pick: () => setReg({ insp: n }), style: seg((lead ? rg.insp : st.viewer) === n) })),
       leadName: S.lead, leadChange: (e) => setS({ lead: e.target.value.trim() || S.lead }),
       inspInputs: S.insp.map((n, i) => ({ no: i + 1, name: n, change: (e) => { const v = e.target.value.trim() || n; this.setState({ set: { ...S, insp: S.insp.map((x, k) => k === i ? v : x) }, sites: st.sites.map(r => r.insp === n ? { ...r, insp: v } : r), reg: rg.insp === n ? { ...rg, insp: v } : rg }); } })),
-      git: st.git, gitPath: st.git.path, gitMsg: st.gitMsg,
-      gOwner: (e) => this.setState({ git: { ...st.git, owner: e.target.value.trim() } }), gRepo: (e) => this.setState({ git: { ...st.git, repo: e.target.value.trim() } }),
-      gBranch: (e) => this.setState({ git: { ...st.git, branch: e.target.value.trim() || 'main' } }), gPath: (e) => this.setState({ git: { ...st.git, path: (e.target.value.trim() || 'data').replace(/^\/+|\/+$/g, '') } }),
-      gToken: (e) => this.setState({ git: { ...st.git, token: e.target.value.trim() } }),
-      gitSave: () => this.gitSave(false), gitLoad: () => this.gitLoad(),
+      gsUrl: st.gsUrl, gsMsg: st.gsMsg || (st.gsUrl ? '' : 'Apps Script URL을 입력하면 연결됩니다.'), gsMsgColor: st.gsOk ? '#14583A' : '#8A1F17',
+      gsUrlChange: (e) => { const v = e.target.value.trim(); try { localStorage.setItem('adm_api', v); } catch (x) {} this.setState({ gsUrl: v }, () => { if (v && this.state.authed) this.gsLoad(); }); },
+      gsSaveGo: () => this.gsSave(false), gsLoadGo: () => this.gsLoad(false),
+      cfgText: JSON.stringify({ api: st.gsUrl || '여기에 위 URL' }), cfgCopy: () => { this.copy(JSON.stringify({ api: st.gsUrl }, null, 2)); this.showToast('config.json 내용을 복사했습니다'); },
       autoLabel: st.auto ? '켜짐' : '꺼짐', toggleAuto: () => this.setState({ auto: !st.auto }), autoStyle: onStyle(st.auto),
-      remLabel: st.remember ? '켜짐' : '꺼짐', toggleRemember: () => { try { if (st.remember) localStorage.removeItem('gh_token'); } catch (e) {} this.setState({ remember: !st.remember }); }, remStyle: onStyle(st.remember),
       goDash: () => this.setState({ view: 'dash' }), goSet: () => lead && this.setState({ view: 'set', sel: null, bulk: '' }),
       navDash: st.view === 'dash' ? 'background:#C8A24A;color:#14213D;font-weight:700' : '', navSet: st.view === 'set' ? 'background:#C8A24A;color:#14213D;font-weight:700' : '',
       msg: st.msg,
-      reg: { ...rg, insp: lead ? rg.insp : st.viewer, s1: rg.step === 1, s2: rg.step === 2, s3: rg.step === 3 }, regBtn: rg.open ? '닫기' : '+ 완료현장 등록',
+      reg: { ...rg, insp: lead ? rg.insp : st.viewer, s1: rg.step === 1, s2: rg.step === 2, sumTxt: [rg.struct, rg.pyung && (rg.pyung + '평')].filter(Boolean).join(' / ') || '입력 안 함 (평가자가 입력)', s3: rg.step === 3, s4: rg.step === 4, costTxt: rg.cost ? Number(rg.cost).toLocaleString('ko-KR') : '', gradeTxt: [rg.arch && ('건축 ' + rg.arch), rg.interior && ('인테리어 ' + rg.interior)].filter(Boolean).join(' / ') || '미선택' }, regBtn: rg.open ? '닫기' : '+ 완료현장 등록',
       toggleReg: () => this.setState({ reg: { ...rg, open: !rg.open, step: 1 }, msg: '' }),
-      regSteps: [['① 현장 주소', 1], ['② 소장 · 구분', 2], ['③ 확인', 3]].map(([label, n]) => ({ label, style: stepStyle(rg.step === n, rg.step > n) })),
+      regSteps: [['① 현장 주소', 1], ['② 소장 · 구분', 2], ['③ 현장 정보 (선택)', 3], ['④ 확인', 4]].map(([label, n]) => ({ label, style: stepStyle(rg.step === n, rg.step > n) })),
       onAddr: (e) => setReg({ addr: e.target.value }), onMgr: (e) => setReg({ mgr: e.target.value }),
       mgrNames: [...new Set(st.sites.filter(r => r.type === rg.type).map(r => r.mgr))].map(v => ({ v })),
+      regionBtns: ['일반 지역', '도시 지역'].map(k => ({ label: k === '도시 지역' ? '도시 지역 (부지가 좁아 자재를 놓거나 공사하기 어려운 곳)' : k, style: seg((rg.region || '일반 지역') === k), pick: () => setReg({ region: k }) })),
+      structBtns: ['RC', '철골', '목조', '중목구조'].map(k => ({ label: k, style: seg(rg.struct === k), pick: () => setReg({ struct: k }) })),
+      onPyung: (e) => setReg({ pyung: e.target.value.replace(/[^0-9.]/g, '') }), onCost: (e) => setReg({ cost: parseInt(e.target.value.replace(/[^0-9]/g, ''), 10) || 0 }),
+      archBtns: (S.gradeB || []).map(k => ({ label: k, style: seg(rg.arch === k), pick: () => setReg({ arch: rg.arch === k ? '' : k }) })), archEmpty: (S.gradeB || []).length ? '' : '설정 ⑦에서 건축 등급을 먼저 등록하세요',
+      intBtns: (S.gradeI || []).map(k => ({ label: k, style: seg(rg.interior === k), pick: () => setReg({ interior: rg.interior === k ? '' : k }) })), intEmpty: (S.gradeI || []).length ? '' : '설정 ⑦에서 인테리어 등급을 먼저 등록하세요',
       typeBtns: ['직영', '관리소장'].map(k => ({ label: k, style: seg(rg.type === k), pick: () => setReg({ type: k }) })),
-      placeMsg, prevLabel: rg.step === 1 ? '취소' : '이전', nextLabel: rg.step === 3 ? '등록하고 소장 묶음에 배치' : '다음',
+      placeMsg, prevLabel: rg.step === 1 ? '취소' : '이전', nextLabel: rg.step === 4 ? '등록하고 소장 묶음에 배치' : '다음',
       regPrev: () => rg.step === 1 ? this.setState({ reg: { ...rg, open: false }, msg: '' }) : setReg({ step: rg.step - 1 }), regNext,
       stepCounts: STEPS.map((label, i) => ({ label, short: ['소장', '감리', '공무', '공사부장', '부사장', '완료'][i], n: vis.filter(r => r.stage === i).length, on: !(i === 3 && !S.useBu) && !(i === 4 && !S.useCeo) })).filter(x => x.on),
       dSum: summary('직영'), mSum: summary('관리소장'), dMgrs: mgrCards('직영'), mMgrs: mgrCards('관리소장'),
@@ -680,7 +755,7 @@ class Component extends DCLogic {
       hasLnk: !!lnkSite, lnkAddr: lnkSite ? lnkSite.addr : '', closeLnk: () => this.setState({ lnk: null }),
       lnkRows: lnkSite ? ROLES.map(([k, label]) => { const sent = lnkSite.links[k]; return { label, url: this.link(lnkSite.id, k), btn: st.flash === lnkSite.id + k ? '✓ 복사됨' : '복사하기',
         style: 'cursor:pointer;height:34px;padding:0 14px;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #14213D;background:' + (st.flash === lnkSite.id + k ? '#14583A' : (sent ? '#14213D' : '#fff')) + ';color:' + ((st.flash === lnkSite.id + k || sent) ? '#fff' : '#14213D') + ';transition:background .15s',
-        click: () => { this.copy('더존평가시스템(' + label + ')\n' + lnkSite.addr + '\n' + this.link(lnkSite.id, k)); upd(lnkSite.id, x => ({ ...x, links: { ...x.links, [k]: true } })); this.setState({ msg: lnkSite.addr + ' · ' + label + ' 링크 복사됨 → 카카오톡·문자에 붙여넣으세요.', flash: lnkSite.id + k }); this.showToast('✓ ' + label + ' 링크가 복사되었습니다'); } }; }) : [],
+        click: () => { this.copy('더존평가시스템(' + label + ')\n' + lnkSite.addr + '\n' + this.link(lnkSite.id, k) + '\n(평가 기한: 요청일로부터 ' + S.due + '일 이내)'); upd(lnkSite.id, x => ({ ...x, links: { ...x.links, [k]: true } })); this.setState({ msg: lnkSite.addr + ' · ' + label + ' 링크 복사됨 → 카카오톡·문자에 붙여넣으세요.', flash: lnkSite.id + k }); this.showToast('✓ ' + label + ' 링크가 복사되었습니다'); } }; }) : [],
       lnkAll: () => { if (!lnkSite) return; this.copy(lnkSite.addr + ' 평가 요청 링크\n' + ROLES.map(([k, l]) => l + ': ' + this.link(lnkSite.id, k)).join('\n')); upd(lnkSite.id, x => ({ ...x, links: { in: true, gam: true, gong: true, bu: true, ceo: true } })); this.setState({ msg: lnkSite.addr + ' · 링크 5개를 한 번에 복사했습니다.' }); },
       hasMgr: !!st.selMgr, mgrName: mn, mgrType: mt, mgrTypeCls: mt === '직영' ? 't-d' : 't-m', mgrCount: mgrRows.length, mgrRows, closeMgr: () => this.setState({ selMgr: null }),
       hasSel: !!cur, ...(cur ? (() => { const d = delOf(cur); return { selDelLabel: d.delLabel === '삭제' ? '이 평가 삭제' : '정말 삭제?', selDelStyle: d.delStyle.replace('height:34px', 'height:44px').replace('padding:0 12px', 'padding:0 16px'), selDelGo: d.delGo }; })() : { selDelLabel: '', selDelStyle: 'display:none', selDelGo: () => {} }), sel, sheetRows, closeSel: () => this.setState({ sel: null }), doPrint: () => { try { window.print(); } catch (e) {} },
@@ -689,10 +764,14 @@ class Component extends DCLogic {
       wPrev: WL.map(([k, label]) => ({ label, score: SAMPLE[k], val: W[k] })),
       wResult: wSum === 0 ? '—' : (Math.round(WL.reduce((a, [k]) => a + SAMPLE[k] * W[k], 0) / wSum * 10) / 10),
       tables,
-      dgCut: S.dg.cut, dgSmall: S.dg.small.toFixed(1), dgBig: S.dg.big.toFixed(1),
-      dgSUp: () => setS({ dg: { ...S.dg, small: Math.min(20, +(S.dg.small + 0.5).toFixed(1)) } }), dgSDown: () => setS({ dg: { ...S.dg, small: Math.max(0, +(S.dg.small - 0.5).toFixed(1)) } }),
-      dgBUp: () => setS({ dg: { ...S.dg, big: Math.min(20, +(S.dg.big + 0.5).toFixed(1)) } }), dgBDown: () => setS({ dg: { ...S.dg, big: Math.max(0, +(S.dg.big - 0.5).toFixed(1)) } }),
-      dgCUp: () => setS({ dg: { ...S.dg, cut: S.dg.cut + 5 } }), dgCDown: () => setS({ dg: { ...S.dg, cut: Math.max(5, S.dg.cut - 5) } }),
+      gradeBItems: (S.gradeB || []).map((label, i) => ({ label, del: () => setS({ gradeB: (S.gradeB || []).filter((_, k) => k !== i) }) })), gradeBEmpty: (S.gradeB || []).length ? '' : '등록된 건축 등급이 없습니다',
+      gradeIItems: (S.gradeI || []).map((label, i) => ({ label, del: () => setS({ gradeI: (S.gradeI || []).filter((_, k) => k !== i) }) })), gradeIEmpty: (S.gradeI || []).length ? '' : '등록된 인테리어 등급이 없습니다',
+      gb: st.gb, gi: st.gi, onGb: (e) => this.setState({ gb: e.target.value }), onGi: (e) => this.setState({ gi: e.target.value }),
+      addGb: () => { const v = (st.gb || '').trim(); if (v && !(S.gradeB || []).includes(v)) setS({ gradeB: [...(S.gradeB || []), v] }); this.setState({ gb: '' }); },
+      addGi: () => { const v = (st.gi || '').trim(); if (v && !(S.gradeI || []).includes(v)) setS({ gradeI: [...(S.gradeI || []), v] }); this.setState({ gi: '' }); },
+      keyGb: (e) => { if (e.key === 'Enter') { const v = e.target.value.trim(); if (v && !(S.gradeB || []).includes(v)) setS({ gradeB: [...(S.gradeB || []), v] }); this.setState({ gb: '' }); } },
+      keyGi: (e) => { if (e.key === 'Enter') { const v = e.target.value.trim(); if (v && !(S.gradeI || []).includes(v)) setS({ gradeI: [...(S.gradeI || []), v] }); this.setState({ gi: '' }); } },
+      profitTarget: S.profitTarget == null ? 20 : S.profitTarget, ptUp: () => setS({ profitTarget: Math.min(100, (S.profitTarget == null ? 20 : S.profitTarget) + 1) }), ptDown: () => setS({ profitTarget: Math.max(0, (S.profitTarget == null ? 20 : S.profitTarget) - 1) }),
       minScore: S.minScore, minUp: () => setS({ minScore: Math.min(100, S.minScore + 5) }), minDown: () => setS({ minScore: Math.max(0, S.minScore - 5) }),
       penScore: S.penScore, penUp: () => setS({ penScore: Math.min(100, S.penScore + 5) }), penDown: () => setS({ penScore: Math.max(0, S.penScore - 5) }),
       buLabel: S.useBu ? '사용' : '사용 안 함', toggleBu: () => setS({ useBu: !S.useBu, w: PRESET(!S.useBu, S.useCeo) }), buStyle: onStyle(S.useBu),
