@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>소장 입력·결과 화면</title>
 <script src="./support.js"></script>
 </head>
@@ -11,6 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
 <style>
+html,body{background:#F5F3EE}
 body{margin:0;font-family:'Noto Sans KR',sans-serif;background:#F5F3EE;color:#1B2333}
 button{font-family:inherit}
 .card{background:#fff;border:1px solid #E2DED3;border-radius:14px;padding:16px}
@@ -23,19 +25,21 @@ button{font-family:inherit}
 @media print{.noprint{display:none!important} body{background:#fff}}
 </style>
 </helmet>
-<div style="width:390px;height:3000px;box-sizing:border-box;display:flex;flex-direction:column;background:#F5F3EE">
+<div style="width:100%;max-width:520px;min-height:100vh;margin:0 auto;box-sizing:border-box;display:flex;flex-direction:column;background:#F5F3EE">
 
   <!-- 시연용 상태 전환 (실제 서비스에서는 서버가 상태로 결정) -->
+  <sc-if value="{{showDemo}}" hint-placeholder-val="{{true}}">
   <div class="noprint" style="background:#0B1328;padding:10px 12px;display:flex;flex-direction:column;gap:6px">
     <div style="font-size:11px;color:#AEB6C9">시안용 · 같은 링크가 상태에 따라 바뀌는 모습</div>
     <div style="display:flex;gap:6px">
       <sc-for list="{{modes}}" as="m" hint-placeholder-count="3"><button onClick="{{m.pick}}" style="{{m.style}}">{{m.label}}</button></sc-for>
     </div>
   </div>
+  </sc-if>
 
   <!-- 헤더 -->
   <div style="background:#14213D;color:#fff;padding:22px 20px 20px">
-    <div style="font-size:12px;color:#C8A24A;font-weight:700;letter-spacing:.5px">직영 현장소장 · 공사완료평가</div>
+    <div style="font-size:12px;color:#C8A24A;font-weight:700;letter-spacing:.5px">{{kind}} 현장소장 · 공사완료평가</div>
     <div style="font-size:20px;font-weight:700;margin-top:6px">{{title}}</div>
     <div style="font-size:13px;color:#C9D0E2;margin-top:4px">{{headSub}}</div>
     <div style="font-size:11px;color:#AEB6C9;margin-top:10px">이 현장 전용 링크 · 현장 종료 후 평가 · 다른 현장은 별도 링크</div>
@@ -51,9 +55,7 @@ button{font-family:inherit}
 
     <section class="card">
       <div style="font-weight:700;font-size:16px;margin-bottom:6px">① 현장 정보 (확인)</div>
-      <div class="row"><span class="lab">구조</span><b>목구조</b></div>
-      <div class="row"><span class="lab">연면적</span><b>32.2평</b></div>
-      <div class="row"><span class="lab">등급(기준)</span><b>24년 4분기/32.2PY/프1/모2/</b></div>
+      <sc-for list="{{infoRows}}" as="ir" hint-placeholder-count="5"><div class="row"><span class="lab">{{ir.k}}</span><b style="text-align:right">{{ir.v}}</b></div></sc-for>
     </section>
 
     <section class="card">
@@ -125,8 +127,11 @@ button{font-family:inherit}
 
     <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px">
       <div style="display:flex;justify-content:space-between;font-size:14px"><span class="lab">자가평가 합계 (가감점 포함)</span><b style="font-size:18px">{{selfTotal}}</b></div>
-      <button style="height:52px;border-radius:12px;border:0;background:#14213D;color:#fff;font-weight:700;font-size:16px;cursor:pointer">제출하기</button>
-      <button style="height:44px;border-radius:12px;border:1px solid #14213D;background:#fff;color:#14213D;font-size:14px;cursor:pointer">임시저장</button>
+      <sc-if value="{{showSubmitBtn}}" hint-placeholder-val="{{true}}"><button onClick="{{submitGo}}" style="height:52px;border-radius:12px;border:0;background:#14213D;color:#fff;font-weight:700;font-size:16px;cursor:pointer;width:100%">제출하기</button></sc-if>
+      <sc-if value="{{showConfirm}}" hint-placeholder-val="{{false}}"><div style="background:#FFF7E0;border:1px solid #E9D69A;border-radius:12px;padding:12px 14px;font-size:14px;color:#5A4300;line-height:1.5;text-align:center">이대로 제출할까요?<br>제출하면 감리·공무가 검토를 시작합니다.</div>
+        <div style="display:flex;gap:10px"><button onClick="{{doSubmit}}" style="flex:1;height:52px;border-radius:12px;border:0;background:#14583A;color:#fff;font-weight:700;font-size:16px;cursor:pointer">제출</button><button onClick="{{cancelSubmit}}" style="flex:1;height:52px;border-radius:12px;border:1px solid #14213D;background:#fff;color:#14213D;font-size:16px;cursor:pointer">취소</button></div></sc-if>
+      <button onClick="{{saveGo}}" style="height:44px;border-radius:12px;border:1px solid #14213D;background:#fff;color:#14213D;font-size:14px;cursor:pointer">임시저장</button>
+      <div style="font-size:13px;font-weight:700;text-align:center;min-height:18px;color:{{saveColor}}">{{saveMsg}}</div>
     </div>
   </div>
   </sc-if>
@@ -141,11 +146,7 @@ button{font-family:inherit}
     </div>
     <div class="card">
       <div style="font-weight:700;font-size:15px;margin-bottom:8px">진행 단계</div>
-      <div class="row"><span>소장 입력</span><span class="pt">완료</span></div>
-      <div class="row"><span>감리 평가</span><span class="pt">완료</span></div>
-      <div class="row"><span>공무 평가</span><span class="pt" style="background:#E5EDFA;color:#1B438A">진행 중</span></div>
-      <div class="row"><span>공사 부장 평가</span><span class="pt" style="background:#FFF0D1;color:#6B4200">대기</span></div>
-      <div class="row"><span>경영진(부사장) 확정</span><span class="pt" style="background:#FFF0D1;color:#6B4200">대기</span></div>
+      <sc-for list="{{steps}}" as="p" hint-placeholder-count="5"><div class="row"><span>{{p.name}}</span><span class="pt" style="{{p.style}}">{{p.state}}</span></div></sc-for>
     </div>
   </div>
   </sc-if>
@@ -192,14 +193,21 @@ button{font-family:inherit}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3000}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { site: null, loadMsg: '', mode: 'input', air: 115, waste: 805000, man: 3,
+  constructor(props) { super(props); this.state = { site: null, cfg: null, loadMsg: '', saveMsg: '', saveOk: true, busy: false, confirming: false, mode: 'input', air: 115, waste: 805000, man: 3,
     sc: [10, 10, 15, 5, 5, 5, 5], d3: [0, 0, 0], cnt: [0, 0, 0, 0, 0, 0, 0, 0] }; }
-  fromSite(site) { return { mode: site.stage === 0 ? 'input' : (site.stage >= 5 ? 'result' : 'wait') }; }
-  componentDidMount() { try { const q = new URLSearchParams(location.search).get('e') || ''; const tk = q.split('-')[0]; const id = (parseInt(tk.slice(1), 36) - 46656) / 7919; const h = location.hostname, owner = h.endsWith('.github.io') ? h.split('.')[0] : '', repo = location.pathname.split('/')[1] || '';
-    if (!q || !owner || !Number.isInteger(id)) return; this.setState({ loadMsg: '현장 정보를 불러오는 중…' });
-    fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/data/sites.json', { headers: { Accept: 'application/vnd.github.raw+json' }, cache: 'no-store' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(j => { const site = (j.sites || []).find(x => x.id === id); if (!site) throw new Error('nf'); this.setState({ site, loadMsg: '', ...this.fromSite(site) }); })
-      .catch(() => this.setState({ loadMsg: '현장 정보를 불러오지 못했습니다. 관리자가 GitHub 저장을 했는지 확인해 주세요.' })); } catch (e) {} }
+  fromSite(site) { const m = site.selfIn || {}; return { mode: site.stage === 0 ? 'input' : (site.stage >= 5 ? 'result' : 'wait'), ...(typeof m.air === 'number' ? { air: m.air } : {}), ...(typeof m.waste === 'number' ? { waste: m.waste } : {}), ...(typeof m.man === 'number' ? { man: m.man } : {}), ...(Array.isArray(m.sc) && m.sc.length === 7 ? { sc: m.sc } : {}), ...(Array.isArray(m.d3) && m.d3.length === 3 ? { d3: m.d3 } : {}), ...(Array.isArray(m.cnt) && m.cnt.length === 8 ? { cnt: m.cnt } : {}) }; }
+  async call(body, get) { const api = this.api; if (!api) throw new Error('cfg'); let r; if (get) r = await fetch(api + '?' + new URLSearchParams(body).toString(), { cache: 'no-store' }); else r = await fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }); if (!r.ok) throw new Error('서버 응답 오류 (' + r.status + ')'); const j = await r.json(); if (!j.ok) throw new Error(j.err || '요청 실패'); return j; }
+  componentDidMount() { try { const q = new URLSearchParams(location.search).get('e') || ''; const id = (parseInt(q.split('-')[0].slice(1), 36) - 46656) / 7919; if (!q || !Number.isInteger(id)) return; this.q = q; this.id = id; this.setState({ loadMsg: '현장 정보를 불러오는 중…' });
+    fetch('config.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(c => { if (!c || !c.api) throw new Error('cfg'); this.api = c.api; return this.call({ a: 'get', id, t: q }, true); })
+      .then(j => { this.setState({ site: j.site, loadMsg: '', ...this.fromSite(j.site) }); if (j.set) this.setState({ cfg: j.set }); })
+      .catch(e => this.setState({ loadMsg: e.message === 'cfg' ? '저장 서버 연결(config.json)이 설정되지 않았습니다. 관리자에게 문의해 주세요.' : '현장 정보를 불러오지 못했습니다. (' + e.message + ')' })); } catch (e) {} }
+  async saveSelf(submit, data) {
+    if (!this.q || !this.api) { this.setState({ saveMsg: '샘플 화면입니다. 실제 평가 링크에서 저장됩니다.', saveOk: false }); return; }
+    if (this.state.busy) return; this.setState({ busy: true, saveMsg: '저장 중…', saveOk: true });
+    try { const j = await this.call({ a: 'role', id: this.id, t: this.q, data, submit: !!submit });
+      this.setState({ site: j.site, busy: false, saveOk: true, saveMsg: (submit ? '제출 완료' : '임시저장 완료') + ' · ' + new Date().toLocaleTimeString('ko-KR'), ...(submit ? { mode: 'wait' } : {}) });
+    } catch (e) { this.setState({ busy: false, saveOk: false, saveMsg: '오류: ' + e.message + ' (입력 내용은 이 화면에 그대로 있습니다. 다시 눌러 주세요)' }); }
+  }
   renderVals() {
     const s = this.state, ABS = 120, WB = 805000;
     const dAir = s.air - ABS;
@@ -229,14 +237,32 @@ class Component extends DCLogic {
       up: () => { if (raw < max) setTo(raw + 1); }, down: () => { if (raw > 0) setTo(raw - 1); } }; };
     const cA = calc(20, airPt, 0), cW = calc(15, wPt, 1), cM = calc(10, mPt, 2);
     const selfTotal = cA.score + cW.score + cM.score + s.sc.reduce((a, b) => a + b, 0) + adjSum;
+    const AK = ['profit', 'pr', 'intro', 'wcomp', 'fine', 'inner', 'acc', 'as'], selfAdj = {}; AK.forEach((k, i) => { if (s.cnt[i]) selfAdj[k] = s.cnt[i]; });
+    const payload = { self: [cA.score, s.sc[0], s.sc[1], s.sc[2], s.sc[3], s.sc[4], s.sc[5], cM.score, s.sc[6], cW.score], selfScore: selfTotal, selfAdj, selfIn: { air: s.air, waste: s.waste, man: s.man, sc: s.sc, d3: s.d3, cnt: s.cnt } };
     const MODES = [['input', '입력 중'], ['wait', '평가 진행 중'], ['result', '확정 후 결과']];
     const ITEMS = [['공기', 20, 19, '감리'], ['안전관리', 10, 9, '감리'], ['안전서류 작성', 10, 9, '감리'], ['감리보고서', 15, 14, '감리'],
       ['엔딩점검·건축주 만족도', 5, 5, '감리'], ['근태관리', 5, 4, '감리·공무'], ['어플근태관리', 5, 4, '감리·공무'],
       ['인력·잡자재·잔여자재', 10, 9, '공무'], ['공사완료확인서·기성·대관', 5, 5, '공무'], ['폐기물처리', 15, 14, '공무']];
-    const rItems = ITEMS.map(([name, max, score, who]) => ({ name, max, score, who, pct: Math.round(score / max * 100) }));
-    const nm = s.site ? s.site.mgr : '소장 아', sub = s.loadMsg || { input: nm + ' · 입력 마감 11/05 · 임시저장됨', wait: nm + ' · 입력 제출 완료', result: nm + ' · 평가 확정 완료' }[s.mode];
+    const site = s.site, real = !!(site && site.sc && site.sc.every(v => v != null)), cfg = s.cfg || {};
+    const rItems = ITEMS.map(([name, max, score, who], i) => { const sc = real ? site.sc[i] : score; return { name, max, score: sc, who, pct: Math.round(sc / max * 100) }; });
+    let rTotal = rItems.reduce((a, b) => a + b.score, 0), rInc = '750,000원';
+    if (real) {
+      const P = { profit: 1, air: 1, pr: 3, intro: 3, wcomp: -5, fine: -20, inner: -2, acc: -5, as: -20 };
+      rTotal += Object.entries(site.adj || {}).reduce((a, [k, n]) => a + (P[k] || 0) * (n || 0), 0) + (site.structPt || 0) + (site.regionPt || 0) + (cfg.useCeo !== false ? (site.ceoAdj || 0) : 0);
+      const minScore = typeof cfg.minScore === 'number' ? cfg.minScore : 80, penScore = typeof cfg.penScore === 'number' ? cfg.penScore : 70, SCL = [100, 95, 90, 85, 80];
+      const dflt = { '관리소장': [3000000, 2200000, 1500000, 1100000, 750000], '직영': [1500000, 1200000, 750000, 600000, 450000] };
+      const tb = (cfg.T && cfg.T[site.type + '|달성']) || dflt[site.type] || dflt['직영'];
+      if (cfg.zeroOut !== false && site.sc.some(v => v === 0)) rInc = '대상 아님';
+      else if (rTotal < penScore) rInc = '페널티 대상';
+      else if (rTotal < minScore) rInc = '대상 아님';
+      else { rInc = '대상 아님'; for (let i = 0; i < SCL.length; i++) { if (rTotal >= SCL[i]) { rInc = tb[i].toLocaleString('ko-KR') + '원'; break; } } }
+    }
+    const nm = s.site ? s.site.mgr : '소장 아', sub = s.loadMsg || { input: nm + ' · 입력 마감 11/05', wait: nm + ' · 입력 제출 완료', result: nm + ' · 평가 확정 완료' }[s.mode];
     return {
       title: s.site ? s.site.addr : '샘플 주소 11',
+      kind: s.site ? s.site.type : '직영',
+      infoRows: s.site ? [['현장 주소', s.site.addr], ['소장', s.site.mgr], ['구분', s.site.type], s.site.region && ['지역', s.site.region],s.site.struct && ['건축 종류', s.site.struct], s.site.pyung && ['실평형수', s.site.pyung + '평'], s.site.cost && ['총 공사 금액', Number(s.site.cost).toLocaleString('ko-KR') + '원'], s.site.arch && ['건축 등급', s.site.arch], s.site.interior && ['인테리어 등급', s.site.interior], ['담당 감리', s.site.insp || '-']].filter(Boolean).map(([k, v]) => ({ k, v })) : [['구조', '목구조'], ['연면적', '32.2평'], ['등급(기준)', '24년 4분기/32.2PY/프1/모2/']].map(([k, v]) => ({ k, v })),
+      showDemo: !(() => { try { return !!new URLSearchParams(location.search).get('e'); } catch (e) { return false; } })(),
       modes: MODES.map(([k, label]) => ({ label, pick: () => this.setState({ mode: k }),
         style: 'cursor:pointer;flex:1;height:36px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid ' + (s.mode === k ? '#C8A24A' : '#3A4A74') + ';background:' + (s.mode === k ? '#C8A24A' : 'transparent') + ';color:' + (s.mode === k ? '#14213D' : '#D7DCE8') })),
       isInput: s.mode === 'input', isWait: s.mode === 'wait', isResult: s.mode === 'result', headSub: sub,
@@ -250,7 +276,7 @@ class Component extends DCLogic {
       wMax: cW.max, wScore: cW.score, wLost: cW.lost, wLostColor: cW.lostColor, wPlusStyle: cW.plus, wSUp: cW.up, wSDown: cW.down,
       mMax: cM.max, mScore: cM.score, mLost: cM.lost, mLostColor: cM.lostColor, mPlusStyle: cM.plus, mSUp: cM.up, mSDown: cM.down,
       selfItems, adjItems, adjTotal: f(adjSum), adjCls: cls(adjSum), selfTotal: selfTotal + '점',
-      rItems, rTotal: rItems.reduce((a, b) => a + b.score, 0), rInc: '750,000원',
+      rItems, rTotal, rInc, saveMsg: s.saveMsg, saveColor: s.saveOk ? '#14583A' : '#8A1F17', saveGo: () => this.saveSelf(false, payload), submitGo: () => this.setState({ confirming: true, saveMsg: '' }), doSubmit: () => { this.setState({ confirming: false }); this.saveSelf(true, payload); }, cancelSubmit: () => this.setState({ confirming: false }), showSubmitBtn: !s.confirming, showConfirm: s.confirming, steps: ['소장 입력', '감리 평가', '공무 평가', '공사 부장 평가', '경영진(부사장) 확정'].map((name, i) => ({ name, i })).filter(({ i }) => !(i === 3 && cfg.useBu === false) && !(i === 4 && cfg.useCeo === false)).map(({ name, i }) => { const g = site ? Math.max(1, site.stage) : 2; return { name, state: i < g ? '완료' : (i === g ? '진행 중' : '대기'), style: i < g ? '' : (i === g ? 'background:#E5EDFA;color:#1B438A' : 'background:#FFF0D1;color:#6B4200') }; }),
       doPrint: () => { try { window.print(); } catch (e) {} }
     };
   }
