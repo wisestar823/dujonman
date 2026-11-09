@@ -56,15 +56,20 @@ button{font-family:inherit}
     <section class="card">
       <div style="font-weight:700;font-size:16px;margin-bottom:6px">① 현장 정보 (확인)</div>
       <sc-for list="{{infoRows}}" as="ir" hint-placeholder-count="5"><div class="row"><span class="lab">{{ir.k}}</span><b style="text-align:right">{{ir.v}}</b></div></sc-for>
+      <div class="row"><span class="lab">구조 구분<br><span style="font-size:11px">RC 선택 시 기준 자동 변경</span></span><div style="display:flex;gap:6px"><sc-for list="{{kindBtns}}" as="k" hint-placeholder-count="2"><button onClick="{{k.pick}}" style="{{k.style}}">{{k.label}}</button></sc-for></div></div>
     </section>
 
     <section class="card">
       <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700;font-size:16px">② 공기 <span style="font-weight:400;font-size:13px;color:#4A5163">20점</span></div><span class="pt {{airCls}}">{{airPt}}</span></div>
-      <div class="row"><span class="lab">절대공기(일)</span><b>{{abs}}일</b></div>
+      <div class="row"><span class="lab">절대공기(일){{absNote}}</span><b>{{abs}}일</b></div>
+      <div class="row"><span class="lab">착공일</span><input type="date" value="{{startDate}}" onChange="{{onStart}}" aria-label="착공일" style="height:38px;border:1px solid #CFC9B8;border-radius:8px;padding:0 8px;font-size:14px;font-family:inherit"></div>
+      <div class="row"><span class="lab">준공일 <span style="font-size:11px">(청소~잔손보기 완료)</span></span><input type="date" value="{{endDate}}" onChange="{{onEnd}}" aria-label="준공일" style="height:38px;border:1px solid #CFC9B8;border-radius:8px;padding:0 8px;font-size:14px;font-family:inherit"></div>
+      <div style="font-size:12px;color:#4A5163;padding:2px 0 6px">두 날짜를 입력하면 완료공기가 자동 계산되고 점수에 바로 반영됩니다. (착공일 포함)</div>
       <div class="row"><span class="lab">완료공기(일)</span>
         <div class="stp"><button aria-label="완료공기 1일 감소" onClick="{{airDown}}">−</button><b style="min-width:48px;text-align:center">{{air}}일</b><button aria-label="완료공기 1일 증가" onClick="{{airUp}}">+</button></div>
       </div>
       <div class="row"><span class="lab">공기차이</span><b>{{airDiff}}</b></div>
+      <div class="row"><span class="lab">공기 가점 (5일 단축)</span><b>{{airBonusTxt}}</b></div>
       <div style="font-size:12px;color:#4A5163">준공청소~잔손보기 완료 기준 · 5일 단축 +1 / 3일 초과 −1</div>
       <div class="row" style="border-top:1px solid #EFEBE1;margin-top:6px;padding-top:10px"><span style="flex:1;line-height:1.35"><b>자가 점수</b><br><span style="font-size:12px;color:#4A5163">{{aMax}}점 만점 · <b style="color:{{aLostColor}}">{{aLost}}</b></span></span>
         <div class="stp"><button aria-label="감점" onClick="{{aSDown}}">−</button><b style="min-width:34px;text-align:center">{{aScore}}</b><button aria-label="점수 증가" onClick="{{aSUp}}" style="{{aPlusStyle}}">+</button></div></div>
@@ -73,7 +78,7 @@ button{font-family:inherit}
 
     <section class="card">
       <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700;font-size:16px">③ 폐기물처리 <span style="font-weight:400;font-size:13px;color:#4A5163">15점</span></div><span class="pt {{wCls}}">{{wPt}}</span></div>
-      <div class="row"><span class="lab">기준액 (목조 평당 2.5만원)</span><b>{{wBase}}원</b></div>
+      <div class="row"><span class="lab">{{wRule}}</span><b>{{wBase}}원</b></div>
       <div class="row"><span class="lab">실제 처리비</span>
         <div class="stp"><button aria-label="처리비 10만원 감소" onClick="{{wDown}}">−</button><b style="min-width:92px;text-align:center">{{wAct}}원</b><button aria-label="처리비 10만원 증가" onClick="{{wUp}}">+</button></div>
       </div>
@@ -87,7 +92,7 @@ button{font-family:inherit}
 
     <section class="card">
       <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700;font-size:16px">④ 인력·잔여자재 <span style="font-weight:400;font-size:13px;color:#4A5163">10점</span></div><span class="pt {{mCls}}">{{mPt}}</span></div>
-      <div class="row"><span class="lab">기준 인력 (10평당 1품)</span><b>3품</b></div>
+      <div class="row"><span class="lab">{{mRule}}</span><b>{{mBase}}품</b></div>
       <div class="row"><span class="lab">실제 사용 인력</span>
         <div class="stp"><button aria-label="인력 1품 감소" onClick="{{mDown}}">−</button><b style="min-width:48px;text-align:center">{{man}}품</b><button aria-label="인력 1품 증가" onClick="{{mUp}}">+</button></div>
       </div>
@@ -193,14 +198,15 @@ button{font-family:inherit}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3000}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { site: null, cfg: null, loadMsg: '', saveMsg: '', saveOk: true, busy: false, confirming: false, mode: 'input', air: 115, waste: 805000, man: 3,
+  constructor(props) { super(props); this.state = { site: null, cfg: null, loadMsg: '', saveMsg: '', saveOk: true, busy: false, confirming: false, start: '', end: '', mode: 'input', kind: '', air: null, waste: null, man: null,
     sc: [10, 10, 15, 5, 5, 5, 5], d3: [0, 0, 0], cnt: [0, 0, 0, 0, 0, 0, 0, 0] }; }
-  fromSite(site) { const m = site.selfIn || {}; return { mode: site.stage === 0 ? 'input' : (site.stage >= 5 ? 'result' : 'wait'), ...(typeof m.air === 'number' ? { air: m.air } : {}), ...(typeof m.waste === 'number' ? { waste: m.waste } : {}), ...(typeof m.man === 'number' ? { man: m.man } : {}), ...(Array.isArray(m.sc) && m.sc.length === 7 ? { sc: m.sc } : {}), ...(Array.isArray(m.d3) && m.d3.length === 3 ? { d3: m.d3 } : {}), ...(Array.isArray(m.cnt) && m.cnt.length === 8 ? { cnt: m.cnt } : {}) }; }
+  fromSite(site) { const m = site.selfIn || {}; return { mode: site.stage === 0 ? 'input' : (site.stage >= 5 ? 'result' : 'wait'), ...(m.kind === 'RC' || m.kind === '목조' ? { kind: m.kind } : {}), ...(typeof m.air === 'number' ? { air: m.air } : {}), ...(typeof m.start === 'string' ? { start: m.start } : {}), ...(typeof m.end === 'string' ? { end: m.end } : {}), ...(typeof m.waste === 'number' ? { waste: m.waste } : {}), ...(typeof m.man === 'number' ? { man: m.man } : {}), ...(Array.isArray(m.sc) && m.sc.length === 7 ? { sc: m.sc } : {}), ...(Array.isArray(m.d3) && m.d3.length === 3 ? { d3: m.d3 } : {}), ...(Array.isArray(m.cnt) && m.cnt.length === 8 ? { cnt: m.cnt } : {}) }; }
   async call(body, get) { const api = this.api; if (!api) throw new Error('cfg'); let r; if (get) r = await fetch(api + '?' + new URLSearchParams(body).toString(), { cache: 'no-store' }); else r = await fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }); if (!r.ok) throw new Error('서버 응답 오류 (' + r.status + ')'); const j = await r.json(); if (!j.ok) throw new Error(j.err || '요청 실패'); return j; }
   componentDidMount() { try { const q = new URLSearchParams(location.search).get('e') || ''; const id = (parseInt(q.split('-')[0].slice(1), 36) - 46656) / 7919; if (!q || !Number.isInteger(id)) return; this.q = q; this.id = id; this.setState({ loadMsg: '현장 정보를 불러오는 중…' });
     fetch('config.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(c => { if (!c || !c.api) throw new Error('cfg'); this.api = c.api; return this.call({ a: 'get', id, t: q }, true); })
       .then(j => { this.setState({ site: j.site, loadMsg: '', ...this.fromSite(j.site) }); if (j.set) this.setState({ cfg: j.set }); })
       .catch(e => this.setState({ loadMsg: e.message === 'cfg' ? '저장 서버 연결(config.json)이 설정되지 않았습니다. 관리자에게 문의해 주세요.' : '현장 정보를 불러오지 못했습니다. (' + e.message + ')' })); } catch (e) {} }
+  setDates(start, end) { const p = { start, end }; const a = Date.parse(start), b = Date.parse(end); if (!isNaN(a) && !isNaN(b) && b >= a) p.air = Math.round((b - a) / 86400000) + 1; this.setState(p); }
   async saveSelf(submit, data) {
     if (!this.q || !this.api) { this.setState({ saveMsg: '샘플 화면입니다. 실제 평가 링크에서 저장됩니다.', saveOk: false }); return; }
     if (this.state.busy) return; this.setState({ busy: true, saveMsg: '저장 중…', saveOk: true });
@@ -209,12 +215,15 @@ class Component extends DCLogic {
     } catch (e) { this.setState({ busy: false, saveOk: false, saveMsg: '오류: ' + e.message + ' (입력 내용은 이 화면에 그대로 있습니다. 다시 눌러 주세요)' }); }
   }
   renderVals() {
-    const s = this.state, ABS = 120, WB = 805000;
-    const dAir = s.air - ABS;
+    const s = this.state, site0 = s.site, py = (site0 && site0.pyung) || 32.2;
+    const kind = s.kind || ((site0 && site0.struct === 'RC') ? 'RC' : '목조'), rc = kind === 'RC';
+    const ABS = Math.round(120 * (rc ? 1.2 : 1)), WB = Math.round(py * (rc ? 35000 : 25000)), MB = Math.max(1, Math.round(py / 10 * (rc ? 2 : 1)));
+    const air = s.air == null ? ABS : s.air, waste = s.waste == null ? WB : s.waste, man = s.man == null ? MB : s.man;
+    const dAir = air - ABS;
     const airPt = dAir <= -5 ? 1 : (dAir >= 3 ? -1 : 0);
-    const dW = s.waste - WB;
+    const dW = waste - WB;
     const wPt = dW > 0 ? -Math.floor(dW / 100000) : Math.floor(-dW / 100000);
-    const dM = s.man - 3;
+    const dM = man - MB;
     const mPt = dM > 0 ? -2 * dM : (dM < 0 ? 2 * (-dM) : 0);
     const f = (n) => (n > 0 ? '+' : '') + n + '점';
     const fmt = (n) => n.toLocaleString('ko-KR');
@@ -235,10 +244,10 @@ class Component extends DCLogic {
     const calc = (max, auto, i) => { const raw = Math.max(0, Math.min(max, max + auto + s.d3[i])); const setTo = (v) => this.setState({ d3: s.d3.map((d, k) => k === i ? v - (max + auto) : d) }); return {
       max, score: raw, lost: raw >= max ? '감점 없음' : '감점 −' + (max - raw), lostColor: raw >= max ? '#4A5163' : '#8A1F17', plus: raw >= max ? 'opacity:.35;cursor:not-allowed' : '',
       up: () => { if (raw < max) setTo(raw + 1); }, down: () => { if (raw > 0) setTo(raw - 1); } }; };
-    const cA = calc(20, airPt, 0), cW = calc(15, wPt, 1), cM = calc(10, mPt, 2);
-    const selfTotal = cA.score + cW.score + cM.score + s.sc.reduce((a, b) => a + b, 0) + adjSum;
-    const AK = ['profit', 'pr', 'intro', 'wcomp', 'fine', 'inner', 'acc', 'as'], selfAdj = {}; AK.forEach((k, i) => { if (s.cnt[i]) selfAdj[k] = s.cnt[i]; });
-    const payload = { self: [cA.score, s.sc[0], s.sc[1], s.sc[2], s.sc[3], s.sc[4], s.sc[5], cM.score, s.sc[6], cW.score], selfScore: selfTotal, selfAdj, selfIn: { air: s.air, waste: s.waste, man: s.man, sc: s.sc, d3: s.d3, cnt: s.cnt } };
+    const airBonus = airPt > 0 ? airPt : 0, cA = calc(20, Math.min(0, airPt), 0), cW = calc(15, wPt, 1), cM = calc(10, mPt, 2);
+    const selfTotal = cA.score + cW.score + cM.score + s.sc.reduce((a, b) => a + b, 0) + adjSum + airBonus;
+    const AK = ['profit', 'pr', 'intro', 'wcomp', 'fine', 'inner', 'acc', 'as'], selfAdj = {}; AK.forEach((k, i) => { if (s.cnt[i]) selfAdj[k] = s.cnt[i]; }); if (airBonus) selfAdj.air = airBonus;
+    const payload = { self: [cA.score, s.sc[0], s.sc[1], s.sc[2], s.sc[3], s.sc[4], s.sc[5], cM.score, s.sc[6], cW.score], selfScore: selfTotal, selfAdj, selfIn: { kind, start: s.start, end: s.end, air: s.air, waste: s.waste, man: s.man, sc: s.sc, d3: s.d3, cnt: s.cnt } };
     const MODES = [['input', '입력 중'], ['wait', '평가 진행 중'], ['result', '확정 후 결과']];
     const ITEMS = [['공기', 20, 19, '감리'], ['안전관리', 10, 9, '감리'], ['안전서류 작성', 10, 9, '감리'], ['감리보고서', 15, 14, '감리'],
       ['엔딩점검·건축주 만족도', 5, 5, '감리'], ['근태관리', 5, 4, '감리·공무'], ['어플근태관리', 5, 4, '감리·공무'],
@@ -266,12 +275,16 @@ class Component extends DCLogic {
       modes: MODES.map(([k, label]) => ({ label, pick: () => this.setState({ mode: k }),
         style: 'cursor:pointer;flex:1;height:36px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid ' + (s.mode === k ? '#C8A24A' : '#3A4A74') + ';background:' + (s.mode === k ? '#C8A24A' : 'transparent') + ';color:' + (s.mode === k ? '#14213D' : '#D7DCE8') })),
       isInput: s.mode === 'input', isWait: s.mode === 'wait', isResult: s.mode === 'result', headSub: sub,
-      abs: ABS, air: s.air, airDiff: (dAir > 0 ? '+' : '') + dAir + '일', airPt: f(airPt), airCls: cls(airPt),
-      airUp: () => this.setState({ air: s.air + 1 }), airDown: () => this.setState({ air: s.air - 1 }),
-      wBase: fmt(WB), wAct: fmt(s.waste), wDiff: (dW > 0 ? '+' : '') + fmt(dW) + '원', wPt: f(wPt), wCls: cls(wPt),
-      wUp: () => this.setState({ waste: s.waste + 100000 }), wDown: () => this.setState({ waste: Math.max(0, s.waste - 100000) }),
-      man: s.man, mPt: f(mPt), mCls: cls(mPt),
-      mUp: () => this.setState({ man: s.man + 1 }), mDown: () => this.setState({ man: Math.max(0, s.man - 1) }),
+      abs: ABS, air, airDiff: (dAir > 0 ? '+' : '') + dAir + '일', airPt: f(airPt), airCls: cls(airPt),
+      startDate: s.start, endDate: s.end, airBonusTxt: airBonus ? '+' + airBonus + '점' : '해당 없음',
+      onStart: (e) => this.setDates(e.target.value, s.end), onEnd: (e) => this.setDates(s.start, e.target.value),
+      airUp: () => this.setState({ air: air + 1 }), airDown: () => this.setState({ air: air - 1 }),
+      wBase: fmt(WB), wAct: fmt(waste), wDiff: (dW > 0 ? '+' : '') + fmt(dW) + '원', wPt: f(wPt), wCls: cls(wPt),
+      wUp: () => this.setState({ waste: waste + 100000 }), wDown: () => this.setState({ waste: Math.max(0, waste - 100000) }),
+      man, mPt: f(mPt), mCls: cls(mPt),
+      mUp: () => this.setState({ man: man + 1 }), mDown: () => this.setState({ man: Math.max(0, man - 1) }),
+      mBase: MB, absNote: rc ? ' (RC: 목조 120일 +20%)' : '', wRule: '기준액 (' + kind + ' 평당 ' + (rc ? '3.5' : '2.5') + '만원 × ' + py + '평)', mRule: '기준 인력 (' + (rc ? 'RC · 10평당 2품' : '10평당 1품') + ')',
+      kindBtns: ['목조', 'RC'].map(k => ({ label: k, pick: () => this.setState({ kind: k }), style: 'cursor:pointer;height:36px;padding:0 18px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (kind === k ? '#14213D' : '#D9D4C6') + ';background:' + (kind === k ? '#14213D' : '#fff') + ';color:' + (kind === k ? '#fff' : '#1B2333') })),
       aMax: cA.max, aScore: cA.score, aLost: cA.lost, aLostColor: cA.lostColor, aPlusStyle: cA.plus, aSUp: cA.up, aSDown: cA.down,
       wMax: cW.max, wScore: cW.score, wLost: cW.lost, wLostColor: cW.lostColor, wPlusStyle: cW.plus, wSUp: cW.up, wSDown: cW.down,
       mMax: cM.max, mScore: cM.score, mLost: cM.lost, mLostColor: cM.lostColor, mPlusStyle: cM.plus, mSUp: cM.up, mSDown: cM.down,
