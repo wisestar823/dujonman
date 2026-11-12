@@ -228,11 +228,12 @@ button{font-family:inherit}
               <div style="font-weight:700;font-size:16px">{{lnkAddr}} · 평가 요청 링크</div>
               <div style="display:flex;gap:8px"><button onClick="{{closeLnk}}" class="open">닫기</button></div>
             </div>
-            <div style="font-size:12px;color:#4A5163;margin-bottom:8px">복사한 링크를 카카오톡·문자에 붙여넣어 각 담당자에게 전달하세요. 이 현장 전용 링크입니다.</div>
+            <div style="font-size:12px;color:#4A5163;margin-bottom:8px">[열기]는 새 탭에서 링크를 확인합니다. [카톡전송용 링크복사]로 복사한 글(현장명 + 링크)을 카카오톡·문자에 붙여넣어 전달하세요. 주소창에는 붙여넣지 마세요.</div>
             <sc-for list="{{lnkRows}}" as="l" hint-placeholder-count="5">
               <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #EFEBE1;flex-wrap:wrap">
                 <span style="flex:0 0 84px;font-weight:700;font-size:14px">{{l.label}}</span>
                 <span style="flex:1 1 240px;min-width:0;font-size:13px;color:#4A5163;word-break:break-all">{{l.url}}</span>
+                <button onClick="{{l.open}}" style="cursor:pointer;height:34px;padding:0 14px;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #14213D;background:#fff;color:#14213D">열기</button>
                 <button onClick="{{l.click}}" style="{{l.style}}">{{l.btn}}</button>
               </div>
             </sc-for>
@@ -754,7 +755,7 @@ class Component extends DCLogic {
       bulkD: () => this.setState({ bulk: '직영', sel: null }), bulkM: () => this.setState({ bulk: '관리소장', sel: null }), bulkA: () => this.setState({ bulk: '전체', sel: null }),
       bulkOpen: !!st.bulk, bulkTitle: st.bulk.startsWith('ins:') ? st.bulk.slice(4) + ' 담당' : st.bulk, bulkCount: st.bulk ? confirmed(st.bulk).length : 0, bulkSheets: st.bulk ? confirmed(st.bulk).map(mkSheet) : [], closeBulk: () => this.setState({ bulk: '' }),
       hasLnk: !!lnkSite, lnkAddr: lnkSite ? lnkSite.addr : '', closeLnk: () => this.setState({ lnk: null }),
-      lnkRows: lnkSite ? ROLES.map(([k, label]) => { const sent = (lnkSite.links || {})[k]; return { label, url: this.link(lnkSite.id, k), btn: st.flash === lnkSite.id + k ? '✓ 복사됨' : '복사하기',
+      lnkRows: lnkSite ? ROLES.map(([k, label]) => { const sent = (lnkSite.links || {})[k]; return { label, url: this.link(lnkSite.id, k), btn: st.flash === lnkSite.id + k ? '✓ 복사됨' : '카톡전송용 링크복사', open: () => window.open(this.link(lnkSite.id, k), '_blank'),
         style: 'cursor:pointer;height:34px;padding:0 14px;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #14213D;background:' + (st.flash === lnkSite.id + k ? '#14583A' : (sent ? '#14213D' : '#fff')) + ';color:' + ((st.flash === lnkSite.id + k || sent) ? '#fff' : '#14213D') + ';transition:background .15s',
         click: () => { this.copy('[' + lnkSite.addr + '] ' + (k === 'in' ? '소장 공사완료평가' : label + ' 평가') + ' 링크\n' + this.link(lnkSite.id, k)); upd(lnkSite.id, x => ({ ...x, links: { ...x.links, [k]: true } })); this.setState({ msg: lnkSite.addr + ' · ' + label + ' 링크 복사됨 → 카카오톡·문자에 붙여넣으세요.', flash: lnkSite.id + k }); this.showToast('✓ ' + label + ' 링크가 복사되었습니다'); } }; }) : [],
       lnkAll: () => { if (!lnkSite) return; this.copy(lnkSite.addr + ' 평가 요청 링크\n' + ROLES.map(([k, l]) => l + ': ' + this.link(lnkSite.id, k)).join('\n')); upd(lnkSite.id, x => ({ ...x, links: { in: true, gam: true, gong: true, bu: true, ceo: true } })); this.setState({ msg: lnkSite.addr + ' · 링크 5개를 한 번에 복사했습니다.' }); },
