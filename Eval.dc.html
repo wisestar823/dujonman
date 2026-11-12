@@ -128,6 +128,7 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
           <div style="font-size:12px;color:#4A5163;margin-bottom:10px;line-height:1.5">수익률 = (총계약금 − 실행금액) ÷ 총계약금. 설정의 달성 기준({{targetTxt}}) 이상이면 기준 이윤 달성, 미만이면 미달로 최종 인센티브 기준표에 자동 반영됩니다.</div>
           <div style="background:#FAF8F3;border-radius:10px;padding:10px 12px;font-size:13px">
             <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0"><span style="color:#4A5163">총계약금</span><div class="st" style="display:flex;align-items:center;gap:6px"><button aria-label="총계약금 감소" onClick="{{conDown}}">−</button><b style="min-width:104px;text-align:center">{{contract}}원</b><button aria-label="총계약금 증가" onClick="{{conUp}}">+</button></div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0"><span style="color:#4A5163">공사 최종 금액 (소장 입력)</span><b>{{finalCostTxt}}</b></div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0"><span style="color:#4A5163">실행금액</span><div class="st" style="display:flex;align-items:center;gap:6px"><button aria-label="실행금액 감소" onClick="{{spDown}}">−</button><b style="min-width:104px;text-align:center">{{spent}}원</b><button aria-label="실행금액 증가" onClick="{{spUp}}">+</button></div></div>
             <div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:#4A5163">수익률 (기준 {{targetTxt}})</span><b style="color:{{profitColor}}">{{marginTxt}}</b></div>
           </div>
@@ -137,8 +138,8 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
         <sc-if value="{{isCeo}}" hint-placeholder-val="{{false}}">
         <!-- 블록 C2: 경영진 조정 -->
         <section class="card" style="padding:16px 18px">
-          <div style="font-weight:700;font-size:16px;margin-bottom:4px">경영진(부사장) 추가 평가</div>
-          <div style="font-size:12px;color:#4A5163;margin-bottom:10px;line-height:1.5">감리·공무·공사 부장의 평가는 그대로 두고, 경영진이 보는 항목에서 추가 점수(+)를 주거나 감점(−)합니다. 항목당 −5 ~ +5점.</div>
+          <div style="font-weight:700;font-size:16px;margin-bottom:4px">감리팀장 추가 평가</div>
+          <div style="font-size:12px;color:#4A5163;margin-bottom:10px;line-height:1.5">감리·공무 평가는 그대로 두고, 감리팀장이 보는 항목에서 추가 점수(+)를 주거나 감점(−)합니다. 항목당 −5 ~ +5점.</div>
           <sc-for list="{{ceoItems}}" as="c" hint-placeholder-count="5">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #EFEBE1;font-size:13px">
               <span style="flex:1;min-width:0;line-height:1.35">{{c.name}}<br><span style="font-size:12px;color:#4A5163">{{c.hint}}</span></span>
@@ -147,7 +148,7 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
           </sc-for>
           <div style="display:flex;justify-content:space-between;font-size:14px;padding:8px 0 2px"><span style="color:#4A5163">실무자 항목 합계</span><b>{{base}}점</b></div>
           <div style="display:flex;justify-content:space-between;font-size:14px;padding:2px 0"><span style="color:#4A5163">가점·감점 합계</span><b>{{adjSum}}</b></div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;padding:2px 0"><span style="color:#4A5163">경영진 추가 평가</span><b style="color:{{ceoColor}}">{{ceoAdjText}}</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;padding:2px 0"><span style="color:#4A5163">감리팀장 추가 평가</span><b style="color:{{ceoColor}}">{{ceoAdjText}}</b></div>
           <label for="rs" style="display:block;font-size:13px;font-weight:700;margin:10px 0 6px">총평</label>
           <textarea id="rs" value="{{reason}}" onChange="{{onReason}}" placeholder="예: 현장 마무리 책임감이 우수하고 보고·소통이 성실함" style="width:100%;box-sizing:border-box;min-height:84px;border:1px solid #CFC9B8;border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;resize:vertical"></textarea>
         </section>
@@ -162,12 +163,13 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
           <div style="background:#FAF8F3;border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:13px">
             <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0"><span style="color:#4A5163">연면적</span><div class="st" style="display:flex;align-items:center;gap:6px"><button aria-label="평수 감소" onClick="{{areaDown}}">−</button><b style="min-width:62px;text-align:center">{{area}}평</b><button aria-label="평수 증가" onClick="{{areaUp}}">+</button></div></div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0"><span style="color:#4A5163">총계약금</span><div class="st" style="display:flex;align-items:center;gap:6px"><button aria-label="계약금 감소" onClick="{{conDown}}">−</button><b style="min-width:104px;text-align:center">{{contract}}원</b><button aria-label="계약금 증가" onClick="{{conUp}}">+</button></div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0"><span style="color:#4A5163">공사 최종 금액 (소장 입력)</span><b>{{finalCostTxt}}</b></div>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:14px;padding:6px 0"><span style="color:#4A5163">최종 점수</span><b style="font-size:20px">{{final}}점</b></div>
           <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;padding:6px 0"><span style="color:#4A5163">인센티브</span><b style="font-size:22px;color:{{amtColor}}">{{amount}}</b></div>
           <div style="font-size:12px;color:#4A5163;margin-top:6px;line-height:1.5">{{note}}</div>
           <button onClick="{{confirmGo}}" style="{{confirmStyle}}">{{confirmLabel}}</button>
-          <div style="font-size:12px;color:#4A5163;margin-top:8px;line-height:1.5">최종 점수와 인센티브 금액을 확인한 뒤 확정하면 해당 소장 링크에 결과가 공개됩니다.</div>
+          <div style="font-size:12px;color:#4A5163;margin-top:8px;line-height:1.5">최종 점수와 인센티브 금액을 확인하고 아래 [평가 제출]을 누른 뒤 확정하면 해당 소장 링크에 결과가 공개됩니다.</div>
         </section>
         </sc-if>
       </div>
@@ -185,15 +187,15 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1300}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { site: null, cfg: null, loadMsg: '', saveMsg: '', saveOk: true, busy: false, confirming: false, submitted: false, sc: [18,9,8,12,4,4,4,8,4,12], adj: { inner: 2 }, role: (() => { try { const t = new URLSearchParams(location.search).get('e') || ''; return { gam: '감리', gong: '공무', bu: '공사 부장', ceo: '경영진' }[t.split('-').pop()] || '감리'; } catch (e) { return '감리'; } })(), ceo: [0, 0, 0, 0, 0], reason: '', area: 32.2, contract: 300000000, bu: [3, 4, 4, 4, 4], done: false, type: '직영', self: [19, 10, 9, 14, 5, 5, 5, 9, 5, 14], target: 20, struct: '', region: '', structPt: 0, regionPt: 0, budget: 0, spent: 230000000, op: { '감리': '', '공무': '', '공사 부장': '' } }; }
-  fromSite(site) { return { adj: { ...(site.adj || {}) }, struct: site.struct || '', region: site.region || '', structPt: site.structPt || 0, regionPt: site.regionPt || 0, ...(site.pyung ? { area: site.pyung } : {}), ...(site.cost ? { contract: site.cost } : {}), sc: [20, 10, 10, 15, 5, 5, 5, 10, 5, 15].map((mx, i) => site.sc && site.sc[i] != null ? site.sc[i] : mx), type: site.type || '직영', op: { '감리': site.cGam || '', '공무': site.cGong || '', '공사 부장': site.cBu || '' }, reason: site.cCeo || '', bu: Array.isArray(site.bu) ? site.bu : [5, 5, 5, 5, 5], ...(Array.isArray(site.ceo) ? { ceo: site.ceo } : {}), ...(site.spent != null ? { spent: site.spent } : {}), done: site.stage >= 5 }; }
+  constructor(props) { super(props); this.state = { site: null, cfg: null, loadMsg: '', saveMsg: '', saveOk: true, busy: false, confirming: false, submitted: false, sc: [18,9,8,8,4,4,4,8,4,8,8], adj: { inner: 2 }, role: (() => { try { const t = new URLSearchParams(location.search).get('e') || ''; return { gam: '감리', gong: '공무', lead: '감리팀장', bu: '감리팀장', ceo: '감리팀장' }[t.split('-').pop()] || '감리'; } catch (e) { return '감리'; } })(), ceo: [0, 0, 0, 0, 0], reason: '', area: 32.2, contract: 300000000, bu: [3, 4, 4, 4, 4], done: false, type: '직영', self: [19, 10, 9, 9, 5, 5, 5, 9, 5, 9, '—'], target: 20, struct: '', region: '', structPt: 0, regionPt: 0, budget: 0, spent: 230000000, op: { '감리': '', '공무': '', '감리팀장': '' } }; }
+  fromSite(site) { return { adj: { ...(site.adj || {}) }, struct: site.struct || '', region: site.region || '', structPt: site.structPt || 0, regionPt: site.regionPt || 0, ...(site.pyung ? { area: site.pyung } : {}), ...(site.cost ? { contract: site.cost } : {}), sc: [20, 10, 10, 10, 5, 5, 5, 10, 5, 10, 10].map((mx, i) => site.sc && site.sc[i] != null ? site.sc[i] : mx), type: site.type || '직영', op: { '감리': site.cGam || '', '공무': site.cGong || '', '감리팀장': site.cBu || '' }, reason: site.cCeo || '', bu: Array.isArray(site.bu) ? site.bu : [5, 5, 5, 5, 5], ...(Array.isArray(site.ceo) ? { ceo: site.ceo } : {}), ...(site.spent != null ? { spent: site.spent } : {}), done: site.stage >= 5 }; }
   async call(body, get) { const api = this.api; if (!api) throw new Error('cfg'); let r; if (get) r = await fetch(api + '?' + new URLSearchParams(body).toString(), { cache: 'no-store' }); else r = await fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }); if (!r.ok) throw new Error('서버 응답 오류 (' + r.status + ')'); const j = await r.json(); if (!j.ok) throw new Error(j.err || '요청 실패'); return j; }
   componentDidMount() { try { const q = new URLSearchParams(location.search).get('e') || ''; const id = (parseInt(q.split('-')[0].slice(1), 36) - 46656) / 7919; if (!q || !Number.isInteger(id)) return; this.q = q; this.id = id; this.setState({ loadMsg: '현장 정보를 불러오는 중…' });
     fetch('config.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(c => { if (!c || !c.api) throw new Error('cfg'); this.api = c.api; return this.call({ a: 'get', id, t: q }, true); })
       .then(j => { this.setState({ site: j.site, loadMsg: '', ...this.fromSite(j.site) }); if (j.set) { this.setState({ cfg: j.set }); if (typeof j.set.profitTarget === 'number') this.setState({ target: j.set.profitTarget }); } })
       .catch(e => this.setState({ loadMsg: e.message === 'cfg' ? '저장 서버 연결(config.json)이 설정되지 않았습니다. 관리자에게 문의해 주세요.' : '현장 정보를 불러오지 못했습니다. (' + e.message + ')' })); } catch (e) {} }
   roleKey() { return this.q ? this.q.split('-').pop() : ''; }
-  roleData(k) { const s = this.state; if (k === 'gam') return { sc: s.sc, adj: s.adj, struct: s.struct, region: s.region, structPt: s.structPt, regionPt: s.regionPt, cGam: s.op['감리'] }; if (k === 'gong') return { sc: s.sc, cGong: s.op['공무'], pyung: s.area, cost: s.contract, spent: s.spent }; if (k === 'bu') return { bu: s.bu, cBu: s.op['공사 부장'] }; if (k === 'ceo') return { ceo: s.ceo, cCeo: s.reason }; return {}; }
+  roleData(k) { const s = this.state; if (k === 'gam') return { sc: s.sc, adj: s.adj, struct: s.struct, region: s.region, structPt: s.structPt, regionPt: s.regionPt, cGam: s.op['감리'] }; if (k === 'gong') return { sc: s.sc, cGong: s.op['공무'], pyung: s.area, cost: s.contract, spent: s.spent }; if (k === 'lead' || k === 'bu' || k === 'ceo') return { bu: s.bu, ceo: s.ceo, cBu: s.op['감리팀장'], cCeo: s.reason }; return {}; }
   async post(submit, confirm) {
     if (!this.q || !this.api) { if (confirm !== undefined) this.setState({ done: !this.state.done }); return; }
     if (this.state.busy) return; this.setState({ busy: true, saveMsg: '저장 중…', saveOk: true });
@@ -205,26 +207,26 @@ class Component extends DCLogic {
     const s = this.state;
     const ITEMS = [
       ['공기', 20, '감리', 's-gam'], ['안전관리', 10, '감리', 's-gam'], ['안전서류 작성', 10, '감리', 's-gam'],
-      ['감리보고서', 15, '감리', 's-gam'], ['엔딩점검·건축주 만족도', 5, '감리', 's-gam'], ['근태관리(주간업무·밴드·공사일보)', 5, '감리·공무', 's-gam'],
-      ['어플근태관리', 5, '감리·공무', 's-gam'], ['인력·잡자재·잔여자재', 10, '공무', 's-gong'], ['공사완료확인서·기성·대관', 5, '공무', 's-gong'], ['폐기물처리', 15, '공무', 's-gong']
+      ['감리보고서', 10, '감리', 's-gam'], ['엔딩점검·건축주 만족도', 5, '감리', 's-gam'], ['근태관리(주간업무·밴드·공사일보)', 5, '감리·공무', 's-gam'],
+      ['어플근태관리', 5, '감리·공무', 's-gam'], ['인력·잡자재·잔여자재', 10, '공무', 's-gong'], ['공사완료확인서·대관', 5, '공무', 's-gong'], ['폐기물처리', 10, '공무', 's-gong'], ['기성관리', 10, '공무', 's-gong']
     ];
     const SELF = s.self;
     const items = ITEMS.map((it, i) => ({
-      name: it[0], max: it[1], who: it[2], cls: it[3], score: s.role === '소장' ? s.self[i] : s.sc[i], self: SELF[i], btnShow: s.role === '경영진' ? 'display:none' : '',
+      name: it[0], max: it[1], who: it[2], cls: it[3], score: s.role === '소장' ? s.self[i] : s.sc[i], self: SELF[i] == null ? '—' : SELF[i], btnShow: '',
       flag: (s.role === '소장' ? s.self[i] : s.sc[i]) === 0 ? '최저점' : '',
       up: () => { const k = s.role === '소장' ? 'self' : 'sc'; const a = s[k].slice(); a[i] = Math.min(it[1], a[i] + 1); this.setState({ [k]: a }); },
       down: () => { const k = s.role === '소장' ? 'self' : 'sc'; const a = s[k].slice(); a[i] = Math.max(0, a[i] - 1); this.setState({ [k]: a }); }
     }));
     const base = s.sc.reduce((x, y) => x + y, 0);
-    const R = s.role, isCeo = R === '경영진';
+    const R = s.role, isCeo = R === '감리팀장';
     const BU = ['AS 협조도', '자재관리', '공기관리', '인력관리', '폐기물 관리'];
     const buItems = BU.map((name, i) => ({ name, max: 5, who: '공사 부장', cls: 's-gong', score: s.bu[i], self: '—', btnShow: '', flag: s.bu[i] === 0 ? '최저점' : '',
       up: () => this.setState({ bu: s.bu.map((v, k) => k === i ? Math.min(5, v + 1) : v) }), down: () => this.setState({ bu: s.bu.map((v, k) => k === i ? Math.max(0, v - 1) : v) }) }));
-    const shown = R === '공사 부장' ? buItems : (R === '소장' ? items : items.filter(it => it.who.includes(R)));
+    const shown = R === '감리팀장' ? buItems : (R === '소장' ? items : items.filter(it => it.who.includes(R)));
     const roleSum = shown.reduce((a, b) => a + b.score, 0), roleMax = shown.reduce((a, b) => a + b.max, 0);
     const NOTE = { '소장': '소장 링크 · 소장은 본인 자가평가(항목별 만점 이내)만 입력합니다. 다른 평가자 점수·인센티브는 보이지 않습니다.', '감리': '감리 링크 · 감리 평가표만 표시됩니다. 모든 항목은 만점으로 시작하니 감점할 항목만 낮춰 주세요. (다른 담당 점수·인센티브는 보이지 않음)', '공무': '공무 링크 · 공무 평가표만 표시됩니다. 모든 항목은 만점으로 시작하니 감점할 항목만 낮춰 주세요. (다른 담당 점수·인센티브는 보이지 않음)',
-      '공사 부장': '공사 부장 링크 · AS 협조도, 자재관리, 공기관리, 인력관리, 폐기물 관리 5개 항목만 표시됩니다.', '경영진': '경영진(부사장) 링크 · 추가 평가를 입력하고, 최종 점수와 인센티브 금액을 확인한 뒤 확정합니다.' };
-    const roleBtn = (k) => ({ label: (k === '경영진' ? '경영진(부사장)' : k) + ' 링크', pick: () => this.setState({ role: k }),
+      '감리팀장': '감리팀장 링크 · 공사 부장 평가 항목(5개)과 추가 평가를 입력하고, 최종 점수와 인센티브 금액을 확인한 뒤 확정합니다.' };
+    const roleBtn = (k) => ({ label: k + ' 링크', pick: () => this.setState({ role: k }),
       style: 'cursor:pointer;height:38px;padding:0 14px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (R === k ? '#14213D' : '#D9D4C6') + ';background:' + (R === k ? '#14213D' : '#fff') + ';color:' + (R === k ? '#fff' : '#1B2333') });
     const ADJ = [
       ['air', '공기달성 5일 단축', 1], ['intro', '현장소개건 (계약 시)', 3],
@@ -251,25 +253,25 @@ class Component extends DCLogic {
                 '직영': mkT('직영|달성', [[100,1500000],[95,1200000],[90,750000],[85,600000],[80,450000]]) };
     const L = { '관리소장': mkT('관리소장|미달', [[100,1500000],[95,1100000],[90,750000],[85,600000],[80,450000]]),
                 '직영': mkT('직영|미달', [[100,750000],[95,600000],[90,450000],[85,300000],[80,150000]]) };
-    const minScore = typeof cfg.minScore === 'number' ? cfg.minScore : 80, penScore = typeof cfg.penScore === 'number' ? cfg.penScore : 70, zeroOut = cfg.zeroOut !== false, useBu = cfg.useBu !== false, useCeo = cfg.useCeo !== false;
+    const minScore = typeof cfg.minScore === 'number' ? cfg.minScore : 80, penScore = typeof cfg.penScore === 'number' ? cfg.penScore : 70, zeroOut = cfg.zeroOut !== false, useBu = true, useCeo = true;
     const finalAdj = merged + (useCeo ? ceoAdj : 0);
-    const margin = s.contract > 0 ? (s.contract - s.spent) / s.contract * 100 : 0, profit = margin >= s.target ? '달성' : '미달', table = (profit === '달성' ? T : L)[s.type];
+    const margin = s.contract > 0 ? (s.contract - s.spent) / s.contract * 100 : 0, profit = margin >= s.target ? '달성' : '미달', table = L[s.type], mult = profit === '달성' ? 2 : 1;
     const excluded = zeroOut && s.sc.some(v => v === 0);
     let amount = '대상 아님', color = '#8A1F17', note = minScore + '점 미만은 인센티브 대상이 아닙니다.';
     if (excluded) { note = '평가 항목 중 최저점수가 있어 인센티브 대상에서 제외됩니다.'; }
     else if (finalAdj < penScore) { amount = '페널티 대상'; note = penScore + '점 미만: 시말서 · 상여금 미지급'; }
-    else if (finalAdj >= minScore) { for (const [sc, v] of table) { if (finalAdj >= sc) { amount = Math.round(v).toLocaleString('ko-KR') + '원'; color = '#14583A'; note = s.type + ' · 기준 이윤 ' + profit + ' 기준표 적용'; break; } } }
-    const roleOff = (R === '공사 부장' && !useBu) || (R === '경영진' && !useCeo);
+    else if (finalAdj >= minScore) { for (const [sc, v] of table) { if (finalAdj >= sc) { amount = Math.round(v * mult).toLocaleString('ko-KR') + '원'; color = '#14583A'; note = s.type + ' · 기준 이윤 ' + profit + (mult === 2 ? ' → 기본 지급액 ×2 적용' : ' · 기본 지급액 적용'); break; } } }
+    const roleOff = false;
     const seg = (on) => 'cursor:pointer;height:40px;padding:0 16px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (on ? '#14213D' : '#D9D4C6') + ';background:' + (on ? '#14213D' : '#fff') + ';color:' + (on ? '#fff' : '#1B2333');
-    const site = s.site, STG = ['소장 입력', '감리 평가', '공무 평가', '공사 부장 평가', '부사장 확정'], g0 = site ? site.stage : 2, g = (g0 === 3 && !useBu) ? 4 : g0, gg = (g === 4 && !useCeo) ? 5 : g;
-    const chips = STG.map((t, i) => ({ t, i })).filter(({ i }) => !(i === 3 && !useBu) && !(i === 4 && !useCeo)).map(({ t, i }) => ({ text: t + (i < gg ? ' 완료' : (i === gg ? ' 진행' : ' 대기')), cls: i < gg ? 's-gam' : (i === gg ? 's-in' : 's-gong') }));
+    const site = s.site, STG = ['소장 입력', '감리 평가', '공무 평가', '감리팀장 확정'], gg = site ? (site.stage >= 5 ? 4 : Math.min(site.stage, 3)) : 2;
+    const chips = STG.map((t, i) => ({ text: t + (i < gg ? ' 완료' : (i === gg ? ' 진행' : ' 대기')), cls: i < gg ? 's-gam' : (i === gg ? 's-in' : 's-gong') }));
     return {
       title: site ? site.addr + ' · ' + site.mgr : '샘플 주소 2 · 소장 나', chips,
       subtitle: s.loadMsg || (site ? site.type + (s.region ? ' · ' + s.region : '') + (s.struct ? ' · ' + s.struct : '') + (site.pyung ? ' · ' + site.pyung + '평' : '') + ' · ' + (site.grade || '') : '샘플 데이터 (링크로 접속하면 해당 현장이 표시됩니다)'),
-      roleOff, offMsg: R + ' 평가는 현재 사용하지 않도록 설정되어 있습니다.', showTable: !isCeo && !roleOff, isGam: R === '감리', isGong: R === '공무', rightStyle: roleOff ? 'display:none' : isCeo || R === '감리' || R === '공무' ? 'flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:20px' : 'display:none',
-      confirmLabel: s.done ? '✓ 부사장 확정 완료 (소장에게 결과 공개)' : '최종 점수 ' + final + '점 · ' + amount + ' 확인 후 부사장 확정', confirmGo: () => this.post(false, !s.done),
+      roleOff, offMsg: R + ' 평가는 현재 사용하지 않도록 설정되어 있습니다.', showTable: !roleOff, isGam: R === '감리', isGong: R === '공무', rightStyle: roleOff ? 'display:none' : isCeo || R === '감리' || R === '공무' ? 'flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:20px' : 'display:none',
+      confirmLabel: s.done ? '✓ 감리팀장 확정 완료 (소장에게 결과 공개)' : '최종 점수 ' + final + '점 · ' + amount + ' 확인 후 감리팀장 확정', confirmGo: () => { if (!s.done && !(s.submitted || (s.site && s.site.leadDone))) { this.setState({ saveOk: false, saveMsg: '먼저 아래 [평가 제출]을 눌러 주세요.' }); return; } this.post(false, !s.done); },
       confirmStyle: 'margin-top:14px;width:100%;min-height:48px;border-radius:10px;border:0;background:' + (s.done ? '#14583A' : '#C8A24A') + ';color:' + (s.done ? '#fff' : '#14213D') + ';font-weight:700;font-size:15px;cursor:pointer;padding:8px 12px',
-      items: shown, roleLabel: isCeo ? '통합' : (R === '소장' ? '소장 자가평가' : R + ' 평가표'), roleSum, roleMax, roleNote: NOTE[R], isCeo, roleBtns: (() => { try { if (/^[^-]+-(gam|gong|bu|ceo)$/.test(new URLSearchParams(location.search).get('e') || '')) return []; } catch (e) {} return ['소장', '감리', '공무', '공사 부장', '경영진'].map(roleBtn); })(), base, merged,
+      items: shown, roleLabel: isCeo ? '공사 부장 평가 항목 (참고)' : (R === '소장' ? '소장 자가평가' : R + ' 평가표'), roleSum, roleMax, roleNote: NOTE[R], isCeo, roleBtns: (() => { try { if (/^[^-]+-(gam|gong|lead|bu|ceo)$/.test(new URLSearchParams(location.search).get('e') || '')) return []; } catch (e) {} return ['소장', '감리', '공무', '감리팀장'].map(roleBtn); })(), base, merged,
       area: s.area, contract: s.contract.toLocaleString('ko-KR'),
       areaUp: () => this.setState({ area: +(s.area + 1).toFixed(1) }), areaDown: () => this.setState({ area: Math.max(1, +(s.area - 1).toFixed(1)) }),
       conUp: () => this.setState({ contract: s.contract + 10000000 }), conDown: () => this.setState({ contract: Math.max(0, s.contract - 10000000) }),
@@ -279,12 +281,12 @@ class Component extends DCLogic {
       regionBtns: ['일반 지역', '도시 지역'].map(k => ({ label: k, pick: () => this.setState({ region: k }), style: 'cursor:pointer;height:38px;padding:0 14px;border-radius:8px;font-size:13px;font-weight:700;border:2px solid ' + (s.region === k ? '#14213D' : '#D9D4C6') + ';background:' + (s.region === k ? '#14213D' : '#fff') + ';color:' + (s.region === k ? '#fff' : '#1B2333') })),
       stUp: () => this.setState({ structPt: Math.min(10, (s.structPt || 0) + 1) }), stDn: () => this.setState({ structPt: Math.max(0, (s.structPt || 0) - 1) }), rpUp: () => this.setState({ regionPt: Math.min(10, (s.regionPt || 0) + 1) }), rpDn: () => this.setState({ regionPt: Math.max(0, (s.regionPt || 0) - 1) }), final: finalAdj, amount, amtColor: color, note,
       typeBtns: ['직영', '관리소장'].map(k => ({ label: k, pick: () => this.setState({ type: k }), style: seg(s.type === k) })),
-      showOp: R !== '경영진' && R !== '소장', opLabel: R + ' 평가 의견', opVal: s.op[R] || '', onOp: (e) => this.setState({ op: { ...s.op, [R]: e.target.value } }),
+      showOp: R !== '소장', opLabel: isCeo ? '공사 부장 평가 항목 의견' : R + ' 평가 의견', opVal: s.op[R] || '', onOp: (e) => this.setState({ op: { ...s.op, [R]: e.target.value } }),
       budget: s.budget.toLocaleString('ko-KR'), spent: s.spent.toLocaleString('ko-KR'),
       budUp: () => this.setState({ budget: s.budget + 10000000 }), budDown: () => this.setState({ budget: Math.max(0, s.budget - 10000000) }),
       spUp: () => this.setState({ spent: s.spent + 10000000 }), spDown: () => this.setState({ spent: Math.max(0, s.spent - 10000000) }),
-      showSave: !!s.site && !roleOff, showSubmitBtn: R !== '경영진' && !s.confirming, submitLabel: s.submitted ? '수정 후 다시 제출' : '평가 제출', showConfirm: R !== '경영진' && s.confirming, saveMsg: s.saveMsg, saveColor: s.saveOk ? '#14583A' : '#8A1F17', saveGo: () => this.post(false), submitGo: () => this.setState({ confirming: true, saveMsg: '' }), doSubmit: () => { this.setState({ confirming: false }); this.post(true); }, cancelSubmit: () => this.setState({ confirming: false }),
-      profitRes: profit, profitColor: profit === '달성' ? '#14583A' : '#8A1F17', marginTxt: margin.toFixed(1) + '%', targetTxt: s.target + '%'
+      showSave: !!s.site && !roleOff, showSubmitBtn: !s.confirming, submitLabel: s.submitted ? '수정 후 다시 제출' : '평가 제출', showConfirm: s.confirming, saveMsg: s.saveMsg, saveColor: s.saveOk ? '#14583A' : '#8A1F17', saveGo: () => this.post(false), submitGo: () => this.setState({ confirming: true, saveMsg: '' }), doSubmit: () => { this.setState({ confirming: false }); this.post(true); }, cancelSubmit: () => this.setState({ confirming: false }),
+      finalCostTxt: s.site && s.site.finalCost ? Number(s.site.finalCost).toLocaleString('ko-KR') + '원' : '소장 미입력', profitRes: profit, profitColor: profit === '달성' ? '#14583A' : '#8A1F17', marginTxt: margin.toFixed(1) + '%', targetTxt: s.target + '%'
     };
   }
 }
