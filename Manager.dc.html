@@ -58,6 +58,8 @@ button{font-family:inherit}
       <sc-for list="{{infoRows}}" as="ir" hint-placeholder-count="5"><div class="row"><span class="lab">{{ir.k}}</span><b style="text-align:right">{{ir.v}}</b></div></sc-for>
       <div class="row"><span class="lab">공사 최종 금액 (원)<br><span style="font-size:11px">준공 기준 최종 금액을 입력</span></span><input inputmode="numeric" value="{{finalCostTxt}}" onChange="{{onFinalCost}}" aria-label="공사 최종 금액" placeholder="예: 285,000,000" style="width:150px;height:38px;border:1px solid #CFC9B8;border-radius:8px;padding:0 10px;font-size:14px;font-family:inherit;text-align:right"></div>
       <div class="row"><span class="lab">구조 구분<br><span style="font-size:11px">공기·폐기물·인력 기준이 구분에 따라 자동 변경</span></span><div style="display:flex;gap:6px"><sc-for list="{{kindBtns}}" as="k" hint-placeholder-count="2"><button onClick="{{k.pick}}" style="{{k.style}}">{{k.label}}</button></sc-for></div></div>
+      <div class="row"><span class="lab">건축 등급<br><span style="font-size:11px">한 번 더 누르면 선택 해제</span></span><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><sc-for list="{{archBtns}}" as="g" hint-placeholder-count="6"><button onClick="{{g.pick}}" style="{{g.style}}">{{g.label}}</button></sc-for></div></div>
+      <div class="row"><span class="lab">인테리어 등급</span><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><sc-for list="{{intBtns}}" as="g" hint-placeholder-count="6"><button onClick="{{g.pick}}" style="{{g.style}}">{{g.label}}</button></sc-for></div></div>
     </section>
 
     <section class="card">
@@ -201,9 +203,9 @@ button{font-family:inherit}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3000}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { site: null, cfg: null, loadMsg: '', saveMsg: '', saveOk: true, busy: false, confirming: false, finalCost: '', start: '', end: '', mode: 'input', kind: '', air: null, waste: null, man: null,
+  constructor(props) { super(props); this.state = { site: null, cfg: null, loadMsg: '', saveMsg: '', saveOk: true, busy: false, confirming: false, finalCost: '', start: '', end: '', mode: 'input', kind: '', arch: '', interior: '', air: null, waste: null, man: null,
     sc: [10, 10, 10, 5, 5, 5, 5], d3: [0, 0, 0], cnt: [0, 0, 0, 0, 0, 0] }; }
-  fromSite(site) { const m = site.selfIn || {}; return { mode: site.stage === 0 ? 'input' : (site.stage >= 5 ? 'result' : 'wait'), ...(m.kind === 'RC' || m.kind === '목조' ? { kind: m.kind } : {}), ...(typeof m.air === 'number' ? { air: m.air } : {}), finalCost: site.finalCost ? String(site.finalCost) : '', ...(typeof m.start === 'string' ? { start: m.start } : {}), ...(typeof m.end === 'string' ? { end: m.end } : {}), ...(typeof m.waste === 'number' ? { waste: m.waste } : {}), ...(typeof m.man === 'number' ? { man: m.man } : {}), ...(Array.isArray(m.sc) && m.sc.length === 7 ? { sc: m.sc } : {}), ...(Array.isArray(m.d3) && m.d3.length === 3 ? { d3: m.d3 } : {}), ...(Array.isArray(m.cnt) && m.cnt.length === 6 ? { cnt: m.cnt } : {}) }; }
+  fromSite(site) { const m = site.selfIn || {}; return { mode: site.stage === 0 ? 'input' : (site.stage >= 5 ? 'result' : 'wait'), ...(m.kind === 'RC' || m.kind === '목조' ? { kind: m.kind } : {}), ...(typeof m.arch === 'string' ? { arch: m.arch } : {}), ...(typeof m.interior === 'string' ? { interior: m.interior } : {}), ...(typeof m.air === 'number' ? { air: m.air } : {}), finalCost: site.finalCost ? String(site.finalCost) : '', ...(typeof m.start === 'string' ? { start: m.start } : {}), ...(typeof m.end === 'string' ? { end: m.end } : {}), ...(typeof m.waste === 'number' ? { waste: m.waste } : {}), ...(typeof m.man === 'number' ? { man: m.man } : {}), ...(Array.isArray(m.sc) && m.sc.length === 7 ? { sc: m.sc } : {}), ...(Array.isArray(m.d3) && m.d3.length === 3 ? { d3: m.d3 } : {}), ...(Array.isArray(m.cnt) && m.cnt.length === 6 ? { cnt: m.cnt } : {}) }; }
   async call(body, get) { const api = this.api; if (!api) throw new Error('cfg'); let r; if (get) r = await fetch(api + '?' + new URLSearchParams(body).toString(), { cache: 'no-store' }); else r = await fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }); if (!r.ok) throw new Error('서버 응답 오류 (' + r.status + ')'); const j = await r.json(); if (!j.ok) throw new Error(j.err || '요청 실패'); return j; }
   componentDidMount() { try { const q = new URLSearchParams(location.search).get('e') || ''; const id = (parseInt(q.split('-')[0].slice(1), 36) - 46656) / 7919; if (!q || !Number.isInteger(id)) return; this.q = q; this.id = id; this.setState({ loadMsg: '현장 정보를 불러오는 중…' });
     fetch('config.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(c => { if (!c || !c.api) throw new Error('cfg'); this.api = c.api; return this.call({ a: 'get', id, t: q }, true); })
@@ -219,7 +221,7 @@ class Component extends DCLogic {
   }
   renderVals() {
     const s = this.state, site0 = s.site, py = (site0 && site0.pyung) || 32.2;
-    const kind = s.kind || ((site0 && (site0.struct === 'RC' || site0.struct === '철골')) ? 'RC' : '목조'), rc = kind === 'RC', kindLabel = rc ? '철골·RC' : '목조·중목';
+    const kind = s.kind || ((site0 && (site0.struct === 'RC' || site0.struct === '철골')) ? 'RC' : '목조'), rc = kind === 'RC', ARCH = rc ? ['j1', 'j2', 'j3', 'j4', 'royal', 'p1', 'p2', 'massyige', 'signature', 'd1', 'd2'] : ['d1', 'd2', 'p1', 'p2', 'p3', 'royal'], INT = ['natural', 'modern1', 'modern2', 'royal'], archSel = ARCH.includes(s.arch) ? s.arch : '', intSel = INT.includes(s.interior) ? s.interior : '', GB = (L, sel, set) => L.map(v => ({ label: v, pick: () => set(sel === v ? '' : v), style: 'cursor:pointer;height:34px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:700;border:2px solid ' + (sel === v ? '#14213D' : '#D9D4C6') + ';background:' + (sel === v ? '#14213D' : '#fff') + ';color:' + (sel === v ? '#fff' : '#1B2333') })), kindLabel = rc ? '철골·RC' : '목조·중목';
     const ABS = Math.round((py + 20) * (rc ? 1.2 : 1)), WB = Math.round(py * (rc ? 35000 : 25000)), MB = Math.max(1, Math.round(py / 10 * (rc ? 2 : 1)));
     const air = s.air == null ? ABS : s.air, waste = s.waste == null ? WB : s.waste, man = s.man == null ? MB : s.man;
     const dAir = air - ABS;
@@ -250,7 +252,7 @@ class Component extends DCLogic {
     const airBonus = airPt > 0 ? airPt : 0, cA = calc(20, Math.min(0, airPt), 0), cW = calc(10, wPt, 1), cM = calc(10, mPt, 2);
     const selfTotal = cA.score + cW.score + cM.score + s.sc.reduce((a, b) => a + b, 0) + adjSum + airBonus;
     const AK = ['intro', 'wcomp', 'fine', 'inner', 'acc', 'as'], selfAdj = {}; AK.forEach((k, i) => { if (s.cnt[i]) selfAdj[k] = s.cnt[i]; }); if (airBonus) selfAdj.air = airBonus;
-    const payload = { ...(s.finalCost ? { finalCost: Number(s.finalCost) } : {}), self: [cA.score, s.sc[0], s.sc[1], s.sc[2], s.sc[3], s.sc[4], s.sc[5], cM.score, s.sc[6], cW.score], selfScore: selfTotal, selfAdj, selfIn: { kind, start: s.start, end: s.end, air: s.air, waste: s.waste, man: s.man, sc: s.sc, d3: s.d3, cnt: s.cnt } };
+    const payload = { ...(s.finalCost ? { finalCost: Number(s.finalCost) } : {}), self: [cA.score, s.sc[0], s.sc[1], s.sc[2], s.sc[3], s.sc[4], s.sc[5], cM.score, s.sc[6], cW.score], selfScore: selfTotal, selfAdj, selfIn: { kind, arch: archSel, interior: intSel, start: s.start, end: s.end, air: s.air, waste: s.waste, man: s.man, sc: s.sc, d3: s.d3, cnt: s.cnt } };
     const MODES = [['input', '입력 중'], ['wait', '평가 진행 중'], ['result', '확정 후 결과']];
     const ITEMS = [['공기', 20, 19, '감리'], ['안전관리', 10, 9, '감리'], ['안전서류 작성', 10, 9, '감리'], ['감리보고서', 10, 9, '감리'],
       ['엔딩점검·건축주 만족도', 5, 5, '감리'], ['근태관리', 5, 4, '감리·공무'], ['어플근태관리', 5, 4, '감리·공무'],
@@ -287,6 +289,7 @@ class Component extends DCLogic {
       man, mPt: f(mPt), mCls: cls(mPt),
       mUp: () => this.setState({ man: man + 1 }), mDown: () => this.setState({ man: Math.max(0, man - 1) }),
       mBase: MB, absNote: ' (기본면적 ' + py + '평 + 20' + (rc ? ' · 철골·RC +20%' : '') + ')', wRule: '기준액 (' + kindLabel + ' 평당 ' + (rc ? '3.5' : '2.5') + '만원 × ' + py + '평)', mRule: '기준 인력 (' + (rc ? '철골·RC · 10평당 2품' : '목조·중목 · 10평당 1품') + ')',
+      archBtns: GB(ARCH, archSel, (v) => this.setState({ arch: v })), intBtns: GB(INT, intSel, (v) => this.setState({ interior: v })),
       kindBtns: [['목조', '목조·중목구조'], ['RC', '철골·콘크리트(RC)']].map(([k, kl]) => ({ label: kl, pick: () => this.setState({ kind: k }), style: 'cursor:pointer;height:36px;padding:0 18px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (kind === k ? '#14213D' : '#D9D4C6') + ';background:' + (kind === k ? '#14213D' : '#fff') + ';color:' + (kind === k ? '#fff' : '#1B2333') })),
       aMax: cA.max, aScore: cA.score, aLost: cA.lost, aLostColor: cA.lostColor, aPlusStyle: cA.plus, aSUp: cA.up, aSDown: cA.down,
       wMax: cW.max, wScore: cW.score, wLost: cW.lost, wLostColor: cW.lostColor, wPlusStyle: cW.plus, wSUp: cW.up, wSDown: cW.down,
