@@ -260,6 +260,7 @@ button{font-family:inherit}
               <tr><th style="width:14%">현장 주소</th><td style="width:46%">{{b.addr}}</td><th style="width:12%">현장소장</th><td>{{b.mgr}}</td></tr>
               <tr><th>건축 종류</th><td>{{b.struct}}</td><th>지역</th><td>{{b.region}}</td></tr>
               <tr><th>실평형수</th><td>{{b.pyung}}</td><th>총 공사 금액</th><td>{{b.cost}}</td></tr>
+              <tr><th>공사 최종 금액 (소장 입력)</th><td colspan="3">{{b.finalCost}}</td></tr>
               <tr><th>건축 등급</th><td>{{b.arch}}</td><th>인테리어 등급</th><td>{{b.interior}}</td></tr>
               <tr><th>등급(기준)</th><td>{{b.grade}}</td><th>담당 감리</th><td>{{b.insp}}</td></tr>
             </table>
@@ -284,7 +285,7 @@ button{font-family:inherit}
         <sc-if value="{{bulkSimple}}" hint-placeholder-val="{{false}}">
           <div style="max-width:794px;margin:0 auto">
             <div style="text-align:center;font-weight:700;font-size:19px;padding:6px 0 4px">현장소장 공사완료평가 결과 요약</div>
-            <div style="text-align:center;font-size:12px;color:#555;margin-bottom:10px">{{bulkTitle}} · 부사장 확정 {{bulkCount}}건</div>
+            <div style="text-align:center;font-size:12px;color:#555;margin-bottom:10px">{{bulkTitle}} · 감리팀장 확정 {{bulkCount}}건</div>
             <table class="sh" style="border-collapse:collapse;width:100%">
               <tr><th style="width:7%">번호</th><th style="width:16%">현장소장</th><th>현장 주소</th><th style="width:14%">평가점수</th><th style="width:20%">인센티브 금액</th></tr>
               <sc-for list="{{simpleRows}}" as="s" hint-placeholder-count="3">
@@ -314,6 +315,7 @@ button{font-family:inherit}
             <tr><th style="width:14%">현장 주소</th><td style="width:46%">{{sel.addr}}</td><th style="width:12%">현장소장</th><td>{{sel.mgr}}</td></tr>
             <tr><th>건축 종류</th><td>{{sel.struct}}</td><th>지역</th><td>{{sel.region}}</td></tr>
               <tr><th>실평형수</th><td>{{sel.pyung}}</td><th>총 공사 금액</th><td>{{sel.cost}}</td></tr>
+              <tr><th>공사 최종 금액 (소장 입력)</th><td colspan="3">{{sel.finalCost}}</td></tr>
               <tr><th>건축 등급</th><td>{{sel.arch}}</td><th>인테리어 등급</th><td>{{sel.interior}}</td></tr>
               <tr><th>등급(기준)</th><td>{{sel.grade}}</td><th>담당 감리</th><td>{{sel.insp}}</td></tr>
           </table>
@@ -339,7 +341,7 @@ button{font-family:inherit}
             <div style="font-weight:700;font-size:16px">소장 결과 공개 (이 현장 소장 링크)</div>
             <span class="chip {{sel.pubCls}}" style="padding:5px 12px">{{sel.pubText}}</span>
           </div>
-          <div style="font-size:13px;color:#4A5163;line-height:1.6">부사장 확정 후 소장이 같은 링크에서 이 현장의 점수·인센티브 금액·평가표를 볼 수 있습니다. 확정 전에는 "평가 진행 중"만 표시됩니다.</div>
+          <div style="font-size:13px;color:#4A5163;line-height:1.6">감리팀장 확정 후 소장이 같은 링크에서 이 현장의 점수·인센티브 금액·평가표를 볼 수 있습니다. 확정 전에는 "평가 진행 중"만 표시됩니다.</div>
           <sc-if value="{{sel.hasViews}}" hint-placeholder-val="{{false}}">
             <table class="list" style="border-collapse:collapse;width:100%;min-width:420px">
               <thead><tr><th>열람 시각</th><th>열람자</th><th>내용</th></tr></thead>
@@ -368,7 +370,7 @@ button{font-family:inherit}
         <div style="font-weight:700;font-size:16px">① 평가자별 반영 비율 (%)</div>
         <span class="chip {{wCls}}" style="padding:5px 12px">{{wStatus}}</span>
       </div>
-      <div style="font-size:12px;color:#4A5163;margin-bottom:10px">소장 자가평가, 감리, 공무, 공사 부장, 부사장 평가가 최종 점수에 반영되는 비율입니다. 합계 100%가 되어야 합니다. 공사 부장·부사장 평가를 끄면 기본 비율이 자동 조정됩니다 (둘 다 끔: 소장 20·감리 50·공무 30 / 부사장만 끔: 소장 20·감리 40·공무 30·공사 부장 10).</div>
+      <div style="font-size:12px;color:#4A5163;margin-bottom:10px">소장 자가평가, 감리, 공무, 감리팀장(공사 부장 항목·추가 평가) 평가가 최종 점수에 반영되는 비율입니다. 합계 100%가 되어야 합니다.</div>
       <div style="display:flex;flex-direction:column">
         <sc-for list="{{wRows}}" as="w" hint-placeholder-count="5">
           <div style="display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid #EFEBE1">
@@ -387,7 +389,7 @@ button{font-family:inherit}
 
     <section class="card" style="padding:18px 20px">
       <div style="font-weight:700;font-size:16px;margin-bottom:4px">② 인센티브 기준표 (원)</div>
-      <div style="font-size:12px;color:#4A5163;margin-bottom:12px">점수 구간별 지급액입니다. 한 번에 5만원씩 조정됩니다.</div>
+      <div style="font-size:12px;color:#4A5163;margin-bottom:12px">점수 구간별 기본 지급액입니다. 공무가 입력한 실행금액으로 기준 이윤을 달성하면 아래 금액의 2배가 지급됩니다. 한 번에 5만원씩 조정됩니다.</div>
       <div style="display:flex;flex-wrap:wrap;gap:16px">
         <sc-for list="{{tables}}" as="t" hint-placeholder-count="4">
           <div style="flex:1 1 260px;min-width:0;border:1px solid #E2DED3;border-radius:10px;padding:12px 14px">
@@ -423,12 +425,8 @@ button{font-family:inherit}
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EFEBE1"><span style="font-size:14px">입력 마감일수<br><span style="font-size:12px;color:#4A5163">링크 발송일로부터 · 마감 후 입력 잠금</span></span>
           <div class="stp"><button aria-label="감소" onClick="{{dueDown}}">−</button><b style="min-width:52px;text-align:center">{{dueDays}}일</b><button aria-label="증가" onClick="{{dueUp}}">+</button></div></div>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EFEBE1"><span style="font-size:14px">링크 전달 방식</span><b style="font-size:14px">링크 복사 → 카카오톡·문자 붙여넣기</b></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EFEBE1"><span style="font-size:14px">소장 결과 공개 시점</span><b style="font-size:14px">부사장 확정 후 (같은 링크)</b></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EFEBE1"><span style="font-size:14px">공사 부장 평가<br><span style="font-size:12px;color:#4A5163">끄면 링크·진행 단계·평가표에서 제외</span></span>
-          <button onClick="{{toggleBu}}" style="{{buStyle}}">{{buLabel}}</button></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EFEBE1"><span style="font-size:14px">부사장 평가<br><span style="font-size:12px;color:#4A5163">끄면 추가평가·총평 없이 감리·공무 점수로 최종 확정</span></span>
-          <button onClick="{{toggleCeo}}" style="{{ceoOnStyle}}">{{ceoOnLabel}}</button></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0"><span style="font-size:14px">부사장 추가 평가 범위<br><span style="font-size:12px;color:#4A5163">충성도·근무 태도 등 항목당 ±점</span></span>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EFEBE1"><span style="font-size:14px">소장 결과 공개 시점</span><b style="font-size:14px">감리팀장 확정 후 (같은 링크)</b></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0"><span style="font-size:14px">감리팀장 추가 평가 범위<br><span style="font-size:12px;color:#4A5163">충성도·근무 태도 등 항목당 ±점</span></span>
           <div class="stp"><button aria-label="감소" onClick="{{ceoDown}}">−</button><b style="min-width:52px;text-align:center">±{{ceoRange}}점</b><button aria-label="증가" onClick="{{ceoUp}}">+</button></div></div>
       </div>
     </section>
@@ -442,7 +440,7 @@ button{font-family:inherit}
 
     <section class="card" style="padding:18px 20px">
       <div style="font-weight:700;font-size:16px;margin-bottom:4px">⑥ 구글 시트 연동 (저장 서버)</div>
-      <div style="font-size:12px;color:#4A5163;margin-bottom:12px;line-height:1.6">현장·평가·설정 데이터를 구글 시트에 저장합니다. 소장·감리·공무·공사 부장·부사장이 링크에서 입력한 내용도 같은 시트에 저장되고, 이 화면에 자동 반영됩니다.</div>
+      <div style="font-size:12px;color:#4A5163;margin-bottom:12px;line-height:1.6">현장·평가·설정 데이터를 구글 시트에 저장합니다. 소장·감리·공무·감리팀장이 링크에서 입력한 내용도 같은 시트에 저장되고, 이 화면에 자동 반영됩니다.</div>
       <label>Apps Script 웹 앱 URL</label>
       <input value="{{gsUrl}}" onChange="{{gsUrlChange}}" placeholder="https://script.google.com/macros/s/…/exec" style="width:100%;box-sizing:border-box">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center">
@@ -491,7 +489,7 @@ button{font-family:inherit}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    const G = '24년 4분기/32.2PY/프1/모2/', B = [null,null,null,null,null,null,null,null,null,null];
+    const G = '24년 4분기/32.2PY/프1/모2/', B = [null,null,null,null,null,null,null,null,null,null,null];
     const R = ['in', 'gam', 'gong', 'bu', 'ceo'];
     const L = (n) => R.reduce((o, k) => ({ ...o, [k]: false }), {});
     const INS = { 1: '김동완', 8: '김동완', 2: '임현규', 11: '임현규', 5: '이영빈', 3: '이영빈', 4: '최현균', 6: '최현균' };
@@ -500,7 +498,7 @@ class Component extends DCLogic {
       gb: '', gi: '', del: null, flash: '', toast: '', authed: false, pw: '', pwErr: '', view: 'dash', next: 20, msg: '', sel: null, bulk: '', selMgr: null, lnk: null, bulkMode: '상세', viewer: 'ALL', gsMsg: '', gsOk: true, gsUrl: '', auto: true,
       reg: { open: false, step: 1, addr: '', mgr: '', type: '직영', insp: '김동완', struct: '', region: '일반 지역', pyung: '', arch: '', interior: '', cost: 0 },
       sites: [
-        mk(1, '샘플 주소 1', '소장 가', '직영', 5, [19,9,9,14,5,4,4,9,5,14], { cGam: '현장 관리 양호, 지적사항 신속 조치.', cGong: '기성·정산 서류 적정.', cBu: '정산·인력 운영 적정.', cCeo: '확정.', selfScore: 93, buScore: 22, ceoAdj: 0, struct: '목조', region: '일반 지역', pyung: 32.2, cost: 300000000, structPt: 0, regionPt: 0, adj: {} }),
+        mk(1, '샘플 주소 1', '소장 가', '직영', 5, [19,9,9,9,5,4,4,9,5,9,9], { cGam: '현장 관리 양호, 지적사항 신속 조치.', cGong: '기성·정산 서류 적정.', cBu: '정산·인력 운영 적정.', cCeo: '확정.', selfScore: 93, buScore: 22, ceoAdj: 0, struct: '목조', region: '일반 지역', pyung: 32.2, cost: 300000000, structPt: 0, regionPt: 0, adj: {} }),
       ],
       set: {
         w: { in: 10, gam: 30, gong: 25, bu: 15, ceo: 20 },
@@ -591,37 +589,39 @@ class Component extends DCLogic {
   showToast(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '', flash: '' }), 2200); }
   token(id, k) { return 'x' + (46656 + id * 7919).toString(36) + '-' + k; }
   link(id, k) { return 'https://wisestar823.github.io/dujonman/' + (k === 'in' ? 'Manager' : 'Eval') + '.dc.html?e=' + this.token(id, k); }
-  incOf(type, score, struct, region) {
-    const S = this.state.set, SC = [100, 95, 90, 85, 80], T = S.T[type + '|달성'];
+  profitOk(r) { const S = this.state.set; return !!(r && r.cost > 0 && r.spent != null && (r.cost - r.spent) / r.cost * 100 >= (typeof S.profitTarget === 'number' ? S.profitTarget : 20)); }
+  incOf(type, score, r) {   // 기본 지급액(기준표) — 공무 실행입력에서 기준 이윤 달성 시 ×2
+    const S = this.state.set, SC = [100, 95, 90, 85, 80], T = S.T[type + '|미달'], m = this.profitOk(r) ? 2 : 1;
     if (score < S.minScore) return null;
-    for (let i = 0; i < SC.length; i++) { if (score >= SC[i]) return T[i]; }
+    for (let i = 0; i < SC.length; i++) { if (score >= SC[i]) return T[i] * m; }
     return null;
   }
   adjOf(r) { const P = { air: 1, intro: 3, wcomp: -5, fine: -20, inner: -2, acc: -5, as: -20 }; return Object.entries(r.adj || {}).reduce((a, [k, n]) => a + (P[k] || 0) * (n || 0), 0); }
   zeroHit(r) { return !!(this.state.set.zeroOut && r.sc.some(v => v === 0)); }
-  incR(r, score) { if (this.zeroHit(r)) return null; return this.incOf(r.type, score); }
+  incR(r, score) { if (this.zeroHit(r)) return null; return this.incOf(r.type, score, r); }
   incT(r, score) {
     const S = this.state.set;
     if (this.zeroHit(r)) return '대상 아님 (최저점 항목)';
-    const v = this.incOf(r.type, score); if (v !== null) return v.toLocaleString('ko-KR') + '원';
+    const v = this.incOf(r.type, score, r); if (v !== null) return v.toLocaleString('ko-KR') + '원' + (this.profitOk(r) ? ' (이윤 달성 ×2)' : '');
     if (score < S.penScore) { return '페널티 (시말서·상여금 미지급)'; }
     return '대상 아님';
   }
   renderVals() {
-    const st = this.state, S = st.set;
+    const st = this.state, S = { ...st.set, useBu: true, useCeo: true };
     const lead = st.viewer === 'ALL';
-    const norm = (r) => { let g = r.stage; if (g === 3 && !S.useBu) g = 4; if (g === 4 && !S.useCeo) g = 5; return g === r.stage ? r : { ...r, stage: g }; };
+    const norm = (r) => { const g = r.stage === 4 ? 3 : r.stage; return g === r.stage ? r : { ...r, stage: g }; };
     const nsites = st.sites.map(norm);
     const vis = lead ? nsites : nsites.filter(r => r.insp === st.viewer);
-    const total = (sc) => sc.every(v => v !== null) ? sc.reduce((a, b) => a + b, 0) : null;
-    const fin = (r) => { const t = total(r.sc); return t === null ? null : t + this.adjOf(r) + (r.structPt || 0) + (r.regionPt || 0) + (S.useCeo ? (r.ceoAdj || 0) : 0); };
-    const part = (r, idx) => idx.every(i => r.sc[i] !== null) ? idx.reduce((a, i) => a + r.sc[i], 0) : null;
-    const evOf = (r) => { const all = (() => { const sg = (v, mx) => v === null ? '—' : v + ' / ' + mx + '점', a = part(r, [0,1,2,3,4]), g = part(r, [7,8,9]), c = part(r, [5,6]);
-      return [{ label: '소장 (자가평가)', score: r.selfScore == null ? '—' : r.selfScore + '점', note: '' }, { label: '감리', score: sg(a, 60), note: r.cGam || '—' }, { label: '가점·감점 (감리 확인)', score: (this.adjOf(r) > 0 ? '+' : '') + this.adjOf(r) + '점', note: '' }, { label: '현장 조건 가산점 (감리)', score: ((r.structPt || 0) + (r.regionPt || 0)) > 0 ? '+' + ((r.structPt || 0) + (r.regionPt || 0)) + '점' : '0점', note: [r.struct && (r.struct + ' +' + (r.structPt || 0)), r.region && (r.region + ' +' + (r.regionPt || 0))].filter(Boolean).join(' · ') || '—' }, { label: '공무', score: sg(g, 30), note: r.cGong || '—' },
-        { label: '감리·공무 공동 (근태)', score: sg(c, 10), note: '' }, { label: '공사 부장 (참고)', score: r.buScore == null ? '—' : r.buScore + ' / 25점', note: r.cBu || '—' },
-        { label: '부사장 (추가평가)', score: r.stage === 5 ? ((r.ceoAdj || 0) > 0 ? '+' : '') + (r.ceoAdj || 0) + '점' : '—', note: r.cCeo || '—' }]; })(); return all.filter(e => !(e.label.startsWith('공사 부장') && !S.useBu) && !(e.label.startsWith('부사장') && !S.useCeo)); };
-    const ROLES = [['in', '소장'], ['gam', '감리'], ['gong', '공무'], ['bu', '공사 부장'], ['ceo', '부사장']].filter(([k]) => !(k === 'bu' && !S.useBu) && !(k === 'ceo' && !S.useCeo));
-    const STEPS = ['소장 입력', '감리 평가', '공무 평가', '공사 부장 평가', '부사장 확정', '완료'];
+    const total = (sc0) => { const sc = Array.from({ length: 11 }, (_, i) => sc0 && sc0[i] != null ? sc0[i] : null); return total2(sc); };
+    const total2 = (sc) => sc.every(v => v !== null) ? sc.reduce((a, b) => a + b, 0) : null;
+    const fin = (r) => { const t = total(r.sc); return t === null ? null : t + this.adjOf(r) + (r.structPt || 0) + (r.regionPt || 0) + (r.ceoAdj || 0); };
+    const part = (r, idx) => idx.every(i => r.sc[i] != null) ? idx.reduce((a, i) => a + r.sc[i], 0) : null;
+    const evOf = (r) => { const all = (() => { const sg = (v, mx) => v === null ? '—' : v + ' / ' + mx + '점', a = part(r, [0,1,2,3,4]), g = part(r, [7,8,9,10]), c = part(r, [5,6]);
+      return [{ label: '소장 (자가평가)', score: r.selfScore == null ? '—' : r.selfScore + '점', note: '' }, { label: '감리', score: sg(a, 55), note: r.cGam || '—' }, { label: '가점·감점 (감리 확인)', score: (this.adjOf(r) > 0 ? '+' : '') + this.adjOf(r) + '점', note: '' }, { label: '현장 조건 가산점 (감리)', score: ((r.structPt || 0) + (r.regionPt || 0)) > 0 ? '+' + ((r.structPt || 0) + (r.regionPt || 0)) + '점' : '0점', note: [r.struct && (r.struct + ' +' + (r.structPt || 0)), r.region && (r.region + ' +' + (r.regionPt || 0))].filter(Boolean).join(' · ') || '—' }, { label: '공무', score: sg(g, 35), note: r.cGong || '—' },
+        { label: '감리·공무 공동 (근태)', score: sg(c, 10), note: '' }, { label: '감리팀장 (공사 부장 항목)', score: r.buScore == null ? '—' : r.buScore + ' / 25점', note: r.cBu || '—' },
+        { label: '감리팀장 (추가평가)', score: r.stage === 5 ? ((r.ceoAdj || 0) > 0 ? '+' : '') + (r.ceoAdj || 0) + '점' : '—', note: r.cCeo || '—' }]; })(); return all.filter(e => !(e.label.startsWith('공사 부장') && !S.useBu) && !(e.label.startsWith('부사장') && !S.useCeo)); };
+    const ROLES = [['in', '소장'], ['gam', '감리'], ['gong', '공무'], ['lead', '감리팀장']];
+    const STEPS = ['소장 입력', '감리 평가', '공무 평가', '감리팀장 확정', '감리팀장 확정', '완료'];
     const STCLS = ['wait', 'prog', 'prog', 'prog', 'prog', 'done'];
     const upd = (id, fn) => this.setState({ sites: st.sites.map(r => r.id === id ? fn(r) : r) });
     const delOf = (r) => { const ask = st.del === r.id; return { delLabel: ask ? '정말 삭제?' : '삭제',
@@ -632,7 +632,7 @@ class Component extends DCLogic {
     const rowOf = (r) => {
       const t = fin(r);
       return { ...r, stText: STEPS[r.stage], stCls: STCLS[r.stage], waitTxt: (r.stage < 5 && r._ts) ? (Math.floor((Date.now() - r._ts) / 86400000) >= 1 ? Math.floor((Date.now() - r._ts) / 86400000) + '일째 대기' : '오늘 변경') : '',
-        dots: [0, 1, 2, 3, 4].filter(i => !(i === 3 && !S.useBu) && !(i === 4 && !S.useCeo)).map(i => ({ t: STEPS[i], style: 'display:inline-block;width:12px;height:12px;border-radius:50%;background:' + (i < r.stage ? '#14583A' : (i === r.stage ? '#C8A24A' : '#DDD8C8')) })),
+        dots: [0, 1, 2, 3].map(i => ({ t: STEPS[i], style: 'display:inline-block;width:12px;height:12px;border-radius:50%;background:' + (i < r.stage ? '#14583A' : (i === r.stage ? '#C8A24A' : '#DDD8C8')) })),
         score: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(r, t),
         addrStyle: 'cursor:pointer;border:0;background:transparent;padding:0;font-size:14px;font-weight:700;color:#14213D;text-decoration:underline;text-align:left;font-family:inherit',
         openLink: () => { this.setState({ lnk: st.lnk === r.id ? null : r.id, sel: null, bulk: '' }); setTimeout(() => { try { const el = document.getElementById('lnkpanel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }, 120); },
@@ -654,22 +654,23 @@ class Component extends DCLogic {
       ['공기', 20, '감리담당', '준공청소~잔손보기 완료 기준 · 5일 단축 +1 / 3일 초과 −1'],
       ['안전관리', 10, '감리담당', '안전모 미착용, 추락방지 안전난간 미설치 등 지적사항 적용'],
       ['안전서류 작성', 10, '감리담당', 'TBM, 신규채용장, 특별안전교육, 위험성평가'],
-      ['감리보고서', 15, '감리담당', '본사 기준시방에 따른 품질평가'],
+      ['감리보고서', 10, '감리담당', '본사 기준시방에 따른 품질평가'],
       ['엔딩점검·건축주 만족도', 5, '감리담당', '만족도 1~15등급 · 감리자 소장평가 1~15등급'],
       ['근태관리', 5, '감리·공무담당', '주간업무·밴드·공사일보 미등록 1회 −3점'],
       ['어플근태관리', 5, '감리·공무담당', '1일당 −1점'],
       ['인력·잡자재·잔여자재', 10, '공무담당', '인력 10평당 1품 · 1인 추가 −2 / 미사용 +2'],
-      ['공사완료확인서·기성·대관', 5, '공무담당', '내역 외 공사 10만원당 −2점'],
-      ['폐기물처리', 15, '공무담당', '목조 평당 2.5만원 · RC 평당 3.5만원 기준, ±10만원당 1점']
+      ['공사완료확인서·대관', 5, '공무담당', '내역 외 공사 10만원당 −2점'],
+      ['폐기물처리', 10, '공무담당', '목조 평당 2.5만원 · RC 평당 3.5만원 기준, ±10만원당 1점'],
+      ['기성관리', 10, '공무담당', '기성 청구·정산 관리 적정성']
     ];
-    const infoOf = (r) => ({ struct: r.struct || '—', region: r.region || '—', pyung: r.pyung ? r.pyung + '평' : '—', cost: r.cost ? Number(r.cost).toLocaleString('ko-KR') + '원' : '—', arch: r.arch || '—', interior: r.interior || '—' });
+    const infoOf = (r) => ({ struct: r.struct || '—', region: r.region || '—', pyung: r.pyung ? r.pyung + '평' : '—', cost: r.cost ? Number(r.cost).toLocaleString('ko-KR') + '원' : '—', finalCost: r.finalCost ? Number(r.finalCost).toLocaleString('ko-KR') + '원' : '—', arch: r.arch || '—', interior: r.interior || '—' });
     const mkSheet = (r) => { const t = fin(r); return { ...infoOf(r), type: r.type, addr: r.addr, mgr: r.mgr, insp: r.insp, grade: r.grade,
-      rows: ITEMS.map((it, i) => ({ max: it[1], name: it[0], who: it[2], detail: it[3], score: r.sc[i] === null ? '—' : r.sc[i] })),
+      rows: ITEMS.map((it, i) => ({ max: it[1], name: it[0], who: it[2], detail: it[3], score: r.sc[i] == null ? '—' : r.sc[i] })),
       ev: evOf(r), finalScore: t === null ? '—' : t + '점', total: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(r, t), cGam: r.cGam || '—', cGong: r.cGong || '—', cBu: r.cBu || '—', cCeo: r.cCeo || '—' }; };
     const cur = nsites.find(r => r.id === st.sel) || null;
     let sheetRows = [], sel = {};
     if (cur) {
-      sheetRows = ITEMS.map((it, i) => ({ max: it[1], name: it[0], who: it[2], detail: it[3], score: cur.sc[i] === null ? '—' : cur.sc[i] }));
+      sheetRows = ITEMS.map((it, i) => ({ max: it[1], name: it[0], who: it[2], detail: it[3], score: cur.sc[i] == null ? '—' : cur.sc[i] }));
       const t = fin(cur), pub = cur.stage === 5;
       sel = { ...cur, ...infoOf(cur), insp: cur.insp, ev: evOf(cur), finalScore: (fin(cur) === null ? '—' : fin(cur) + '점'), total: t === null ? '집계 중' : t + '점', totalNote: t === null ? '모든 평가 완료 후 자동 합산' : '',
         final: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(cur, t),
@@ -690,17 +691,17 @@ class Component extends DCLogic {
       if (rg.step === 2) { if (!rg.mgr.trim()) { this.setState({ msg: '현장소장을 입력해 주세요.' }); return; } setReg({ step: 3 }); return; }
       if (rg.step === 3) { setReg({ step: 4 }); return; }
       const mgr = rg.mgr.trim(), addr = rg.addr.trim();
-      this.setState({ sites: [...st.sites, { id: st.next, addr, mgr, type: rg.type, insp: lead ? rg.insp : st.viewer, grade: [rg.arch && ('건축 ' + rg.arch), rg.interior && ('인테리어 ' + rg.interior)].filter(Boolean).join(' / ') || '[등급 기준 입력]', struct: rg.struct, region: rg.region || '일반 지역', pyung: parseFloat(rg.pyung) || 0, arch: rg.arch, interior: rg.interior, cost: rg.cost, sc: [null,null,null,null,null,null,null,null,null,null], stage: 0, links: { in: false, gam: false, gong: false, bu: false, ceo: false }, cGam: '', cGong: '', cBu: '', cCeo: '' }],
+      this.setState({ sites: [...st.sites, { id: st.next, addr, mgr, type: rg.type, insp: lead ? rg.insp : st.viewer, grade: [rg.arch && ('건축 ' + rg.arch), rg.interior && ('인테리어 ' + rg.interior)].filter(Boolean).join(' / ') || '[등급 기준 입력]', struct: rg.struct, region: rg.region || '일반 지역', pyung: parseFloat(rg.pyung) || 0, arch: rg.arch, interior: rg.interior, cost: rg.cost, sc: [null,null,null,null,null,null,null,null,null,null,null], stage: 0, links: { in: false, gam: false, gong: false, bu: false, ceo: false }, cGam: '', cGong: '', cBu: '', cCeo: '' }],
         next: st.next + 1, reg: { open: false, step: 1, addr: '', mgr: '', type: rg.type, insp: rg.insp, struct: '', region: '일반 지역', pyung: '', arch: '', interior: '', cost: 0 }, selMgr: lead ? null : rg.type + '|' + mgr, lnk: lead ? null : st.next, sel: null, bulk: '',
         msg: addr + ' 등록 완료 · ' + mgr + ' (' + rg.type + ') 소장 묶음에 자동 배치됨. ' + (lead ? '담당 감리(' + rg.insp + ') 계정에서 현장별 링크를 복사해 전달하세요.' : '아래에서 현장별 링크를 복사해 전달하세요.') });
     };
     const W = S.w, wSum = Object.entries(W).filter(([k]) => !(k === 'bu' && !S.useBu) && !(k === 'ceo' && !S.useCeo)).reduce((a, [, b]) => a + b, 0);
-    const WL = [['in', '소장 자가'], ['gam', '감리'], ['gong', '공무'], ['bu', '공사 부장'], ['ceo', '부사장']].filter(([k]) => !(k === 'bu' && !S.useBu) && !(k === 'ceo' && !S.useCeo));
+    const WL = [['in', '소장 자가'], ['gam', '감리'], ['gong', '공무'], ['bu', '감리팀장(공사 부장 항목)'], ['ceo', '감리팀장(추가 평가)']].filter(([k]) => !(k === 'bu' && !S.useBu) && !(k === 'ceo' && !S.useCeo));
     const PRESET = (bu, ceo) => bu && ceo ? { in: 10, gam: 30, gong: 25, bu: 15, ceo: 20 } : (!bu && !ceo ? { in: 20, gam: 50, gong: 30, bu: 0, ceo: 0 } : (!ceo ? { in: 20, gam: 40, gong: 30, bu: 10, ceo: 0 } : { in: 20, gam: 40, gong: 30, bu: 0, ceo: 10 }));
     const setS = (p) => this.setState({ set: { ...S, ...p } });
     const SAMPLE = { in: 92, gam: 90, gong: 94, bu: 91, ceo: 95 };
     const SC = [100, 95, 90, 85, 80];
-    const tables = ['직영|달성', '직영|미달', '관리소장|달성', '관리소장|미달'].map(k => ({ title: k.replace('|', ' · 기준 이윤 '),
+    const tables = ['직영|미달', '관리소장|미달'].map(k => ({ title: k.split('|')[0] + ' · 기본 지급액 (기준 이윤 달성 시 ×2)',
       rows: S.T[k].map((v, i) => ({ score: SC[i], amt: v.toLocaleString('ko-KR'),
         up: () => setS({ T: { ...S.T, [k]: S.T[k].map((x, j) => j === i ? x + 50000 : x) } }),
         down: () => setS({ T: { ...S.T, [k]: S.T[k].map((x, j) => j === i ? Math.max(0, x - 50000) : x) } }) })) }));
@@ -747,13 +748,13 @@ class Component extends DCLogic {
       typeBtns: ['직영', '관리소장'].map(k => ({ label: k, style: seg(rg.type === k), pick: () => setReg({ type: k }) })),
       placeMsg, prevLabel: rg.step === 1 ? '취소' : '이전', nextLabel: rg.step === 4 ? '등록하고 소장 묶음에 배치' : '다음',
       regPrev: () => rg.step === 1 ? this.setState({ reg: { ...rg, open: false }, msg: '' }) : setReg({ step: rg.step - 1 }), regNext,
-      stepCounts: STEPS.map((label, i) => ({ label, short: ['소장', '감리', '공무', '공사부장', '부사장', '완료'][i], n: vis.filter(r => r.stage === i).length, on: !(i === 3 && !S.useBu) && !(i === 4 && !S.useCeo) })).filter(x => x.on),
+      stepCounts: STEPS.map((label, i) => ({ label, short: ['소장', '감리', '공무', '감리팀장', '감리팀장', '완료'][i], n: vis.filter(r => r.stage === i).length, on: i !== 4 })).filter(x => x.on),
       dSum: summary('직영'), mSum: summary('관리소장'), dMgrs: mgrCards('직영'), mMgrs: mgrCards('관리소장'),
       dDone: confirmed('직영').length, mDone: confirmed('관리소장').length, allDone: confirmed('전체').length,
       bulkD: () => this.setState({ bulk: '직영', sel: null }), bulkM: () => this.setState({ bulk: '관리소장', sel: null }), bulkA: () => this.setState({ bulk: '전체', sel: null }),
       bulkOpen: !!st.bulk, bulkTitle: st.bulk.startsWith('ins:') ? st.bulk.slice(4) + ' 담당' : st.bulk, bulkCount: st.bulk ? confirmed(st.bulk).length : 0, bulkSheets: st.bulk ? confirmed(st.bulk).map(mkSheet) : [], closeBulk: () => this.setState({ bulk: '' }),
       hasLnk: !!lnkSite, lnkAddr: lnkSite ? lnkSite.addr : '', closeLnk: () => this.setState({ lnk: null }),
-      lnkRows: lnkSite ? ROLES.map(([k, label]) => { const sent = lnkSite.links[k]; return { label, url: this.link(lnkSite.id, k), btn: st.flash === lnkSite.id + k ? '✓ 복사됨' : '복사하기',
+      lnkRows: lnkSite ? ROLES.map(([k, label]) => { const sent = (lnkSite.links || {})[k]; return { label, url: this.link(lnkSite.id, k), btn: st.flash === lnkSite.id + k ? '✓ 복사됨' : '복사하기',
         style: 'cursor:pointer;height:34px;padding:0 14px;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #14213D;background:' + (st.flash === lnkSite.id + k ? '#14583A' : (sent ? '#14213D' : '#fff')) + ';color:' + ((st.flash === lnkSite.id + k || sent) ? '#fff' : '#14213D') + ';transition:background .15s',
         click: () => { this.copy('더존평가시스템(' + label + ')\n' + this.link(lnkSite.id, k)); upd(lnkSite.id, x => ({ ...x, links: { ...x.links, [k]: true } })); this.setState({ msg: lnkSite.addr + ' · ' + label + ' 링크 복사됨 → 카카오톡·문자에 붙여넣으세요.', flash: lnkSite.id + k }); this.showToast('✓ ' + label + ' 링크가 복사되었습니다'); } }; }) : [],
       lnkAll: () => { if (!lnkSite) return; this.copy(lnkSite.addr + ' 평가 요청 링크\n' + ROLES.map(([k, l]) => l + ': ' + this.link(lnkSite.id, k)).join('\n')); upd(lnkSite.id, x => ({ ...x, links: { in: true, gam: true, gong: true, bu: true, ceo: true } })); this.setState({ msg: lnkSite.addr + ' · 링크 5개를 한 번에 복사했습니다.' }); },
