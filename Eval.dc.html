@@ -55,13 +55,13 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
         </div>
         <div style="overflow-x:auto">
           <table class="evt" style="border-collapse:collapse;width:100%;min-width:680px">
-            <thead><tr><th>평가 항목</th><th>배점</th><th>소장 자가</th><th>평가자</th><th>점수</th></tr></thead>
+            <thead><tr><th>평가 항목</th><th>배점</th><th>소장 입력<br><span style="font-size:11px;font-weight:400">(참고 점수)</span></th><th>평가자</th><th>점수</th></tr></thead>
             <tbody>
               <sc-for list="{{items}}" as="it" hint-placeholder-count="10">
                 <tr>
-                  <td>{{it.name}}</td>
+                  <td>{{it.name}}<br><span style="display:block;margin-top:4px;font-size:12px;line-height:1.5;color:#4A5163;font-weight:400">{{it.desc}}</span></td>
                   <td>{{it.max}}</td>
-                  <td style="color:#4A5163">{{it.self}}</td>
+                  <td style="background:#FFF7E0;color:#5A4300;font-weight:700;text-align:center;white-space:nowrap">{{it.self}}<br><span style="display:block;font-size:11px;font-weight:400;line-height:1.4;white-space:pre-line">{{it.selfNote}}</span></td>
                   <td><span class="chip {{it.cls}}">{{it.who}}</span></td>
                   <td>
                     <div class="st" style="display:flex;align-items:center;gap:8px">
@@ -187,15 +187,15 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1300}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { site: null, cfg: null, loadMsg: '', saveMsg: '', saveOk: true, busy: false, confirming: false, submitted: false, sc: [18,9,8,8,4,4,4,8,4,8,8], adj: { inner: 2 }, role: (() => { try { const t = new URLSearchParams(location.search).get('e') || ''; return { gam: '감리', gong: '공무', lead: '감리팀장', bu: '감리팀장', ceo: '감리팀장' }[t.split('-').pop()] || '감리'; } catch (e) { return '감리'; } })(), ceo: [0, 0, 0, 0, 0], reason: '', area: 32.2, contract: 300000000, bu: [3, 4, 4, 4, 4], done: false, type: '직영', self: [19, 10, 9, 9, 5, 5, 5, 9, 5, 9, '—'], target: 20, struct: '', region: '', structPt: 0, regionPt: 0, budget: 0, spent: 230000000, op: { '감리': '', '공무': '', '감리팀장': '' } }; }
-  fromSite(site) { return { adj: { ...(site.adj || {}) }, struct: site.struct || '', region: site.region || '', structPt: site.structPt || 0, regionPt: site.regionPt || 0, ...(site.pyung ? { area: site.pyung } : {}), ...(site.cost ? { contract: site.cost } : {}), sc: [20, 10, 10, 10, 5, 5, 5, 10, 5, 10, 10].map((mx, i) => site.sc && site.sc[i] != null ? site.sc[i] : mx), type: site.type || '직영', op: { '감리': site.cGam || '', '공무': site.cGong || '', '감리팀장': site.cBu || '' }, reason: site.cCeo || '', bu: Array.isArray(site.bu) ? site.bu : [5, 5, 5, 5, 5], ...(Array.isArray(site.ceo) ? { ceo: site.ceo } : {}), ...(site.spent != null ? { spent: site.spent } : {}), done: site.stage >= 5 }; }
+  constructor(props) { super(props); this.state = { site: null, cfg: null, loadMsg: '', saveMsg: '', saveOk: true, busy: false, confirming: false, submitted: false, sc: [18,9,8,12,4,4,4,8,4,8,4], adj: { inner: 2 }, role: (() => { try { const t = new URLSearchParams(location.search).get('e') || ''; return { gam: '감리', gong: '공무', lead: '감리팀장', bu: '감리팀장', ceo: '감리팀장' }[t.split('-').pop()] || '감리'; } catch (e) { return '감리'; } })(), ceo: [0, 0, 0, 0, 0], reason: '', area: 32.2, contract: 300000000, bu: [3, 4, 4, 4, 4], done: false, type: '직영', self: [19, 10, 9, 14, 5, 5, 5, 9, 5, 9, 5], target: 20, struct: '', region: '', structPt: 0, regionPt: 0, budget: 0, spent: 230000000, op: { '감리': '', '공무': '', '감리팀장': '' } }; }
+  fromSite(site) { return { adj: { ...(site.adj || {}) }, struct: site.struct || '', region: site.region || '', structPt: site.structPt || 0, regionPt: site.regionPt || 0, ...(site.pyung ? { area: site.pyung } : {}), ...(site.cost ? { contract: site.cost } : {}), sc: [20, 10, 10, 15, 5, 5, 5, 10, 5, 10, 5].map((mx, i) => site.sc && site.sc[i] != null ? site.sc[i] : mx), type: site.type || '직영', op: { '감리': site.cGam || '', '공무': site.cGong || '', '감리팀장': site.cBu || '' }, reason: site.cCeo || '', bu: Array.isArray(site.bu) ? site.bu : [5, 5, 5, 5, 5], ...(Array.isArray(site.ceo) ? { ceo: site.ceo.map((v, k) => (k === 0 || k === 2) ? v : 0) } : {}), ...(site.spent != null ? { spent: site.spent } : {}), done: site.stage >= 5, ...(Array.isArray(site.self) && site.self.length === 11 ? { self: site.self } : {}) }; }
   async call(body, get) { const api = this.api; if (!api) throw new Error('cfg'); let r; if (get) r = await fetch(api + '?' + new URLSearchParams(body).toString(), { cache: 'no-store' }); else r = await fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }); if (!r.ok) throw new Error('서버 응답 오류 (' + r.status + ')'); const j = await r.json(); if (!j.ok) throw new Error(j.err || '요청 실패'); return j; }
   componentDidMount() { try { const q = new URLSearchParams(location.search).get('e') || ''; const id = (parseInt(q.split('-')[0].slice(1), 36) - 46656) / 7919; if (!q || !Number.isInteger(id)) return; this.q = q; this.id = id; this.setState({ loadMsg: '현장 정보를 불러오는 중…' });
     fetch('config.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(c => { if (!c || !c.api) throw new Error('cfg'); this.api = c.api; return this.call({ a: 'get', id, t: q }, true); })
       .then(j => { this.setState({ site: j.site, loadMsg: '', ...this.fromSite(j.site) }); if (j.set) { this.setState({ cfg: j.set }); if (typeof j.set.profitTarget === 'number') this.setState({ target: j.set.profitTarget }); } })
       .catch(e => this.setState({ loadMsg: e.message === 'cfg' ? '저장 서버 연결(config.json)이 설정되지 않았습니다. 관리자에게 문의해 주세요.' : '현장 정보를 불러오지 못했습니다. (' + e.message + ')' })); } catch (e) {} }
   roleKey() { return this.q ? this.q.split('-').pop() : ''; }
-  roleData(k) { const s = this.state; if (k === 'gam') return { sc: s.sc, adj: s.adj, struct: s.struct, region: s.region, structPt: s.structPt, regionPt: s.regionPt, cGam: s.op['감리'] }; if (k === 'gong') return { sc: s.sc, cGong: s.op['공무'], pyung: s.area, cost: s.contract, spent: s.spent }; if (k === 'lead' || k === 'bu' || k === 'ceo') return { bu: s.bu, ceo: s.ceo, cBu: s.op['감리팀장'], cCeo: s.reason }; return {}; }
+  roleData(k) { const s = this.state; if (k === 'gam') return { sc: s.sc, adj: s.adj, struct: s.struct, region: s.region, structPt: s.structPt, regionPt: s.regionPt, cGam: s.op['감리'] }; if (k === 'gong') return { sc: s.sc, cGong: s.op['공무'], pyung: s.area, cost: s.contract, spent: s.spent }; if (k === 'lead' || k === 'bu' || k === 'ceo') return { bu: s.bu, ceo: s.ceo.map((v, k) => (k === 0 || k === 2) ? v : 0), cBu: s.op['감리팀장'], cCeo: s.reason }; return {}; }
   async post(submit, confirm) {
     if (!this.q || !this.api) { if (confirm !== undefined) this.setState({ done: !this.state.done }); return; }
     if (this.state.busy) return; this.setState({ busy: true, saveMsg: '저장 중…', saveOk: true });
@@ -207,12 +207,17 @@ class Component extends DCLogic {
     const s = this.state;
     const ITEMS = [
       ['공기', 20, '감리', 's-gam'], ['안전관리', 10, '감리', 's-gam'], ['안전서류 작성', 10, '감리', 's-gam'],
-      ['감리보고서', 10, '감리', 's-gam'], ['엔딩점검·건축주 만족도', 5, '감리', 's-gam'], ['근태관리(주간업무·밴드·공사일보)', 5, '감리·공무', 's-gam'],
-      ['어플근태관리', 5, '감리·공무', 's-gam'], ['인력·잡자재·잔여자재', 10, '공무', 's-gong'], ['공사완료확인서·대관', 5, '공무', 's-gong'], ['폐기물처리', 10, '공무', 's-gong'], ['기성관리', 10, '공무', 's-gong']
+      ['감리보고서', 15, '감리', 's-gam'], ['엔딩점검·건축주 만족도', 5, '감리', 's-gam'], ['근태관리(주간업무·밴드·공사일보)', 5, '감리', 's-gam'],
+      ['어플근태관리', 5, '공무', 's-gong'], ['인력·잡자재·잔여자재', 10, '공무', 's-gong'], ['공사완료확인서·기성·대관', 5, '공무', 's-gong'], ['폐기물처리', 10, '공무', 's-gong'], ['AS처리', 5, '감리', 's-gam']
     ];
-    const SELF = s.self;
+    const DESC = ["공사종료 기준. ① 준공청소 완료 시(싱크·가구공사, 오·배수공사, 수도인입 공사, 모든 잔손보기 완료) ② 하자항목은 별도 적용(완공 시점에 발생된 하자는 공기산정에 추가). 목구조 기준, R.C·철골은 별도 공기 부여. 관계자 미팅 시 산정, 특별한 경우 별도 보고를 통해 추가 공기 부여.", "현장·밴드 감리 시 지적사항 항목 적용 — 안전모 미착용, 추락방지 안전난간 미설치(계단·오픈부위) 등. 안전사고 발생 시 해당 항목 제외.", "안전서류 작성 — TBM, 신규채용장, 특별안전교육, 위험성평가 등.", "현장 감리 시 지적사항 항목 적용. 전체 공종 본사 기준시방에 따른 품질평가.", "건축주 만족도 + 엔딩점검표 — 건축주 만족도 1~15등급, 감리자 현장·소장평가 1~15등급.", "주간업무·밴드·공사일보 — 주간업무 미등록 1회 −3점(월요일 기준), 밴드·공사일보 미등록 1회 −3점.", "어플 근태관리 — 1일당 −1점.", "공사부 원가절감방안 기준 — 1인 추가 사용 시 −2점, 1인 미사용 시 +2점(인력 기준 10평당 1품, R.C 별도), 잡자재 사용분석·구입불가자재 −1~10점, 잔여자재 회수 증빙자료 첨부.", "계약서·산출내역서·추가내역서·도면에 근거한 기성업무 작성기준, 대관업무 준공서류. 내역 외 공사 시 −10만원당 −2점.", "공사부 원가절감방안 기준 — 기준 이상 청구 시 −10만원당 −1점, 기준 미만 정산 시 +10만원당 +1점. 목조 평당 2.5만원, R.C 평당 3.5만원.","완공현장 AS 발생 — 하자처리기한 15일 초과 시 −5점, 1일 초과마다 −1점."];
+    const SELF = s.self, si = (s.site && s.site.selfIn) || {}, spy = Number(s.site && s.site.pyung) || 32.2, rcK = (si.kind === 'RC') || (!si.kind && s.site && (s.site.struct === 'RC' || s.site.struct === '철골')), fm = (n) => Number(n).toLocaleString('ko-KR');
+    const SNOTE = {};
+    if ((si.airV != null ? si.airV : si.air) != null) SNOTE[0] = '완료공기 ' + (si.airV != null ? si.airV : si.air) + '일 (기준 ' + Math.round((spy + 20) * (rcK ? 1.2 : 1)) + '일)' + (si.start && si.end ? '\n' + si.start + ' ~ ' + si.end : '');
+    if ((si.manV != null ? si.manV : si.man) != null) SNOTE[7] = '사용 인력 ' + (si.manV != null ? si.manV : si.man) + '품 (기준 ' + Math.max(1, Math.round(spy / 10 * (rcK ? 2 : 1))) + '품)';
+    if ((si.wasteV != null ? si.wasteV : si.waste) != null) SNOTE[9] = '처리비 ' + fm(si.wasteV != null ? si.wasteV : si.waste) + '원 (기준 ' + fm(Math.round(spy * (rcK ? 35000 : 25000))) + '원)';
     const items = ITEMS.map((it, i) => ({
-      name: it[0], max: it[1], who: it[2], cls: it[3], score: s.role === '소장' ? s.self[i] : s.sc[i], self: SELF[i] == null ? '—' : SELF[i], btnShow: '',
+      name: it[0], max: it[1], who: it[2], cls: it[3], score: s.role === '소장' ? s.self[i] : s.sc[i], desc: DESC[i], selfNote: SNOTE[i] || '', self: SELF[i] == null ? '—' : SELF[i] + '점', btnShow: '',
       flag: (s.role === '소장' ? s.self[i] : s.sc[i]) === 0 ? '최저점' : '',
       up: () => { const k = s.role === '소장' ? 'self' : 'sc'; const a = s[k].slice(); a[i] = Math.min(it[1], a[i] + 1); this.setState({ [k]: a }); },
       down: () => { const k = s.role === '소장' ? 'self' : 'sc'; const a = s[k].slice(); a[i] = Math.max(0, a[i] - 1); this.setState({ [k]: a }); }
@@ -225,7 +230,7 @@ class Component extends DCLogic {
     const shown = R === '감리팀장' ? buItems : (R === '소장' ? items : items.filter(it => it.who.includes(R)));
     const roleSum = shown.reduce((a, b) => a + b.score, 0), roleMax = shown.reduce((a, b) => a + b.max, 0);
     const NOTE = { '소장': '소장 링크 · 소장은 본인 자가평가(항목별 만점 이내)만 입력합니다. 다른 평가자 점수·인센티브는 보이지 않습니다.', '감리': '감리 링크 · 감리 평가표만 표시됩니다. 모든 항목은 만점으로 시작하니 감점할 항목만 낮춰 주세요. (다른 담당 점수·인센티브는 보이지 않음)', '공무': '공무 링크 · 공무 평가표만 표시됩니다. 모든 항목은 만점으로 시작하니 감점할 항목만 낮춰 주세요. (다른 담당 점수·인센티브는 보이지 않음)',
-      '감리팀장': '감리팀장 링크 · 공사 부장 평가 항목(5개)과 추가 평가를 입력하고, 최종 점수와 인센티브 금액을 확인한 뒤 확정합니다.' };
+      '감리팀장': '감리팀장 링크 · 추가 평가와 총평을 입력하고, 최종 점수와 인센티브 금액을 확인한 뒤 확정합니다.' };
     const roleBtn = (k) => ({ label: k + ' 링크', pick: () => this.setState({ role: k }),
       style: 'cursor:pointer;height:38px;padding:0 14px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (R === k ? '#14213D' : '#D9D4C6') + ';background:' + (R === k ? '#14213D' : '#fff') + ';color:' + (R === k ? '#fff' : '#1B2333') });
     const ADJ = [
@@ -243,8 +248,8 @@ class Component extends DCLogic {
     const adjSum = ADJ.reduce((x, [k, , p]) => x + (s.adj[k] || 0) * p, 0);
     const condSum = (s.structPt || 0) + (s.regionPt || 0), merged = base + adjSum + condSum;
     const CEO = [['회사 충성도', '회사 방침·이익을 우선하는 태도'], ['근무 태도', '성실성·책임감·보고 및 소통'], ['협업·조직 기여', '타 부서·협력사와의 협조'], ['위기 대응·문제 해결', '돌발 상황 대처 능력'], ['고객·현장 평판', '건축주 반응·현장 신뢰도']];
-    const ceoAdj = s.ceo.reduce((a, b) => a + b, 0);
-    const ceoItems = CEO.map(([name, hint], i) => { const v = s.ceo[i]; return { name, hint, text: (v > 0 ? '+' : '') + v + '점', color: v < 0 ? '#8A1F17' : (v > 0 ? '#14583A' : '#4A5163'),
+    const KEEP = [0, 2], ceoAdj = s.ceo.reduce((a, b, k) => a + (KEEP.includes(k) ? b : 0), 0);
+    const ceoItems = CEO.map(([name, hint], i) => ({ name, hint, i })).filter(o => KEEP.includes(o.i)).map(({ name, hint, i }) => { const v = s.ceo[i]; return { name, hint, text: (v > 0 ? '+' : '') + v + '점', color: v < 0 ? '#8A1F17' : (v > 0 ? '#14583A' : '#4A5163'),
       up: () => this.setState({ ceo: s.ceo.map((x, k) => k === i ? Math.min(5, x + 1) : x) }), down: () => this.setState({ ceo: s.ceo.map((x, k) => k === i ? Math.max(-5, x - 1) : x) }) }; });
     const final = merged + ceoAdj;
     const cfg = s.cfg || {}, SCL = [100, 95, 90, 85, 80];
@@ -268,7 +273,7 @@ class Component extends DCLogic {
     return {
       title: site ? site.addr + ' · ' + site.mgr : '샘플 주소 2 · 소장 나', chips,
       subtitle: s.loadMsg || (site ? site.type + (s.region ? ' · ' + s.region : '') + (s.struct ? ' · ' + s.struct : '') + (site.pyung ? ' · ' + site.pyung + '평' : '') + ' · ' + (site.grade || '') : '샘플 데이터 (링크로 접속하면 해당 현장이 표시됩니다)'),
-      roleOff, offMsg: R + ' 평가는 현재 사용하지 않도록 설정되어 있습니다.', showTable: !roleOff, isGam: R === '감리', isGong: R === '공무', rightStyle: roleOff ? 'display:none' : isCeo || R === '감리' || R === '공무' ? 'flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:20px' : 'display:none',
+      roleOff, offMsg: R + ' 평가는 현재 사용하지 않도록 설정되어 있습니다.', showTable: !roleOff && !isCeo, isGam: R === '감리', isGong: R === '공무', rightStyle: roleOff ? 'display:none' : isCeo || R === '감리' || R === '공무' ? 'flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:20px' : 'display:none',
       confirmLabel: s.done ? '✓ 감리팀장 확정 완료 (소장에게 결과 공개)' : '최종 점수 ' + final + '점 · ' + amount + ' 확인 후 감리팀장 확정', confirmGo: () => { if (!s.done && !(s.submitted || (s.site && s.site.leadDone))) { this.setState({ saveOk: false, saveMsg: '먼저 아래 [평가 제출]을 눌러 주세요.' }); return; } this.post(false, !s.done); },
       confirmStyle: 'margin-top:14px;width:100%;min-height:48px;border-radius:10px;border:0;background:' + (s.done ? '#14583A' : '#C8A24A') + ';color:' + (s.done ? '#fff' : '#14213D') + ';font-weight:700;font-size:15px;cursor:pointer;padding:8px 12px',
       items: shown, roleLabel: isCeo ? '공사 부장 평가 항목 (참고)' : (R === '소장' ? '소장 자가평가' : R + ' 평가표'), roleSum, roleMax, roleNote: NOTE[R], isCeo, roleBtns: (() => { try { if (/^[^-]+-(gam|gong|lead|bu|ceo)$/.test(new URLSearchParams(location.search).get('e') || '')) return []; } catch (e) {} return ['소장', '감리', '공무', '감리팀장'].map(roleBtn); })(), base, merged,
