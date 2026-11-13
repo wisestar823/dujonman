@@ -349,7 +349,7 @@ button{font-family:inherit}
             </table>
           </sc-if>
           <sc-if value="{{sel.noViews}}" hint-placeholder-val="{{true}}">
-            <div style="font-size:13px;color:#4A5163">공개 전이라 열람 기록이 없습니다.</div>
+            <div style="font-size:13px;color:#4A5163">소장 열람 기록은 현재 제공하지 않습니다.</div>
           </sc-if>
         </div>
       </section>
@@ -672,7 +672,7 @@ class Component extends DCLogic {
       sel = { ...cur, ...infoOf(cur), insp: cur.insp, ev: evOf(cur), finalScore: (fin(cur) === null ? '—' : fin(cur) + '점'), total: t === null ? '집계 중' : t + '점', totalNote: t === null ? '모든 평가 완료 후 자동 합산' : '',
         final: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(cur, t),
         cGam: cur.cGam || '—', cGong: cur.cGong || '—', cBu: cur.cBu || '—', cCeo: cur.cCeo || '—',
-        pubCls: pub ? 'done' : 'wait', pubText: pub ? '공개됨' : '비공개 (확정 대기)', hasViews: pub, noViews: !pub,
+        pubCls: pub ? 'done' : 'wait', pubText: pub ? '공개됨' : '비공개 (확정 대기)', hasViews: false, noViews: true,
         views: [{ at: '10/27 09:12', who: cur.mgr, what: '결과 조회' }, { at: '10/27 09:15', who: cur.mgr, what: '평가표 PDF 저장' }] };
     }
     const lnkSite = (st.lnk && st.selMgr) ? vis.find(r => r.id === st.lnk) : null;
