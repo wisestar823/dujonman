@@ -119,10 +119,7 @@ button{font-family:inherit}
           <div style="display:flex;flex-direction:column;gap:6px;font-size:14px">
             <div><span style="color:#4A5163">현장 주소</span> · <b>{{reg.addr}}</b></div>
             <div><span style="color:#4A5163">구분 / 소장</span> · <b>{{reg.type}} / {{reg.mgr}}</b></div>
-            <div><span style="color:#4A5163">지역</span> · <b>{{reg.region}}</b></div>
-            <div><span style="color:#4A5163">건축 종류 / 실평형수</span> · <b>{{reg.sumTxt}}</b></div>
-            <div><span style="color:#4A5163">건축 · 인테리어 등급</span> · <b>{{reg.gradeTxt}}</b></div>
-            <div><span style="color:#4A5163">총 공사 금액</span> · <b>{{reg.costTxt}}원</b></div>
+            <div style="color:#4A5163;font-size:13px">건축 종류 · 평수 · 지역 · 총 공사 금액 · 등급은 소장이 소장 링크에서 직접 입력합니다.</div>
             <div><span style="color:#4A5163">담당 감리</span> · <b>{{reg.insp}}</b></div>
             <div style="color:#4A5163;font-size:13px">{{placeMsg}}</div>
           </div>
@@ -371,7 +368,7 @@ button{font-family:inherit}
         <div style="font-weight:700;font-size:16px">① 평가자별 반영 비율 (%)</div>
         <span class="chip {{wCls}}" style="padding:5px 12px">{{wStatus}}</span>
       </div>
-      <div style="font-size:12px;color:#4A5163;margin-bottom:10px">소장 자가평가, 감리, 공무, 감리팀장(공사 부장 항목·추가 평가) 평가가 최종 점수에 반영되는 비율입니다. 합계 100%가 되어야 합니다.</div>
+      <div style="font-size:12px;color:#4A5163;margin-bottom:10px">총 10개 항목 100점 = 감리 평가 7개 항목 70점 + 공무 평가 4개 항목 30점입니다. 감리·공무 평가가 100% 반영되며(고정), 소장 자가평가는 평가자 참고용입니다.</div>
       <div style="display:flex;flex-direction:column">
         <sc-for list="{{wRows}}" as="w" hint-placeholder-count="5">
           <div style="display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid #EFEBE1">
@@ -499,7 +496,7 @@ class Component extends DCLogic {
       gb: '', gi: '', del: null, flash: '', toast: '', authed: false, pw: '', pwErr: '', view: 'dash', next: 20, msg: '', sel: null, bulk: '', selMgr: null, lnk: null, bulkMode: '상세', viewer: 'ALL', gsMsg: '', gsOk: true, gsUrl: '', auto: true,
       reg: { open: false, step: 1, addr: '', mgr: '', type: '직영', insp: '김동완', struct: '', region: '일반 지역', pyung: '', arch: '', interior: '', cost: 0 },
       sites: [
-        mk(1, '샘플 주소 1', '소장 가', '직영', 5, [19,9,9,9,5,4,4,9,5,9,9], { cGam: '현장 관리 양호, 지적사항 신속 조치.', cGong: '기성·정산 서류 적정.', cBu: '정산·인력 운영 적정.', cCeo: '확정.', selfScore: 93, buScore: 22, ceoAdj: 0, struct: '목조', region: '일반 지역', pyung: 32.2, cost: 300000000, structPt: 0, regionPt: 0, adj: {} }),
+        mk(1, '샘플 주소 1', '소장 가', '직영', 5, [19,9,9,14,5,4,4,9,5,9,5], { cGam: '현장 관리 양호, 지적사항 신속 조치.', cGong: '기성·정산 서류 적정.', cBu: '정산·인력 운영 적정.', cCeo: '확정.', selfScore: 93, buScore: 22, ceoAdj: 0, struct: '목조', region: '일반 지역', pyung: 32.2, cost: 300000000, structPt: 0, regionPt: 0, adj: {} }),
       ],
       set: {
         w: { in: 10, gam: 30, gong: 25, bu: 15, ceo: 20 },
@@ -608,7 +605,7 @@ class Component extends DCLogic {
     return '대상 아님';
   }
   renderVals() {
-    const st = this.state, S = { ...st.set, useBu: true, useCeo: true };
+    const st = this.state, S = { ...st.set, useBu: true, useCeo: true, w: { in: 0, gam: 70, gong: 30, bu: 0, ceo: 0 } };
     const lead = st.viewer === 'ALL';
     const norm = (r) => { const g = r.stage === 4 ? 3 : r.stage; return g === r.stage ? r : { ...r, stage: g }; };
     const nsites = st.sites.map(norm);
@@ -617,10 +614,9 @@ class Component extends DCLogic {
     const total2 = (sc) => sc.every(v => v !== null) ? sc.reduce((a, b) => a + b, 0) : null;
     const fin = (r) => { const t = total(r.sc); return t === null ? null : t + this.adjOf(r) + (r.structPt || 0) + (r.regionPt || 0) + (r.ceoAdj || 0); };
     const part = (r, idx) => idx.every(i => r.sc[i] != null) ? idx.reduce((a, i) => a + r.sc[i], 0) : null;
-    const evOf = (r) => { const all = (() => { const sg = (v, mx) => v === null ? '—' : v + ' / ' + mx + '점', a = part(r, [0,1,2,3,4]), g = part(r, [7,8,9,10]), c = part(r, [5,6]);
-      return [{ label: '소장 (자가평가)', score: r.selfScore == null ? '—' : r.selfScore + '점', note: '' }, { label: '감리', score: sg(a, 55), note: r.cGam || '—' }, { label: '가점·감점 (감리 확인)', score: (this.adjOf(r) > 0 ? '+' : '') + this.adjOf(r) + '점', note: '' }, { label: '현장 조건 가산점 (감리)', score: ((r.structPt || 0) + (r.regionPt || 0)) > 0 ? '+' + ((r.structPt || 0) + (r.regionPt || 0)) + '점' : '0점', note: [r.struct && (r.struct + ' +' + (r.structPt || 0)), r.region && (r.region + ' +' + (r.regionPt || 0))].filter(Boolean).join(' · ') || '—' }, { label: '공무', score: sg(g, 35), note: r.cGong || '—' },
-        { label: '감리·공무 공동 (근태)', score: sg(c, 10), note: '' }, { label: '감리팀장 (공사 부장 항목)', score: r.buScore == null ? '—' : r.buScore + ' / 25점', note: r.cBu || '—' },
-        { label: '감리팀장 (추가평가)', score: r.stage === 5 ? ((r.ceoAdj || 0) > 0 ? '+' : '') + (r.ceoAdj || 0) + '점' : '—', note: r.cCeo || '—' }]; })(); return all.filter(e => !(e.label.startsWith('공사 부장') && !S.useBu) && !(e.label.startsWith('부사장') && !S.useCeo)); };
+    const evOf = (r) => { const all = (() => { const sg = (v, mx) => v === null ? '—' : v + ' / ' + mx + '점', a = part(r, [0,1,2,3,4,5,10]), g = part(r, [6,7,8,9]);
+      return [{ label: '소장 (자가평가)', score: r.selfScore == null ? '—' : r.selfScore + '점', note: '' }, { label: '감리', score: sg(a, 70), note: r.cGam || '—' }, { label: '가점·감점 (감리 확인)', score: (this.adjOf(r) > 0 ? '+' : '') + this.adjOf(r) + '점', note: '' }, { label: '현장 조건 가산점 (감리)', score: ((r.structPt || 0) + (r.regionPt || 0)) > 0 ? '+' + ((r.structPt || 0) + (r.regionPt || 0)) + '점' : '0점', note: [r.struct && (r.struct + ' +' + (r.structPt || 0)), r.region && (r.region + ' +' + (r.regionPt || 0))].filter(Boolean).join(' · ') || '—' }, { label: '공무', score: sg(g, 30), note: r.cGong || '—' },
+                { label: '감리팀장 (추가평가)', score: r.stage === 5 ? ((r.ceoAdj || 0) > 0 ? '+' : '') + (r.ceoAdj || 0) + '점' : '—', note: r.cCeo || '—' }]; })(); return all.filter(e => !(e.label.startsWith('공사 부장') && !S.useBu) && !(e.label.startsWith('부사장') && !S.useCeo)); };
     const ROLES = [['in', '소장'], ['gam', '감리'], ['gong', '공무'], ['lead', '감리팀장']];
     const STEPS = ['소장 입력', '감리 평가', '공무 평가', '감리팀장 확정', '감리팀장 확정', '완료'];
     const STCLS = ['wait', 'prog', 'prog', 'prog', 'prog', 'done'];
@@ -655,14 +651,14 @@ class Component extends DCLogic {
       ['공기', 20, '감리담당', '준공청소~잔손보기 완료 기준 · 5일 단축 +1 / 3일 초과 −1'],
       ['안전관리', 10, '감리담당', '안전모 미착용, 추락방지 안전난간 미설치 등 지적사항 적용'],
       ['안전서류 작성', 10, '감리담당', 'TBM, 신규채용장, 특별안전교육, 위험성평가'],
-      ['감리보고서', 10, '감리담당', '본사 기준시방에 따른 품질평가'],
+      ['감리보고서', 15, '감리담당', '본사 기준시방에 따른 품질평가'],
       ['엔딩점검·건축주 만족도', 5, '감리담당', '만족도 1~15등급 · 감리자 소장평가 1~15등급'],
-      ['근태관리', 5, '감리·공무담당', '주간업무·밴드·공사일보 미등록 1회 −3점'],
-      ['어플근태관리', 5, '감리·공무담당', '1일당 −1점'],
+      ['근태관리', 5, '감리담당', '주간업무·밴드·공사일보 미등록 1회 −3점'],
+      ['어플근태관리', 5, '공무담당', '1일당 −1점'],
       ['인력·잡자재·잔여자재', 10, '공무담당', '인력 10평당 1품 · 1인 추가 −2 / 미사용 +2'],
-      ['공사완료확인서·대관', 5, '공무담당', '내역 외 공사 10만원당 −2점'],
+      ['공사완료확인서·기성·대관', 5, '공무담당', '내역 외 공사 10만원당 −2점'],
       ['폐기물처리', 10, '공무담당', '목조 평당 2.5만원 · RC 평당 3.5만원 기준, ±10만원당 1점'],
-      ['기성관리', 10, '공무담당', '기성 청구·정산 관리 적정성']
+      ['AS처리', 5, '감리담당', '완공현장 AS 하자처리기한 15일 초과 −5점, 1일 초과마다 −1점']
     ];
     const infoOf = (r) => ({ struct: r.struct || '—', region: r.region || '—', pyung: r.pyung ? r.pyung + '평' : '—', cost: r.cost ? Number(r.cost).toLocaleString('ko-KR') + '원' : '—', finalCost: r.finalCost ? Number(r.finalCost).toLocaleString('ko-KR') + '원' : '—', arch: r.arch || '—', interior: r.interior || '—' });
     const mkSheet = (r) => { const t = fin(r); return { ...infoOf(r), type: r.type, addr: r.addr, mgr: r.mgr, insp: r.insp, grade: r.grade,
@@ -689,7 +685,7 @@ class Component extends DCLogic {
     const setReg = (p) => this.setState({ reg: { ...rg, ...p }, msg: '' });
     const regNext = () => {
       if (rg.step === 1) { if (!rg.addr.trim()) { this.setState({ msg: '현장 주소를 입력해 주세요.' }); return; } if (st.sites.some(r => r.addr === rg.addr.trim())) { this.setState({ msg: '이미 등록된 현장 주소입니다.' }); return; } setReg({ step: 2 }); return; }
-      if (rg.step === 2) { if (!rg.mgr.trim()) { this.setState({ msg: '현장소장을 입력해 주세요.' }); return; } setReg({ step: 3 }); return; }
+      if (rg.step === 2) { if (!rg.mgr.trim()) { this.setState({ msg: '현장소장을 입력해 주세요.' }); return; } setReg({ step: 4 }); return; }
       if (rg.step === 3) { setReg({ step: 4 }); return; }
       const mgr = rg.mgr.trim(), addr = rg.addr.trim();
       this.setState({ sites: [...st.sites, { id: st.next, addr, mgr, type: rg.type, insp: lead ? rg.insp : st.viewer, grade: [rg.arch && ('건축 ' + rg.arch), rg.interior && ('인테리어 ' + rg.interior)].filter(Boolean).join(' / ') || '[등급 기준 입력]', struct: rg.struct, region: rg.region || '일반 지역', pyung: parseFloat(rg.pyung) || 0, arch: rg.arch, interior: rg.interior, cost: rg.cost, sc: [null,null,null,null,null,null,null,null,null,null,null], stage: 0, links: { in: false, gam: false, gong: false, bu: false, ceo: false }, cGam: '', cGong: '', cBu: '', cCeo: '' }],
@@ -697,7 +693,7 @@ class Component extends DCLogic {
         msg: addr + ' 등록 완료 · ' + mgr + ' (' + rg.type + ') 소장 묶음에 자동 배치됨. ' + (lead ? '담당 감리(' + rg.insp + ') 계정에서 현장별 링크를 복사해 전달하세요.' : '아래에서 현장별 링크를 복사해 전달하세요.') });
     };
     const W = S.w, wSum = Object.entries(W).filter(([k]) => !(k === 'bu' && !S.useBu) && !(k === 'ceo' && !S.useCeo)).reduce((a, [, b]) => a + b, 0);
-    const WL = [['in', '소장 자가'], ['gam', '감리'], ['gong', '공무'], ['bu', '감리팀장(공사 부장 항목)'], ['ceo', '감리팀장(추가 평가)']].filter(([k]) => !(k === 'bu' && !S.useBu) && !(k === 'ceo' && !S.useCeo));
+    const WL = [['gam', '감리 평가 (7개 항목)'], ['gong', '공무 평가 (4개 항목)']];
     const PRESET = (bu, ceo) => bu && ceo ? { in: 10, gam: 30, gong: 25, bu: 15, ceo: 20 } : (!bu && !ceo ? { in: 20, gam: 50, gong: 30, bu: 0, ceo: 0 } : (!ceo ? { in: 20, gam: 40, gong: 30, bu: 10, ceo: 0 } : { in: 20, gam: 40, gong: 30, bu: 0, ceo: 10 }));
     const setS = (p) => this.setState({ set: { ...S, ...p } });
     const SAMPLE = { in: 92, gam: 90, gong: 94, bu: 91, ceo: 95 };
@@ -738,7 +734,7 @@ class Component extends DCLogic {
       msg: st.msg,
       reg: { ...rg, insp: lead ? rg.insp : st.viewer, s1: rg.step === 1, s2: rg.step === 2, sumTxt: [rg.struct, rg.pyung && (rg.pyung + '평')].filter(Boolean).join(' / ') || '입력 안 함 (평가자가 입력)', s3: rg.step === 3, s4: rg.step === 4, costTxt: rg.cost ? Number(rg.cost).toLocaleString('ko-KR') : '', gradeTxt: [rg.arch && ('건축 ' + rg.arch), rg.interior && ('인테리어 ' + rg.interior)].filter(Boolean).join(' / ') || '미선택' }, regBtn: rg.open ? '닫기' : '+ 완료현장 등록',
       toggleReg: () => this.setState({ reg: { ...rg, open: !rg.open, step: 1 }, msg: '' }),
-      regSteps: [['① 현장 주소', 1], ['② 소장 · 구분', 2], ['③ 현장 정보 (선택)', 3], ['④ 확인', 4]].map(([label, n]) => ({ label, style: stepStyle(rg.step === n, rg.step > n) })),
+      regSteps: [['① 현장 주소', 1], ['② 소장 · 구분', 2], ['③ 확인', 4]].map(([label, n]) => ({ label, style: stepStyle(rg.step === n, rg.step > n) })),
       onAddr: (e) => setReg({ addr: e.target.value }), onMgr: (e) => setReg({ mgr: e.target.value }),
       mgrNames: [...new Set(st.sites.filter(r => r.type === rg.type).map(r => r.mgr))].map(v => ({ v })),
       regionBtns: ['일반 지역', '도시 지역'].map(k => ({ label: k === '도시 지역' ? '도시 지역 (부지가 좁아 자재를 놓거나 공사하기 어려운 곳)' : k, style: seg((rg.region || '일반 지역') === k), pick: () => setReg({ region: k }) })),
@@ -748,7 +744,7 @@ class Component extends DCLogic {
       intBtns: (S.gradeI || []).map(k => ({ label: k, style: seg(rg.interior === k), pick: () => setReg({ interior: rg.interior === k ? '' : k }) })), intEmpty: (S.gradeI || []).length ? '' : '설정 ⑦에서 인테리어 등급을 먼저 등록하세요',
       typeBtns: ['직영', '관리소장'].map(k => ({ label: k, style: seg(rg.type === k), pick: () => setReg({ type: k }) })),
       placeMsg, prevLabel: rg.step === 1 ? '취소' : '이전', nextLabel: rg.step === 4 ? '등록하고 소장 묶음에 배치' : '다음',
-      regPrev: () => rg.step === 1 ? this.setState({ reg: { ...rg, open: false }, msg: '' }) : setReg({ step: rg.step - 1 }), regNext,
+      regPrev: () => rg.step === 1 ? this.setState({ reg: { ...rg, open: false }, msg: '' }) : setReg({ step: rg.step === 4 ? 2 : rg.step - 1 }), regNext,
       stepCounts: STEPS.map((label, i) => ({ label, short: ['소장', '감리', '공무', '감리팀장', '감리팀장', '완료'][i], n: vis.filter(r => r.stage === i).length, on: i !== 4 })).filter(x => x.on),
       dSum: summary('직영'), mSum: summary('관리소장'), dMgrs: mgrCards('직영'), mMgrs: mgrCards('관리소장'),
       dDone: confirmed('직영').length, mDone: confirmed('관리소장').length, allDone: confirmed('전체').length,
@@ -761,7 +757,7 @@ class Component extends DCLogic {
       lnkAll: () => { if (!lnkSite) return; this.copy(lnkSite.addr + ' 평가 요청 링크\n' + ROLES.map(([k, l]) => l + ': ' + this.link(lnkSite.id, k)).join('\n')); upd(lnkSite.id, x => ({ ...x, links: { in: true, gam: true, gong: true, bu: true, ceo: true } })); this.setState({ msg: lnkSite.addr + ' · 링크 5개를 한 번에 복사했습니다.' }); },
       hasMgr: !!st.selMgr, mgrName: mn, mgrType: mt, mgrTypeCls: mt === '직영' ? 't-d' : 't-m', mgrCount: mgrRows.length, mgrRows, closeMgr: () => this.setState({ selMgr: null }),
       hasSel: !!cur, ...(cur ? (() => { const d = delOf(cur); return { selDelLabel: d.delLabel === '삭제' ? '이 평가 삭제' : '정말 삭제?', selDelStyle: d.delStyle.replace('height:34px', 'height:44px').replace('padding:0 12px', 'padding:0 16px'), selDelGo: d.delGo }; })() : { selDelLabel: '', selDelStyle: 'display:none', selDelGo: () => {} }), sel, sheetRows, closeSel: () => this.setState({ sel: null }), doPrint: () => { try { window.print(); } catch (e) {} },
-      wRows: WL.map(([k, label]) => ({ label, val: W[k], up: () => setS({ w: { ...W, [k]: Math.min(100, W[k] + 5) } }), down: () => setS({ w: { ...W, [k]: Math.max(0, W[k] - 5) } }) })),
+      wRows: WL.map(([k, label]) => ({ label, val: W[k], up: () => {}, down: () => {} })),
       wStatus: wSum === 100 ? '합계 100% 정상' : '합계 ' + wSum + '% · 100%로 맞춰 주세요', wCls: wSum === 100 ? 'done' : 'wait',
       wPrev: WL.map(([k, label]) => ({ label, score: SAMPLE[k], val: W[k] })),
       wResult: wSum === 0 ? '—' : (Math.round(WL.reduce((a, [k]) => a + SAMPLE[k] * W[k], 0) / wSum * 10) / 10),
