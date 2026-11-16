@@ -64,7 +64,7 @@ button{font-family:inherit}
     <button onClick="{{goDash}}" style="{{navDash}}">대시보드</button>
     <sc-if value="{{isLead}}" hint-placeholder-val="{{true}}"><button onClick="{{goSet}}" style="{{navSet}}">설정</button></sc-if>
     <div style="height:1px;background:#2C3C66;margin:16px 0 8px"></div>
-    <div style="color:#AEB6C9;font-size:11px;padding:0 14px 4px">보기 계정 (시안: 로그인 대신 선택)</div>
+    <div style="color:#AEB6C9;font-size:11px;padding:0 14px 4px">보기 선택 (통합 · 담당 감리별)</div>
     <sc-for list="{{accounts}}" as="a" hint-placeholder-count="5"><button onClick="{{a.pick}}" style="{{a.style}}">{{a.label}}</button></sc-for>
   </aside>
 
@@ -544,6 +544,7 @@ class Component extends DCLogic {
     const cur = this.state.sites, curMap = {}; cur.forEach(x => { curMap[x.id] = x; });
     const srvIds = {}; const merged = j.sites.map(s => { srvIds[s.id] = 1; const loc = curMap[s.id]; if (sentKeys && loc && sentKeys[s.id] !== undefined && this.gsKey(loc) !== sentKeys[s.id]) return { ...loc, _ts: s._ts }; return s; });
     cur.forEach(x => { if (!srvIds[x.id] && sentKeys && sentKeys[x.id] === undefined) merged.push(x); });
+    for (let k = merged.length - 1; k >= 0; k--) if (/^샘플 주소/.test(merged[k].addr || '')) merged.splice(k, 1); // 샘플 현장은 시트 연동 시 제외
     merged.sort((p, q) => p.id - q.id);
     const set = (j.set && !(sentKeys && this.gsKey(this.state.set) !== sentKeys.__set)) ? { ...this.state.set, ...j.set } : this.state.set;
     this.syncIds = j.sites.map(s => s.id);
