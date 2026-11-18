@@ -33,6 +33,8 @@ button{font-family:inherit}
 .stp button{width:34px;height:34px;border-radius:8px;border:1px solid #14213D;background:#fff;color:#14213D;font-size:17px;cursor:pointer}
 .sh th,.sh td{border:1px solid #333;padding:6px 8px;font-size:12px;vertical-align:middle;line-height:1.45}
 .sh th{background:#EEE;text-align:center;font-weight:700}
+.ln th,.ln td{border:1px solid #333;padding:4px 3px;font-size:10px;line-height:1.35;text-align:center;vertical-align:middle}
+.ln th{background:#EEE;font-weight:700}
 @media print{
   .noprint{display:none!important}
   body{background:#fff}
@@ -41,6 +43,9 @@ button{font-family:inherit}
   .pb{page-break-after:always}
   .pb:last-child{page-break-after:auto}
   @page{size:A4;margin:12mm}
+  @page wide{size:A4 landscape;margin:10mm}
+  .wide{page:wide;overflow:visible!important;width:275mm!important;max-width:275mm!important}
+  .ln{table-layout:auto}
 }
 @media(max-width:760px){aside.nav{flex:0 0 100% !important;flex-direction:row !important;flex-wrap:wrap !important;padding:12px !important}main{padding:16px !important}}
 </style>
@@ -251,6 +256,18 @@ button{font-family:inherit}
           </div>
         </div>
         <sc-if value="{{bulkDetail}}" hint-placeholder-val="{{true}}">
+        <div class="pb wide" style="margin:0 auto 28px;overflow-x:auto;max-width:100%">
+          <div style="text-align:center;font-weight:700;font-size:19px;padding:6px 0 4px">현장소장 공사완료평가 한 줄 요약표</div>
+          <div style="text-align:center;font-size:12px;color:#555;margin-bottom:10px">{{bulkTitle}} · 감리팀장 확정 {{bulkCount}}건</div>
+          <table class="ln" style="border-collapse:collapse;width:100%">
+            <tr><th rowspan="2">번호</th><th rowspan="2">현장 주소</th><th rowspan="2">소장</th><th rowspan="2">구분</th><th rowspan="2">등급</th><th rowspan="2">평수</th><th colspan="11">항목별 점수</th><th rowspan="2">최종<br>점수</th><th rowspan="2">인센티브<br>금액</th></tr>
+            <tr><sc-for list="{{lineHeads}}" as="h" hint-placeholder-count="11"><th>{{h.name}}<br>({{h.max}})</th></sc-for></tr>
+            <sc-for list="{{lineRows}}" as="l" hint-placeholder-count="3">
+              <tr><td>{{l.no}}</td><td style="text-align:left">{{l.addr}}</td><td>{{l.mgr}}</td><td>{{l.type}}</td><td>{{l.grade}}</td><td>{{l.pyung}}</td><sc-for list="{{l.cells}}" as="c" hint-placeholder-count="11"><td>{{c.v}}</td></sc-for><td style="font-weight:700">{{l.total}}</td><td style="font-weight:700;text-align:right">{{l.inc}}</td></tr>
+            </sc-for>
+            <tr><th colspan="18">인센티브 합계 ({{bulkCount}}건)</th><td style="font-weight:700;text-align:right">{{simpleTotal}}</td></tr>
+          </table>
+        </div>
         <sc-for list="{{bulkSheets}}" as="b" hint-placeholder-count="2">
           <div class="pb" style="max-width:794px;margin:0 auto 28px;display:flex;flex-direction:column">
             <div style="text-align:center;font-weight:700;font-size:19px;padding:6px 0 10px">현장소장 공사완료평가 및 인센티브지급 기준안 <span style="font-size:14px">({{b.type}})</span></div>
@@ -277,6 +294,7 @@ button{font-family:inherit}
               <tr><th>최종 점수</th><td style="text-align:center;font-weight:700;font-size:15px">{{b.finalScore}}</td><td></td></tr>
               <tr><th>최종 인센티브 금액</th><td colspan="2" style="text-align:center;font-weight:700;font-size:15px">{{b.inc}}</td></tr>
             </table>
+            <div style="font-size:11px;color:#555;margin-top:8px">평가 항목 중 최저점수 발생 시 인센티브 대상에서 제외 · 70점 미만 페널티 적용</div>
           </div>
         </sc-for>
         </sc-if>
@@ -549,6 +567,7 @@ class Component extends DCLogic {
     const set = (j.set && !(sentKeys && this.gsKey(this.state.set) !== sentKeys.__set)) ? { ...this.state.set, ...j.set } : this.state.set;
     this.syncIds = j.sites.map(s => s.id);
     this.lastText = this.gsText(merged, set);
+    for (let k = 0; k < merged.length; k++) { const r = merged[k]; if (r.stage >= 5 && !r.snap) { const sn = this.mkSnap(r, set); if (sn) merged[k] = { ...r, snap: sn }; } }   // 기존 확정 건도 현재 결과를 한 번 보존
     this.setState({ sites: merged, set, next: Math.max(this.state.next, j.next || 0) });
   }
   async gsLoad(silent, quiet) {
@@ -588,18 +607,26 @@ class Component extends DCLogic {
   showToast(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '', flash: '' }), 2200); }
   token(id, k) { return 'x' + (46656 + id * 7919).toString(36) + '-' + k; }
   link(id, k) { return 'https://wisestar823.github.io/dujonman/' + (k === 'in' ? 'Manager' : 'Eval') + '.dc.html?e=' + this.token(id, k); }
-  profitOk(r) { const S = this.state.set; return !!(r && r.cost > 0 && r.spent != null && (r.cost - r.spent) / r.cost * 100 >= (typeof S.profitTarget === 'number' ? S.profitTarget : 20)); }
+  profitOk(r) { const S = this.state.set; if (r && r.stage >= 5 && r.snap) return !!r.snap.profitOk; return !!(r && r.cost > 0 && r.spent != null && (r.cost - r.spent) / r.cost * 100 >= (typeof S.profitTarget === 'number' ? S.profitTarget : 20)); }
   incOf(type, score, r) {   // 기본 지급액(기준표) — 공무 실행입력에서 기준 이윤 달성 시 ×2
     const S = this.state.set, SC = [100, 95, 90, 85, 80], T = S.T[type + '|미달'], m = this.profitOk(r) ? 2 : 1;
     if (score < S.minScore) return null;
     for (let i = 0; i < SC.length; i++) { if (score >= SC[i]) return T[i] * m; }
     return null;
   }
+  mkSnap(r, S) {
+    if (!Array.isArray(r.sc) || r.sc.some(v => v == null)) return null;
+    const t = r.sc.reduce((a, b) => a + b, 0) + this.adjOf(r) + (r.structPt || 0) + (r.regionPt || 0) + (r.ceoAdj || 0);
+    const zero = !!(S.zeroOut && r.sc.some(v => v === 0)), profitOk = !!(r.cost > 0 && r.spent != null && (r.cost - r.spent) / r.cost * 100 >= (typeof S.profitTarget === 'number' ? S.profitTarget : 20)), T = S.T && S.T[r.type + '|미달'], SC = [100, 95, 90, 85, 80];
+    let amt = null; if (!zero && T && t >= S.minScore) for (let i = 0; i < SC.length; i++) { if (t >= SC[i]) { amt = T[i] * (profitOk ? 2 : 1); break; } }
+    return { score: t, kind: zero ? 'zero' : (amt !== null ? 'pay' : (t < S.penScore ? 'pen' : 'none')), amt, x2: amt !== null && profitOk, profitOk, at: Date.now() };
+  }
   adjOf(r) { const P = { air: 1, intro: 3, wcomp: -5, fine: -20, inner: -2, acc: -5, as: -20 }; return Object.entries(r.adj || {}).reduce((a, [k, n]) => a + (P[k] || 0) * (n || 0), 0); }
   zeroHit(r) { return !!(this.state.set.zeroOut && r.sc.some(v => v === 0)); }
-  incR(r, score) { if (this.zeroHit(r)) return null; return this.incOf(r.type, score, r); }
+  incR(r, score) { if (r.stage >= 5 && r.snap) return r.snap.kind === 'pay' ? r.snap.amt : null; if (this.zeroHit(r)) return null; return this.incOf(r.type, score, r); }
   incT(r, score) {
     const S = this.state.set;
+    if (r.stage >= 5 && r.snap) { const k = r.snap.kind; return k === 'pay' ? Number(r.snap.amt).toLocaleString('ko-KR') + '원' + (r.snap.x2 ? ' (이윤 달성 ×2)' : '') : (k === 'zero' ? '대상 아님 (최저점 항목)' : (k === 'pen' ? '페널티 (시말서·상여금 미지급)' : '대상 아님')); }
     if (this.zeroHit(r)) return '대상 아님 (최저점 항목)';
     const v = this.incOf(r.type, score, r); if (v !== null) return v.toLocaleString('ko-KR') + '원' + (this.profitOk(r) ? ' (이윤 달성 ×2)' : '');
     if (score < S.penScore) { return '페널티 (시말서·상여금 미지급)'; }
@@ -613,7 +640,7 @@ class Component extends DCLogic {
     const vis = lead ? nsites : nsites.filter(r => r.insp === st.viewer);
     const total = (sc0) => { const sc = Array.from({ length: 11 }, (_, i) => sc0 && sc0[i] != null ? sc0[i] : null); return total2(sc); };
     const total2 = (sc) => sc.every(v => v !== null) ? sc.reduce((a, b) => a + b, 0) : null;
-    const fin = (r) => { const t = total(r.sc); return t === null ? null : t + this.adjOf(r) + (r.structPt || 0) + (r.regionPt || 0) + (r.ceoAdj || 0); };
+    const fin = (r) => { if (r.stage >= 5 && r.snap && typeof r.snap.score === 'number') return r.snap.score; const t = total(r.sc); return t === null ? null : t + this.adjOf(r) + (r.structPt || 0) + (r.regionPt || 0) + (r.ceoAdj || 0); };
     const part = (r, idx) => idx.every(i => r.sc[i] != null) ? idx.reduce((a, i) => a + r.sc[i], 0) : null;
     const evOf = (r) => { const all = (() => { const sg = (v, mx) => v === null ? '—' : v + ' / ' + mx + '점', a = part(r, [0,1,2,3,4,5,10]), g = part(r, [6,7,8,9]);
       return [{ label: '소장 (자가평가)', score: r.selfScore == null ? '—' : r.selfScore + '점', note: '' }, { label: '감리', score: sg(a, 70), note: r.cGam || '—' }, { label: '가점·감점 (감리 확인)', score: (this.adjOf(r) > 0 ? '+' : '') + this.adjOf(r) + '점', note: '' }, { label: '현장 조건 가산점 (감리)', score: ((r.structPt || 0) + (r.regionPt || 0)) > 0 ? '+' + ((r.structPt || 0) + (r.regionPt || 0)) + '점' : '0점', note: [r.struct && (r.struct + ' +' + (r.structPt || 0)), r.region && (r.region + ' +' + (r.regionPt || 0))].filter(Boolean).join(' · ') || '—' }, { label: '공무', score: sg(g, 30), note: r.cGong || '—' },
@@ -710,6 +737,8 @@ class Component extends DCLogic {
       modeBtns: ['상세', '간편'].map(k => ({ label: k + ' 출력', pick: () => this.setState({ bulkMode: k }),
         style: 'cursor:pointer;height:44px;padding:0 16px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (st.bulkMode === k ? '#C8A24A' : '#D9D4C6') + ';background:' + (st.bulkMode === k ? '#FFF7E0' : '#fff') + ';color:#1B2333' })),
       bulkDetail: st.bulkMode === '상세', bulkSimple: st.bulkMode === '간편', modeNote: st.bulkMode === '상세' ? '상세: 현장별 1페이지' : '간편: 소장·주소·점수·인센티브 1장',
+      lineHeads: ['공기', '안전관리', '안전서류', '감리보고서', '엔딩점검', '근태관리', '어플근태', '인력·자재', '완료확인서', '폐기물', 'AS처리'].map((name, i) => ({ name, max: ITEMS[i][1] })),
+      lineRows: st.bulk ? confirmed(st.bulk).map((r, i) => { const t = fin(r); return { no: i + 1, addr: r.addr, mgr: r.mgr, type: r.type, grade: r.grade || '—', pyung: r.pyung ? r.pyung + '평' : '—', cells: ITEMS.map((it, k) => ({ v: r.sc[k] == null ? '—' : r.sc[k] })), total: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(r, t) }; }) : [],
       simpleRows: st.bulk ? confirmed(st.bulk).map((r, i) => ({ no: i + 1, mgr: r.mgr, addr: r.addr, score: fin(r) + '점', inc: this.incT(r, fin(r)) })) : [],
       simpleTotal: st.bulk ? confirmed(st.bulk).reduce((a, r) => a + (this.incR(r, fin(r)) || 0), 0).toLocaleString('ko-KR') + '원' : '',
       catRows: [['직영', 't-d'], ['관리소장', 't-m']].map(([k, cls]) => { const rs = vis.filter(r => r.type === k), dn = rs.filter(r => r.stage === 5), ts = dn.map(r => fin(r));
