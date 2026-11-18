@@ -74,8 +74,8 @@ button{font-family:inherit}
       <div class="row"><span class="lab">절대공기(일){{absNote}}</span><b>{{abs}}일</b></div>
       <div class="row"><span class="lab">착공일</span><input type="date" value="{{startDate}}" onChange="{{onStart}}" aria-label="착공일" style="height:38px;border:1px solid #CFC9B8;border-radius:8px;padding:0 8px;font-size:14px;font-family:inherit"></div>
       <div class="row"><span class="lab">준공일 <span style="font-size:11px">(청소~잔손보기 완료)</span></span><input type="date" value="{{endDate}}" onChange="{{onEnd}}" aria-label="준공일" style="height:38px;border:1px solid #CFC9B8;border-radius:8px;padding:0 8px;font-size:14px;font-family:inherit"></div>
-      <div style="font-size:12px;color:#4A5163;padding:2px 0 6px">두 날짜를 입력하면 완료공기가 자동 계산되고 점수에 바로 반영됩니다. (착공일 포함)</div>
-      <div class="row"><span class="lab">완료공기(일)</span>
+      <div style="font-size:12px;color:#4A5163;padding:2px 0 6px">두 날짜를 입력하면 완료공기가 자동 계산되고 점수에 바로 반영됩니다. (착공일·준공일 포함, 토·일·공휴일 제외한 근무일 기준)</div>
+      <div class="row"><span class="lab">완료공기(근무일)</span>
         <div class="stp"><button aria-label="완료공기 1일 감소" onClick="{{airDown}}">−</button><b style="min-width:48px;text-align:center">{{air}}일</b><button aria-label="완료공기 1일 증가" onClick="{{airUp}}">+</button></div>
       </div>
       <div class="row"><span class="lab">공기차이</span><b>{{airDiff}}</b></div>
@@ -212,6 +212,23 @@ button{font-family:inherit}
   </div>
   </sc-if>
 </div>
+<sc-if value="{{backOpen}}" hint-placeholder-val="{{false}}">
+<div role="dialog" aria-label="나가기 확인" style="position:fixed;inset:0;z-index:50;background:rgba(20,33,61,.55);display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:14px;padding:22px 20px;width:100%;max-width:340px;box-sizing:border-box;font-family:inherit">
+    <div style="font-weight:700;font-size:18px;margin-bottom:6px">제출하시겠습니까?</div>
+    <div style="font-size:13px;line-height:1.5;color:#4A5163;margin-bottom:16px">나가기 전에 입력한 내용을 제출할지 선택해 주세요. <b>입력취소</b>를 누르면 이 화면에서 저장하지 않은 내용은 사라집니다.</div>
+    <button onClick="{{backSubmit}}" style="width:100%;min-height:48px;border-radius:10px;border:0;background:#14213D;color:#fff;font-weight:700;font-size:16px;cursor:pointer;margin-bottom:8px">제출하기</button>
+    <button onClick="{{backCancel}}" style="width:100%;min-height:48px;border-radius:10px;border:1px solid #8A1F17;background:#fff;color:#8A1F17;font-weight:700;font-size:16px;cursor:pointer;margin-bottom:8px">입력취소</button>
+    <button onClick="{{backStay}}" style="width:100%;min-height:40px;border:0;background:transparent;color:#4A5163;font-size:14px;cursor:pointer;text-decoration:underline">계속 작성하기</button>
+  </div>
+</div>
+</sc-if>
+<sc-if value="{{exited}}" hint-placeholder-val="{{false}}">
+<div style="position:fixed;inset:0;z-index:60;background:#14213D;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;font-family:inherit">
+  <div style="font-size:20px;font-weight:700">평가 화면을 종료했습니다</div>
+  <div style="font-size:14px;line-height:1.6;color:#D9DEE8">이 창을 닫고 바탕 화면(카카오톡 등)으로 돌아가 주세요.<br>다시 입력하려면 받으신 링크를 다시 눌러 주세요.</div>
+</div>
+</sc-if>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3000}}'>
 class Component extends DCLogic {
@@ -219,17 +236,30 @@ class Component extends DCLogic {
     sc: [10, 10, 15, 5, 5, 5, 5, 5], d3: [0, 0, 0], cnt: [0, 0, 0, 0, 0] }; }
   fromSite(site) { const m = site.selfIn || {}; return { mode: site.stage === 0 ? 'input' : (site.stage >= 5 ? 'result' : 'wait'), ...(m.kind === 'RC' || m.kind === '목조' ? { kind: m.kind } : {}), ...(typeof m.arch === 'string' ? { arch: m.arch } : {}), pyungIn: site.pyung ? String(site.pyung) : '', costIn: site.cost ? String(site.cost) : '', struct: site.struct || '', region: site.region || '', ...(typeof m.interior === 'string' ? { interior: m.interior } : {}), ...(typeof m.air === 'number' ? { air: m.air } : {}), finalCost: site.finalCost ? String(site.finalCost) : '', ...(typeof m.start === 'string' ? { start: m.start } : {}), ...(typeof m.end === 'string' ? { end: m.end } : {}), ...(typeof m.waste === 'number' ? { waste: m.waste } : {}), ...(typeof m.man === 'number' ? { man: m.man } : {}), ...(Array.isArray(m.sc) && (m.sc.length === 7 || m.sc.length === 8) ? { sc: m.sc.length === 7 ? [...m.sc, 5] : m.sc } : {}), ...(Array.isArray(m.d3) && m.d3.length === 3 ? { d3: m.d3 } : {}), ...(Array.isArray(m.cnt) && (m.cnt.length === 6 || m.cnt.length === 5) ? { cnt: m.cnt.length === 6 ? m.cnt.slice(1) : m.cnt } : {}) }; }
   async call(body, get) { const api = this.api; if (!api) throw new Error('cfg'); let r; if (get) r = await fetch(api + '?' + new URLSearchParams(body).toString(), { cache: 'no-store' }); else r = await fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }); if (!r.ok) throw new Error('서버 응답 오류 (' + r.status + ')'); const j = await r.json(); if (!j.ok) throw new Error(j.err || '요청 실패'); return j; }
-  componentDidMount() { try { const q = new URLSearchParams(location.search).get('e') || ''; const id = (parseInt(q.split('-')[0].slice(1), 36) - 46656) / 7919; if (!q) return; if (!Number.isInteger(id)) { this.q = q; this.setState({ loadMsg: '링크가 올바르지 않습니다. 받으신 링크 전체가 복사되었는지 확인해 주세요.' }); return; } this.q = q; this.id = id; this.setState({ loadMsg: '현장 정보를 불러오는 중…' });
+  componentDidMount() { try { const q = new URLSearchParams(location.search).get('e') || ''; const id = (parseInt(q.split('-')[0].slice(1), 36) - 46656) / 7919; if (!q) return; if (!Number.isInteger(id)) { this.q = q; this.setState({ loadMsg: '링크가 올바르지 않습니다. 받으신 링크 전체가 복사되었는지 확인해 주세요.' }); return; } this.q = q; this.id = id; this.setState({ loadMsg: '현장 정보를 불러오는 중…' }); this.initBack();
     fetch('config.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(c => { if (!c || !c.api) throw new Error('cfg'); this.api = c.api; return this.call({ a: 'get', id, t: q }, true); })
       .then(j => { this.setState({ site: j.site, loadMsg: '', ...this.fromSite(j.site) }); if (j.set) this.setState({ cfg: j.set }); })
       .catch(e => this.setState({ loadMsg: e.message === 'cfg' ? '저장 서버 연결(config.json)이 설정되지 않았습니다. 관리자에게 문의해 주세요.' : '현장 정보를 불러오지 못했습니다. (' + e.message + ')' })); } catch (e) {} }
-  setDates(start, end) { const p = { start, end }; const a = Date.parse(start), b = Date.parse(end); if (!isNaN(a) && !isNaN(b) && b >= a) p.air = Math.round((b - a) / 86400000) + 1; this.setState(p); }
+  // 근무일 수 계산: 착공일·준공일 포함, 토·일·공휴일(대체공휴일 포함) 제외. 표에 없는 연도는 토·일만 제외됩니다.
+  workDays(start, end) {
+    const HOL = new Set(['2025-01-01', '2025-01-27', '2025-01-28', '2025-01-29', '2025-01-30', '2025-03-03', '2025-05-05', '2025-05-06', '2025-06-03', '2025-06-06', '2025-08-15', '2025-10-03', '2025-10-05', '2025-10-06', '2025-10-07', '2025-10-08', '2025-10-09', '2025-12-25',
+      '2026-01-01', '2026-02-16', '2026-02-17', '2026-02-18', '2026-03-01', '2026-03-02', '2026-05-05', '2026-05-24', '2026-05-25', '2026-06-03', '2026-06-06', '2026-08-15', '2026-08-17', '2026-09-24', '2026-09-25', '2026-09-26', '2026-09-28', '2026-10-03', '2026-10-05', '2026-10-09', '2026-12-25',
+      '2027-01-01', '2027-02-06', '2027-02-07', '2027-02-08', '2027-02-09', '2027-03-01', '2027-05-05', '2027-05-13', '2027-06-06', '2027-08-15', '2027-08-16', '2027-09-14', '2027-09-15', '2027-09-16', '2027-10-03', '2027-10-04', '2027-10-09', '2027-10-11', '2027-12-25', '2027-12-27']);
+    let n = 0; const e = Date.parse(end + 'T00:00:00Z');
+    for (let t = Date.parse(start + 'T00:00:00Z'); t <= e; t += 86400000) { const d = new Date(t), w = d.getUTCDay(); if (w !== 0 && w !== 6 && !HOL.has(d.toISOString().slice(0, 10))) n++; }
+    return n;
+  }
+  setDates(start, end) { const p = { start, end }; const a = Date.parse(start), b = Date.parse(end); if (!isNaN(a) && !isNaN(b) && b >= a) p.air = this.workDays(start, end); this.setState(p); }
+  initBack() { if (this._backInit) return; this._backInit = true; try { history.pushState({ dj: 1 }, '', location.href); window.addEventListener('popstate', () => { if (this.state.exited) return; try { history.pushState({ dj: 1 }, '', location.href); } catch (e) {} this.onBack(); }); } catch (e) {} }
+  onBack() { const s = this.state; if (s.exited || s.backOpen) return; if (s.site && s.mode === 'input') this.setState({ backOpen: true }); else this.exitApp(); }
+  async backSubmit() { const s = this.state, miss = this._miss || []; if (this.q && miss.length) { this.setState({ backOpen: false, saveOk: false, saveMsg: '제출 전에 ' + miss.join(', ') + '을(를) 입력해 주세요. (공기·폐기물·인력 기준 계산에 필요합니다)' }); return; } const ok = await this.saveSelf(true, this._payload); if (ok) this.exitApp(); else this.setState({ backOpen: false }); }
+  exitApp() { this.setState({ exited: true, backOpen: false }); try { window.close(); } catch (e) {} }
   async saveSelf(submit, data) {
-    if (!this.q || !this.api) { this.setState({ saveMsg: '샘플 화면입니다. 실제 평가 링크에서 저장됩니다.', saveOk: false }); return; }
-    if (this.state.busy) return; this.setState({ busy: true, saveMsg: '저장 중…', saveOk: true });
+    if (!this.q || !this.api) { this.setState({ saveMsg: '샘플 화면입니다. 실제 평가 링크에서 저장됩니다.', saveOk: false }); return false; }
+    if (this.state.busy) return false; this.setState({ busy: true, saveMsg: '저장 중…', saveOk: true });
     try { const j = await this.call({ a: 'role', id: this.id, t: this.q, data, submit: !!submit });
-      this.setState({ site: j.site, busy: false, saveOk: true, saveMsg: (submit ? '제출 완료' : '임시저장 완료') + ' · ' + new Date().toLocaleTimeString('ko-KR'), ...(submit ? { mode: 'wait' } : {}) });
-    } catch (e) { this.setState({ busy: false, saveOk: false, saveMsg: '오류: ' + e.message + ' (입력 내용은 이 화면에 그대로 있습니다. 다시 눌러 주세요)' }); }
+      this.setState({ site: j.site, busy: false, saveOk: true, saveMsg: (submit ? '제출 완료' : '임시저장 완료') + ' · ' + new Date().toLocaleTimeString('ko-KR'), ...(submit ? { mode: 'wait' } : {}) }); return true;
+    } catch (e) { this.setState({ busy: false, saveOk: false, saveMsg: '오류: ' + e.message + ' (입력 내용은 이 화면에 그대로 있습니다. 다시 눌러 주세요)' }); return false; }
   }
   renderVals() {
     const s = this.state, site0 = s.site, py = Number(s.pyungIn) > 0 ? Number(s.pyungIn) : ((site0 && site0.pyung) || 32.2);
@@ -266,7 +296,9 @@ class Component extends DCLogic {
     const airBonus = airPt > 0 ? airPt : 0, cA = calc(20, Math.min(0, airPt), 0), cW = calc(10, wPt, 1), cM = calc(10, mPt, 2);
     const selfTotal = cA.score + cW.score + cM.score + s.sc.reduce((a, b) => a + b, 0) + adjSum + airBonus;
     const AK = ['wcomp', 'fine', 'inner', 'acc', 'as'], selfAdj = {}; AK.forEach((k, i) => { if (s.cnt[i]) selfAdj[k] = s.cnt[i]; }); if (airBonus) selfAdj.air = airBonus;
+    this._miss = [!(Number(s.pyungIn) > 0) && '실평형수', !s.struct && '건축 종류(구조)', (!s.start || !s.end) && '착공일·준공일'].filter(Boolean);
     const payload = { ...(s.finalCost ? { finalCost: Number(s.finalCost) } : {}), self: [cA.score, s.sc[0], s.sc[1], s.sc[2], s.sc[3], s.sc[4], s.sc[5], cM.score, s.sc[6], cW.score, s.sc[7]], selfScore: selfTotal, selfAdj, info: { ...(Number(s.pyungIn) > 0 ? { pyung: Number(s.pyungIn) } : {}), ...(s.costIn ? { cost: Number(s.costIn) } : {}), ...(s.struct ? { struct: s.struct } : {}), ...(s.region ? { region: s.region } : {}), arch: archSel, interior: intSel }, selfIn: { kind, arch: archSel, interior: intSel, start: s.start, end: s.end, air: s.air, waste: s.waste, man: s.man, airV: air, wasteV: waste, manV: man, sc: s.sc, d3: s.d3, cnt: s.cnt } };
+    this._payload = payload;
     const MODES = [['input', '입력 중'], ['wait', '평가 진행 중'], ['result', '확정 후 결과']];
     const ITEMS = [['공기', 20, 19, '감리'], ['안전관리', 10, 9, '감리'], ['안전서류 작성', 10, 9, '감리'], ['감리보고서', 15, 14, '감리'],
       ['엔딩점검·건축주 만족도', 5, 5, '감리'], ['근태관리', 5, 4, '감리'], ['어플근태관리', 5, 4, '공무'],
@@ -284,6 +316,7 @@ class Component extends DCLogic {
       else if (rTotal < penScore) rInc = '페널티 대상';
       else if (rTotal < minScore) rInc = '대상 아님';
       else { rInc = '대상 아님'; for (let i = 0; i < SCL.length; i++) { if (rTotal >= SCL[i]) { rInc = Math.round(tb[i] * mult).toLocaleString('ko-KR') + '원'; break; } } }
+      if (site.stage >= 5 && site.snap && typeof site.snap.score === 'number') { rTotal = site.snap.score; rInc = site.snap.kind === 'pay' && site.snap.amt != null ? Number(site.snap.amt).toLocaleString('ko-KR') + '원' : (site.snap.kind === 'pen' ? '페널티 대상' : '대상 아님'); }   // 확정 시점 값 보존
     }
     const nm = s.site ? s.site.mgr : '소장 아', sub = s.loadMsg || { input: nm + ' · 입력 마감 11/05', wait: nm + ' · 입력 제출 완료', result: nm + ' · 평가 확정 완료' }[s.mode];
     return {
@@ -314,7 +347,8 @@ class Component extends DCLogic {
       wMax: cW.max, wScore: cW.score, wLost: cW.lost, wLostColor: cW.lostColor, wPlusStyle: cW.plus, wSUp: cW.up, wSDown: cW.down,
       mMax: cM.max, mScore: cM.score, mLost: cM.lost, mLostColor: cM.lostColor, mPlusStyle: cM.plus, mSUp: cM.up, mSDown: cM.down,
       selfGam: [...selfItems.slice(0, 5), selfItems[7]], selfGong: selfItems.slice(5, 7), adjItems, adjTotal: f(adjSum), adjCls: cls(adjSum), selfTotal: selfTotal + '점',
-      rItems, rTotal, rInc, saveMsg: s.saveMsg, saveColor: s.saveOk ? '#14583A' : '#8A1F17', saveGo: () => this.saveSelf(false, payload), submitGo: () => { const miss = [!(Number(s.pyungIn) > 0) && '실평형수', !s.struct && '건축 종류(구조)', (!s.start || !s.end) && '착공일·준공일'].filter(Boolean); if (this.q && miss.length) { this.setState({ saveOk: false, saveMsg: '제출 전에 ' + miss.join(', ') + '을(를) 입력해 주세요. (공기·폐기물·인력 기준 계산에 필요합니다)' }); return; } this.setState({ confirming: true, saveMsg: '' }); }, doSubmit: () => { this.setState({ confirming: false }); this.saveSelf(true, payload); }, cancelSubmit: () => this.setState({ confirming: false }), showSubmitBtn: !s.confirming, showConfirm: s.confirming, steps: ['소장 입력', '감리 평가', '공무 평가', '감리팀장 확정'].map((name, i) => ({ name, i })).map(({ name, i }) => { const g = site ? Math.min(Math.max(1, site.stage), 3) : 2; return { name, state: i < g ? '완료' : (i === g ? '진행 중' : '대기'), style: i < g ? '' : (i === g ? 'background:#E5EDFA;color:#1B438A' : 'background:#FFF0D1;color:#6B4200') }; }),
+      rItems, rTotal, rInc, saveMsg: s.saveMsg, saveColor: s.saveOk ? '#14583A' : '#8A1F17', saveGo: () => this.saveSelf(false, payload), submitGo: () => { const miss = [!(Number(s.pyungIn) > 0) && '실평형수', !s.struct && '건축 종류(구조)', (!s.start || !s.end) && '착공일·준공일'].filter(Boolean); if (this.q && miss.length) { this.setState({ saveOk: false, saveMsg: '제출 전에 ' + miss.join(', ') + '을(를) 입력해 주세요. (공기·폐기물·인력 기준 계산에 필요합니다)' }); return; } this.setState({ confirming: true, saveMsg: '' }); }, doSubmit: () => { this.setState({ confirming: false }); this.saveSelf(true, payload); }, cancelSubmit: () => this.setState({ confirming: false }), backOpen: !!s.backOpen, exited: !!s.exited, backSubmit: () => this.backSubmit(), backCancel: () => this.exitApp(), backStay: () => this.setState({ backOpen: false }),
+      showSubmitBtn: !s.confirming, showConfirm: s.confirming, steps: ['소장 입력', '감리 평가', '공무 평가', '감리팀장 확정'].map((name, i) => ({ name, i })).map(({ name, i }) => { const g = site ? Math.min(Math.max(1, site.stage), 3) : 2; return { name, state: i < g ? '완료' : (i === g ? '진행 중' : '대기'), style: i < g ? '' : (i === g ? 'background:#E5EDFA;color:#1B438A' : 'background:#FFF0D1;color:#6B4200') }; }),
       doPrint: () => { try { window.print(); } catch (e) {} }
     };
   }
