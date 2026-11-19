@@ -229,6 +229,12 @@ button{font-family:inherit}
   <div style="font-size:14px;line-height:1.6;color:#D9DEE8">이 창을 닫고 바탕 화면(카카오톡 등)으로 돌아가 주세요.<br>다시 입력하려면 받으신 링크를 다시 눌러 주세요.</div>
 </div>
 </sc-if>
+<sc-if value="{{showRetry}}" hint-placeholder-val="{{false}}">
+<div style="position:fixed;left:16px;right:16px;bottom:24px;z-index:40;background:#fff;border:1px solid #D9D4C6;border-radius:12px;padding:14px;box-shadow:0 6px 24px rgba(0,0,0,.18);font-family:inherit">
+  <div style="font-size:13px;line-height:1.5;color:#4A5163;margin-bottom:10px;word-break:break-all;white-space:pre-line">{{diag}}</div>
+  <button onClick="{{retryGo}}" style="width:100%;min-height:46px;border-radius:10px;border:0;background:#14213D;color:#fff;font-weight:700;font-size:15px;cursor:pointer">다시 불러오기</button>
+</div>
+</sc-if>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3000}}'>
 class Component extends DCLogic {
@@ -236,10 +242,22 @@ class Component extends DCLogic {
     sc: [10, 10, 15, 5, 5, 5, 5, 5], d3: [0, 0, 0], cnt: [0, 0, 0, 0, 0] }; }
   fromSite(site) { const m = site.selfIn || {}; return { mode: site.stage === 0 ? 'input' : (site.stage >= 5 ? 'result' : 'wait'), ...(m.kind === 'RC' || m.kind === '목조' ? { kind: m.kind } : {}), ...(typeof m.arch === 'string' ? { arch: m.arch } : {}), pyungIn: site.pyung ? String(site.pyung) : '', costIn: site.cost ? String(site.cost) : '', struct: site.struct || '', region: site.region || '', ...(typeof m.interior === 'string' ? { interior: m.interior } : {}), ...(typeof m.air === 'number' ? { air: m.air } : {}), finalCost: site.finalCost ? String(site.finalCost) : '', ...(typeof m.start === 'string' ? { start: m.start } : {}), ...(typeof m.end === 'string' ? { end: m.end } : {}), ...(typeof m.waste === 'number' ? { waste: m.waste } : {}), ...(typeof m.man === 'number' ? { man: m.man } : {}), ...(Array.isArray(m.sc) && (m.sc.length === 7 || m.sc.length === 8) ? { sc: m.sc.length === 7 ? [...m.sc, 5] : m.sc } : {}), ...(Array.isArray(m.d3) && m.d3.length === 3 ? { d3: m.d3 } : {}), ...(Array.isArray(m.cnt) && (m.cnt.length === 6 || m.cnt.length === 5) ? { cnt: m.cnt.length === 6 ? m.cnt.slice(1) : m.cnt } : {}) }; }
   async call(body, get) { const api = this.api; if (!api) throw new Error('cfg'); let r; if (get) r = await fetch(api + '?' + new URLSearchParams(body).toString(), { cache: 'no-store' }); else r = await fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }); if (!r.ok) throw new Error('서버 응답 오류 (' + r.status + ')'); const j = await r.json(); if (!j.ok) throw new Error(j.err || '요청 실패'); return j; }
-  componentDidMount() { try { const q = new URLSearchParams(location.search).get('e') || ''; const id = (parseInt(q.split('-')[0].slice(1), 36) - 46656) / 7919; if (!q) return; if (!Number.isInteger(id)) { this.q = q; this.setState({ loadMsg: '링크가 올바르지 않습니다. 받으신 링크 전체가 복사되었는지 확인해 주세요.' }); return; } this.q = q; this.id = id; this.setState({ loadMsg: '현장 정보를 불러오는 중…' }); this.initBack();
-    fetch('config.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(c => { if (!c || !c.api) throw new Error('cfg'); this.api = c.api; return this.call({ a: 'get', id, t: q }, true); })
-      .then(j => { this.setState({ site: j.site, loadMsg: '', ...this.fromSite(j.site) }); if (j.set) this.setState({ cfg: j.set }); })
-      .catch(e => this.setState({ loadMsg: e.message === 'cfg' ? '저장 서버 연결(config.json)이 설정되지 않았습니다. 관리자에게 문의해 주세요.' : '현장 정보를 불러오지 못했습니다. (' + e.message + ')' })); } catch (e) {} }
+  componentDidMount() { try { const q = new URLSearchParams(location.search).get('e') || ''; const id = (parseInt(q.split('-')[0].slice(1), 36) - 46656) / 7919; if (!q) return; if (!Number.isInteger(id)) { this.q = q; this.setState({ loadMsg: '링크가 올바르지 않습니다. 받으신 링크 전체가 복사되었는지 확인해 주세요.' }); return; } this.q = q; this.id = id; this.setState({ loadMsg: '현장 정보를 불러오는 중…' }); this.initBack(); this.loadSite(1); } catch (e) {} }
+  async loadSite(n) {
+    const q = this.q, id = this.id, TO = (pr, ms) => Promise.race([pr, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+    this.setState({ loadMsg: n > 1 ? '서버 응답이 늦어 다시 시도하는 중… (' + n + '/3)' : '현장 정보를 불러오는 중…', retry: false, diag: '' });
+    try {
+      if (!this.api) { const r = await TO(fetch('config.json', { cache: 'no-store' }), 15000); const c = r.ok ? await r.json() : null; if (!c || !c.api) throw new Error('cfg'); this.api = c.api; }
+      const j = await TO(this.call({ a: 'get', id, t: q }, true), 25000);
+      this.setState({ site: j.site, loadMsg: '', retry: false, ...this.fromSite(j.site) });
+      if (j.set) this.setState({ cfg: j.set });
+    } catch (e) {
+      const transient = e.message === 'timeout' || e instanceof TypeError || /서버 응답 오류/.test(e.message);
+      if (transient && n < 3) { await new Promise(r => setTimeout(r, 1500)); return this.loadSite(n + 1); }
+      const why = e.message === 'cfg' ? '저장 서버 연결(config.json)이 설정되지 않았습니다. 관리자에게 문의해 주세요.' : (e.message === 'timeout' ? '서버가 응답하지 않습니다. 잠시 후 [다시 불러오기]를 눌러 주세요.' : (e instanceof TypeError ? '서버에 연결하지 못했습니다. 인터넷 연결과 링크를 확인한 뒤 [다시 불러오기]를 눌러 주세요.' : '현장 정보를 불러오지 못했습니다. (' + e.message + ')'));
+      this.setState({ loadMsg: why, retry: e.message !== 'cfg', diag: why + '\n[' + (this.q || '').split('-').pop() + ' 링크 · ' + e.message + ']' });
+    }
+  }
   // 근무일 수 계산: 착공일·준공일 포함, 토·일·공휴일(대체공휴일 포함) 제외. 표에 없는 연도는 토·일만 제외됩니다.
   workDays(start, end) {
     const HOL = new Set(['2025-01-01', '2025-01-27', '2025-01-28', '2025-01-29', '2025-01-30', '2025-03-03', '2025-05-05', '2025-05-06', '2025-06-03', '2025-06-06', '2025-08-15', '2025-10-03', '2025-10-05', '2025-10-06', '2025-10-07', '2025-10-08', '2025-10-09', '2025-12-25',
@@ -348,6 +366,7 @@ class Component extends DCLogic {
       mMax: cM.max, mScore: cM.score, mLost: cM.lost, mLostColor: cM.lostColor, mPlusStyle: cM.plus, mSUp: cM.up, mSDown: cM.down,
       selfGam: [...selfItems.slice(0, 5), selfItems[7]], selfGong: selfItems.slice(5, 7), adjItems, adjTotal: f(adjSum), adjCls: cls(adjSum), selfTotal: selfTotal + '점',
       rItems, rTotal, rInc, saveMsg: s.saveMsg, saveColor: s.saveOk ? '#14583A' : '#8A1F17', saveGo: () => this.saveSelf(false, payload), submitGo: () => { const miss = [!(Number(s.pyungIn) > 0) && '실평형수', !s.struct && '건축 종류(구조)', (!s.start || !s.end) && '착공일·준공일'].filter(Boolean); if (this.q && miss.length) { this.setState({ saveOk: false, saveMsg: '제출 전에 ' + miss.join(', ') + '을(를) 입력해 주세요. (공기·폐기물·인력 기준 계산에 필요합니다)' }); return; } this.setState({ confirming: true, saveMsg: '' }); }, doSubmit: () => { this.setState({ confirming: false }); this.saveSelf(true, payload); }, cancelSubmit: () => this.setState({ confirming: false }), backOpen: !!s.backOpen, exited: !!s.exited, backSubmit: () => this.backSubmit(), backCancel: () => this.exitApp(), backStay: () => this.setState({ backOpen: false }),
+      showRetry: !!s.retry, diag: s.diag || '', retryGo: () => this.loadSite(1),
       showSubmitBtn: !s.confirming, showConfirm: s.confirming, steps: ['소장 입력', '감리 평가', '공무 평가', '감리팀장 확정'].map((name, i) => ({ name, i })).map(({ name, i }) => { const g = site ? Math.min(Math.max(1, site.stage), 3) : 2; return { name, state: i < g ? '완료' : (i === g ? '진행 중' : '대기'), style: i < g ? '' : (i === g ? 'background:#E5EDFA;color:#1B438A' : 'background:#FFF0D1;color:#6B4200') }; }),
       doPrint: () => { try { window.print(); } catch (e) {} }
     };
