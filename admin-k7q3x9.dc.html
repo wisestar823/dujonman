@@ -35,6 +35,10 @@ button{font-family:inherit}
 .sh th{background:#EEE;text-align:center;font-weight:700}
 .ln th,.ln td{border:1px solid #333;padding:4px 3px;font-size:10px;line-height:1.35;text-align:center;vertical-align:middle}
 .ln th{background:#EEE;font-weight:700}
+.og{zoom:.88}
+.og th,.og td{border:1px solid #333;padding:2px 4px;font-size:9px;line-height:1.35;vertical-align:middle}
+.og th{background:#EEE;font-weight:700;text-align:center}
+.og .c{text-align:center}.og .l{text-align:left;vertical-align:top}.og .s{font-size:8.5px;color:#444}.og .v{font-weight:700;background:#FFFBE0}
 @media print{
   .noprint{display:none!important}
   body{background:#fff}
@@ -255,7 +259,7 @@ button{font-family:inherit}
             <button onClick="{{closeBulk}}" style="height:44px;padding:0 18px;border-radius:8px;border:1px solid #14213D;background:#fff;color:#14213D;font-size:14px;cursor:pointer">닫기</button>
           </div>
         </div>
-        <sc-if value="{{bulkDetail}}" hint-placeholder-val="{{true}}">
+        <sc-if value="{{bulkSimple}}" hint-placeholder-val="{{false}}">
         <div class="pb wide" style="margin:0 auto 28px;overflow-x:auto;max-width:100%">
           <div style="text-align:center;font-weight:700;font-size:19px;padding:6px 0 4px">현장소장 공사완료평가 한 줄 요약표</div>
           <div style="text-align:center;font-size:12px;color:#555;margin-bottom:10px">{{bulkTitle}} · 감리팀장 확정 {{bulkCount}}건</div>
@@ -298,18 +302,48 @@ button{font-family:inherit}
           </div>
         </sc-for>
         </sc-if>
-        <sc-if value="{{bulkSimple}}" hint-placeholder-val="{{false}}">
-          <div style="max-width:794px;margin:0 auto">
-            <div style="text-align:center;font-weight:700;font-size:19px;padding:6px 0 4px">현장소장 공사완료평가 결과 요약</div>
-            <div style="text-align:center;font-size:12px;color:#555;margin-bottom:10px">{{bulkTitle}} · 감리팀장 확정 {{bulkCount}}건</div>
-            <table class="sh" style="border-collapse:collapse;width:100%">
-              <tr><th style="width:7%">번호</th><th style="width:16%">현장소장</th><th>현장 주소</th><th style="width:14%">평가점수</th><th style="width:20%">인센티브 금액</th></tr>
-              <sc-for list="{{simpleRows}}" as="s" hint-placeholder-count="3">
-                <tr><td style="text-align:center">{{s.no}}</td><td style="text-align:center">{{s.mgr}}</td><td>{{s.addr}}</td><td style="text-align:center;font-weight:700">{{s.score}}</td><td style="text-align:right;font-weight:700">{{s.inc}}</td></tr>
-              </sc-for>
-              <tr><th colspan="4">인센티브 합계 ({{bulkCount}}건)</th><td style="text-align:right;font-weight:700">{{simpleTotal}}</td></tr>
+        <sc-if value="{{bulkDetail}}" hint-placeholder-val="{{true}}">
+        <sc-for list="{{origSheets}}" as="o" hint-placeholder-count="2">
+          <div class="pb" style="max-width:760px;margin:0 auto 28px">
+            <table class="og" style="border-collapse:collapse;width:100%;table-layout:fixed">
+              <tr style="height:0"><td style="width:6%;padding:0;border:0;height:0;line-height:0;font-size:0"></td><td style="width:25%;padding:0;border:0;height:0;line-height:0;font-size:0"></td><td style="width:8%;padding:0;border:0;height:0;line-height:0;font-size:0"></td><td style="width:8%;padding:0;border:0;height:0;line-height:0;font-size:0"></td><td style="width:35%;padding:0;border:0;height:0;line-height:0;font-size:0"></td><td style="width:9%;padding:0;border:0;height:0;line-height:0;font-size:0"></td><td style="width:9%;padding:0;border:0;height:0;line-height:0;font-size:0"></td></tr>
+              <tr><th colspan="7" style="font-size:16px;padding:6px 0">현장소장 공사완료평가 및 인센티브지급 기준안 <span style="font-size:12px">({{o.type}})</span></th></tr>
+              <tr><td colspan="2" style="text-align:left;background:#FFFBE0">현장명 : <b>{{o.addr}}</b></td><td colspan="2" style="text-align:left;background:#FFFBE0">현장소장 : <b>{{o.mgr}}</b></td><td style="font-size:8px;background:#FFFBE0">등급(기준) 예시 : 24년 4분기/32.2PY/프1/모2/</td><td colspan="2" style="text-align:left;background:#FFFBE0">등급 : <b>{{o.grade}}</b></td></tr>
+              <tr><th rowspan="2">기준점수</th><th rowspan="2">품목</th><th colspan="2">평가점수</th><th rowspan="2">상세 내용</th><th rowspan="2">구분</th><th rowspan="2">비고</th></tr>
+              <tr><th>기본점수</th><th>가감점수</th></tr>
+              <tr><td rowspan="4" class="c">20</td><td rowspan="4" class="l">- 건축공사 공기 목구조 기준<br>- R.C조, 철골 별도공기 부여</td><td rowspan="3" class="c v">{{o.s0}}</td><td rowspan="3" class="c v">{{o.airAdj}}</td><td rowspan="4" class="l">※ 공사종료 기준.<br>1. 준공청소 완료시<br>&nbsp;완료 기준 &gt;<br>&nbsp;싱크 및 가구공사, 오·배수공사, 수도인입 공사, 모든 잔손보기 완료시<br>2. 하자항목은 별도 적용<br>&nbsp;완공 완료시점에 발생된 하자는 공기산정에 추가한다.</td><td class="c">절대공기</td><td class="c v">{{o.absAir}}</td></tr>
+              <tr><td class="c">완료공기</td><td class="c v">{{o.doneAir}}</td></tr>
+              <tr><td class="c">공기차이</td><td class="c v">{{o.airDiff}}</td></tr>
+              <tr><td colspan="2" class="l s">- 관계자 미팅 시 산정 되며 특별한 경우 별도 보고를 통해 추가 공기 부여</td><td class="c">가감점수</td><td class="c v">{{o.airAdj}}</td></tr>
+              <tr><td class="c">10</td><td class="l">- 안전관리 기준<br>&nbsp;현장, 밴드 감리시 지적사항 항목적용</td><td colspan="2" class="c v">{{o.s1}}</td><td rowspan="2" class="l">- 안전모 미착용<br>- 추락방지 안전난간 미설치 (계단, 오픈부위) 등<br>- TBM, 신규채용장, 특별안전교육, 위험성평가 등<br>- 안전사고 발생시 : 해당제외</td><td colspan="2" rowspan="2"></td></tr>
+              <tr><td class="c">10</td><td class="l">- 안전서류 작성<br><span class="s">평가자 : 감리담당, 부서장.</span></td><td colspan="2" class="c v">{{o.s2}}</td></tr>
+              <tr><td class="c">15</td><td class="l">- 감리보고서 기준<br>&nbsp;현장감리시 지적사항 항목적용<br><span class="s">평가자 : 감리담당, 부서장.</span></td><td colspan="2" class="c v">{{o.s3}}</td><td class="l">※ 전체 공종 본사기준시방에 따른 품질평가</td><td colspan="2"></td></tr>
+              <tr><td class="c">5</td><td class="l">- 엔딩점검 및 건축주 만족도<br>&nbsp;건축주만족도 + 엔딩점검표<br><span class="s">평가자 : 감리담당, 부서장.</span></td><td colspan="2" class="c v">{{o.s4}}</td><td class="l">- 건축주 만족도 1등급~15등급.<br>- 감리자 현장, 소장평가 1~15등급</td><td colspan="2"></td></tr>
+              <tr><td class="c">5</td><td class="l">- 근태관리<br>&nbsp;(주간업무등록, 밴드, 공사일보)</td><td colspan="2" class="c v">{{o.s5}}</td><td rowspan="2" class="l">- 주간업무 미등록 1회 -3점 (월요일기준)<br>- 밴드, 공사일보 미등록 1회 -3<br>- 어플근태관리 1일당 -1점</td><td colspan="2" rowspan="2"></td></tr>
+              <tr><td class="c">5</td><td class="l">- 어플근태관리<br><span class="s">평가자 : 감리담당, 부서장, 공무담당자</span></td><td colspan="2" class="c v">{{o.s6}}</td></tr>
+              <tr><td class="c">10</td><td class="l">- 인력 및 잡자재 사용<br>&nbsp;(공사부 원가절감방안기준)<br>- 잔여자재 관리 및 회수 관련<br><span class="s">평가자 : 공무담당, 부서장.</span></td><td colspan="2" class="c v">{{o.s7}}</td><td class="l">- 1인 추가사용시 감점 -2점<br>- 1인 미사용시 가점 +2<br>- 잡자재 사용분석 / 구입불가자재 -1~10점<br>- 잔여자재 회수 증빙자료 첨부<br>- 10평당 1품 (R.C별도)</td><td colspan="2" class="c">* 인력 : 품사용<br><b class="v">{{o.manTxt}}</b></td></tr>
+              <tr><td class="c">5</td><td class="l">- 공사완료 확인서 및 기성업무<br>&nbsp;(계약서, 산출내역서, 추가내역서 기준)<br>- 대관업무 준공서류<br><span class="s">평가자 : 공무담당, 부서장.</span></td><td colspan="2" class="c v">{{o.s8}}</td><td class="l">- 계약서, 산출내역서, 추가내역서, 도면에 근거하여 기성업무 작성기준.<br>- 내역 외 공사시 -10만원당 -2점</td><td colspan="2"></td></tr>
+              <tr><td rowspan="2" class="c">10</td><td rowspan="2" class="l">- 폐기물처리<br>&nbsp;(공사부 원가절감방안기준)<br><span class="s">평가자 : 공무담당, 부서장</span></td><td rowspan="2" colspan="2" class="c v">{{o.s9}}</td><td rowspan="2" class="l">- 기준 이상 청구시 -10만원당 -1점<br>- 기준 미만 정산시 +10만원당 +1점<br>- 목조 : 평당 2.5만원<br>- R.C : 평당 3.5만원</td><td class="c">폐기물<br>처리비</td><td class="c v">{{o.wasteTxt}}</td></tr>
+              <tr><td class="c">평당</td><td class="c v">{{o.wastePy}}</td></tr>
+              <tr><td class="c">5</td><td class="l">- 완공현장 AS처리<br><span class="s">평가자 : 감리담당, 부서장.</span></td><td colspan="2" class="c v">{{o.s10}}</td><td class="l">- 하자처리기한 15일 초과시 -5점, 1일 초과마다 -1점</td><td colspan="2"></td></tr>
+              <tr><td></td><td class="l" style="color:#C00">경위서 및 시말서 작성</td><td colspan="2"></td><td class="l" style="color:#C00">- 경위서 작성 시 1회 : -3 / 2회 : -5<br>&nbsp;시말서 작성 시 : 미지급</td><td colspan="2"></td></tr>
+              <tr><td class="c">100</td><td></td><td colspan="2" class="c v" style="font-size:13px">합계 : {{o.total}}</td><td colspan="3" class="l">가감·가산 반영 최종 점수 : <b>{{o.finalScore}}</b><br><span class="s">{{o.adjNote}}</span></td></tr>
+              <tr><td colspan="7" class="c" style="color:#C00;font-weight:700">평가 항목 중 최저점수 발생 시 인센티브 대상에서 제외</td></tr>
+              <tr><th colspan="4">담당자 평가</th><th colspan="3">가점 및 감점 항목</th></tr>
+              <tr><td colspan="4" class="c" style="height:20px">감리평가</td><td colspan="3" rowspan="4" class="l s" style="vertical-align:top;font-size:9px;line-height:1.5">▶ 가점 항목<br>&nbsp;1. 공사이윤 (기준 이윤 이상 시 1%당 +1점)<br>&nbsp;2. 공기달성 (5일 단축 +1 / 3일 초과 -1점)<br>&nbsp;3. 홍보관련 (백년손님방문기 인터뷰, 오픈하우스, 영상촬영 +3점)<br>▶ 감점 항목<br>&nbsp;1. 안전관리 항목 지적사항 발생시<br>&nbsp;&nbsp;- 안전관련 정부기관 지적(고발) -5점<br>&nbsp;&nbsp;- 적발 범칙금 부과시 -20점<br>&nbsp;&nbsp;- 내부감리 지적사항 건당 -2점<br>&nbsp;2. 안전사고<br>&nbsp;&nbsp;- 경미한 안전사고 -5점<br>&nbsp;&nbsp;- 산재사고접수 인센티브 제외<br>&nbsp;3. 완공현장 AS발생<br>&nbsp;&nbsp;- 하자처리기한 15일 초과시 -5, 1일 초과시마다 -1점</td></tr>
+              <tr><td colspan="4" class="l" style="height:34px;vertical-align:top">{{o.cGam}}</td></tr>
+              <tr><td colspan="4" class="c" style="height:20px">공무평가</td></tr>
+              <tr><td colspan="4" class="l" style="height:34px;vertical-align:top">{{o.cGong}}</td></tr>
+              <tr><td colspan="4" class="c" style="height:20px">감리팀장 평가</td><th colspan="3">인센티브 지급방안 (완료현장 실행분석 회의, 점수책정)</th></tr>
+              <tr><td colspan="4" class="l" style="vertical-align:top">{{o.cCeo}}</td><td colspan="3" class="l" style="vertical-align:top;font-size:9px;line-height:1.5">
+                <table style="width:100%;border-collapse:collapse;font-size:9px"><tr><th style="border:0;background:none;text-align:left">▶ 기준 이윤 달성 시</th><th style="border:0;background:none;text-align:left">▶ 기준 이윤 미달 시</th></tr>
+                <sc-for list="{{o.tiers}}" as="p" hint-placeholder-count="5"><tr><td style="border:0;padding:1px 2px;{{p.okSt}}">- {{p.tier}} : {{p.ok}}</td><td style="border:0;padding:1px 2px;{{p.badSt}}">- {{p.tier}} : {{p.bad}}</td></tr></sc-for></table>
+                ▶ R.C현장 100% 추가적용<br>▶ 70점 미만 페널티 적용 (시말서 · 상여금 미지급)<br>※ 특별 상여금 기준<br>&nbsp;- 특수 현장 및 어려운 현장임에도 불구하고, 열정을 다해 원만한 현장진행으로 책임을 다해 임무완수를 위해 힘써준 소장님들을 위한 상여금 (해당 감리담당 및 공무담당자들의 추천을 통해 대표이사 승인 후 지급)
+                <div style="margin-top:4px;padding:3px 6px;border:1px solid #333;font-size:10px"><b>이 현장 결과</b> : {{o.resultTxt}}</div></td></tr>
             </table>
           </div>
+        </sc-for>
+        </sc-if>
         </sc-if>
       </section>
     </sc-if>
@@ -692,6 +726,20 @@ class Component extends DCLogic {
     const mkSheet = (r) => { const t = fin(r); return { ...infoOf(r), type: r.type, addr: r.addr, mgr: r.mgr, insp: r.insp, grade: r.grade,
       rows: ITEMS.map((it, i) => ({ max: it[1], name: it[0], who: it[2], detail: it[3], score: r.sc[i] == null ? '—' : r.sc[i] })),
       ev: evOf(r), finalScore: t === null ? '—' : t + '점', total: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(r, t), cGam: r.cGam || '—', cGong: r.cGong || '—', cBu: r.cBu || '—', cCeo: r.cCeo || '—' }; };
+    const mkOrig = (r) => {
+      const S0 = this.state.set, n = (v) => (v == null || v === '' ? '' : v), si = r.selfIn || {}, rc = /RC|R\.C|철골/i.test(r.struct || si.kind || ''), py = Number(r.pyung) || 0, fmt = (x) => Number(x).toLocaleString('ko-KR');
+      const abs = py ? Math.round((py + 20) * (rc ? 1.2 : 1)) : null, done = si.airV != null ? si.airV : si.air, diff = abs != null && done != null ? done - abs : null;   // 소장 화면과 동일: (완료공기 − 절대공기), 음수 = 단축
+      const airAdj = (r.adj && r.adj.air ? r.adj.air : 0) * 1, man = si.manV != null ? si.manV : si.man, waste = si.wasteV != null ? si.wasteV : si.waste, t = fin(r), SC = [100, 95, 90, 85, 80], T = S0.T[r.type + '|미달'] || [0, 0, 0, 0, 0], ok = this.profitOk(r);
+      const hit = t !== null && !this.zeroHit(r) && t >= S0.minScore ? SC.findIndex(x => t >= x) : -1, B = 'font-weight:700;text-decoration:underline';
+      const sum = r.sc.every(v => v != null) ? r.sc.reduce((a, b) => a + b, 0) : null, cond = (r.structPt || 0) + (r.regionPt || 0), sg = (v) => (v > 0 ? '+' : '') + v;
+      const o = { type: r.type, addr: r.addr, mgr: r.mgr, grade: r.grade || '', airAdj: airAdj ? sg(airAdj) : 0, absAir: abs != null ? abs + '일' : '', doneAir: done != null ? done + '일' : '', airDiff: diff != null ? sg(diff) + '일' : '',
+        manTxt: man != null ? man + '품' + (py ? ' (기준 ' + Math.max(1, Math.round(py / 10 * (rc ? 2 : 1))) + '품)' : '') : '', wasteTxt: waste != null ? fmt(waste) + '원' : '', wastePy: waste != null && py ? fmt(Math.round(waste / py)) + '원' : '',
+        total: sum === null ? '집계 중' : sum + '점', finalScore: t === null ? '—' : t + '점', adjNote: t === null ? '' : '가점·감점 ' + sg(this.adjOf(r)) + ' · 현장 조건 가산 ' + sg(cond) + ' · 감리팀장 추가 ' + sg(r.ceoAdj || 0),
+        cGam: r.cGam || '', cGong: r.cGong || '', cCeo: r.cCeo || '',
+        tiers: SC.map((x, i) => ({ tier: x === 100 ? '100점' : x + '점~', ok: fmt(T[i] * 2) + '원', bad: fmt(T[i]) + '원', okSt: hit === i && ok ? B : '', badSt: hit === i && !ok ? B : '' })),
+        resultTxt: t === null ? '평가 집계 중' : t + '점 · ' + this.incT(r, t) + ' · 기준 이윤 ' + (ok ? '달성' : '미달') };
+      for (let k = 0; k < 11; k++) o['s' + k] = r.sc[k] == null ? '' : r.sc[k];
+      return o; };
     const cur = nsites.find(r => r.id === st.sel) || null;
     let sheetRows = [], sel = {};
     if (cur) {
@@ -736,7 +784,8 @@ class Component extends DCLogic {
       isIns: !lead,
       modeBtns: ['상세', '간편'].map(k => ({ label: k + ' 출력', pick: () => this.setState({ bulkMode: k }),
         style: 'cursor:pointer;height:44px;padding:0 16px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (st.bulkMode === k ? '#C8A24A' : '#D9D4C6') + ';background:' + (st.bulkMode === k ? '#FFF7E0' : '#fff') + ';color:#1B2333' })),
-      bulkDetail: st.bulkMode === '상세', bulkSimple: st.bulkMode === '간편', modeNote: st.bulkMode === '상세' ? '상세: 현장별 1페이지' : '간편: 소장·주소·점수·인센티브 1장',
+      bulkDetail: st.bulkMode === '상세', bulkSimple: st.bulkMode === '간편', modeNote: st.bulkMode === '상세' ? '상세: 기준안 원본 양식 · 현장별 1페이지' : '간편: 한 줄 요약표 + 현장별 평가표',
+      origSheets: st.bulk ? confirmed(st.bulk).map(mkOrig) : [],
       lineHeads: ['공기', '안전관리', '안전서류', '감리보고서', '엔딩점검', '근태관리', '어플근태', '인력·자재', '완료확인서', '폐기물', 'AS처리'].map((name, i) => ({ name, max: ITEMS[i][1] })),
       lineRows: st.bulk ? confirmed(st.bulk).map((r, i) => { const t = fin(r); return { no: i + 1, addr: r.addr, mgr: r.mgr, type: r.type, grade: r.grade || '—', pyung: r.pyung ? r.pyung + '평' : '—', cells: ITEMS.map((it, k) => ({ v: r.sc[k] == null ? '—' : r.sc[k] })), total: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(r, t) }; }) : [],
       simpleRows: st.bulk ? confirmed(st.bulk).map((r, i) => ({ no: i + 1, mgr: r.mgr, addr: r.addr, score: fin(r) + '점', inc: this.incT(r, fin(r)) })) : [],
