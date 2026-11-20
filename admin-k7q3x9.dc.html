@@ -182,6 +182,45 @@ button{font-family:inherit}
       </section>
     </sc-if>
 
+    <!-- 평가 확정 · 소장 공개 관리 -->
+    <section class="card noprint" style="overflow:hidden;border:2px solid #14213D">
+      <div style="padding:12px 18px;background:#14213D;color:#fff;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-size:15px">평가 확정 · 소장 공개 관리</b><span style="font-size:12px;color:#D9DEE8">공무 평가까지 끝난 현장을 선택해 확정하고, 소장에게 보여줄 내용을 현장별로 정합니다</span></div>
+      <div style="padding:12px 18px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid #E2DED3;background:#FAF8F3">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+          <sc-for list="{{pubFilters}}" as="f" hint-placeholder-count="3"><button onClick="{{f.pick}}" style="{{f.style}}">{{f.label}}</button></sc-for>
+          <span style="margin-left:auto;font-size:13px;color:#4A5163">선택 <b>{{pubSelN}}</b>건</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+          <button onClick="{{pubAll}}" style="{{pubBtn}}">{{pubAllLabel}}</button>
+          <span style="width:1px;height:22px;background:#D9D4C6"></span>
+          <button onClick="{{pubConfirmSel}}" style="{{pubBtnDark}}">선택 평가 확정</button>
+          <button onClick="{{pubUnconfirmSel}}" style="{{pubBtn}}">선택 확정 취소</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center">
+          <span style="font-size:13px;font-weight:700">선택 현장 소장 공개</span>
+          <sc-for list="{{pubBulk}}" as="b" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:4px;font-size:13px">{{b.label}}<button onClick="{{b.on}}" style="{{b.onStyle}}">공개</button><button onClick="{{b.off}}" style="{{b.offStyle}}">비공개</button></span></sc-for>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="list" style="border-collapse:collapse;width:100%;min-width:900px">
+          <thead><tr><th style="width:44px">선택</th><th>현장 주소</th><th>소장</th><th>구분</th><th>상태</th><th>점수</th><th>인센티브</th><th>소장 공개 (눌러서 변경)</th><th></th></tr></thead>
+          <tbody>
+            <sc-for list="{{pubRows}}" as="r" hint-placeholder-count="3">
+              <tr>
+                <td><button onClick="{{r.tog}}" aria-label="현장 선택" style="{{r.boxStyle}}">{{r.box}}</button></td>
+                <td style="font-weight:700">{{r.addr}}</td><td>{{r.mgr}}</td><td><span class="chip {{r.typeCls}}">{{r.type}}</span></td>
+                <td><span class="chip {{r.stCls}}">{{r.stLabel}}</span></td>
+                <td style="font-weight:700">{{r.score}}</td><td>{{r.inc}}</td>
+                <td><div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{r.chips}}" as="c" hint-placeholder-count="3"><button onClick="{{c.click}}" style="{{c.style}}">{{c.label}}</button></sc-for><span style="font-size:12px;color:#8A6D1F">{{r.chipNote}}</span></div></td>
+                <td><div style="display:flex;gap:6px"><button onClick="{{r.confirmGo}}" style="{{r.confirmStyle}}">{{r.confirmLabel}}</button><button class="open" onClick="{{r.open}}">상세</button></div></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <sc-if value="{{pubEmpty}}" hint-placeholder-val="{{false}}"><div style="padding:18px;font-size:13px;color:#4A5163">공무 평가까지 끝난 현장이 아직 없습니다.</div></sc-if>
+      </div>
+    </section>
+
     <!-- 소장 (터치) : 개별 감리 전용 -->
     <sc-if value="{{isIns}}" hint-placeholder-val="{{false}}">
     <section class="noprint" style="display:flex;flex-direction:column;gap:10px">
@@ -317,7 +356,8 @@ button{font-family:inherit}
               <tr><td colspan="2" class="l s">- 관계자 미팅 시 산정 되며 특별한 경우 별도 보고를 통해 추가 공기 부여</td><td class="c">가감점수</td><td class="c v">{{o.airAdj}}</td></tr>
               <tr><td class="c">10</td><td class="l">- 안전관리 기준<br>&nbsp;현장, 밴드 감리시 지적사항 항목적용</td><td colspan="2" class="c v">{{o.s1}}</td><td rowspan="2" class="l">- 안전모 미착용<br>- 추락방지 안전난간 미설치 (계단, 오픈부위) 등<br>- TBM, 신규채용장, 특별안전교육, 위험성평가 등<br>- 안전사고 발생시 : 해당제외</td><td colspan="2" rowspan="2"></td></tr>
               <tr><td class="c">10</td><td class="l">- 안전서류 작성<br><span class="s">평가자 : 감리담당, 부서장.</span></td><td colspan="2" class="c v">{{o.s2}}</td></tr>
-              <tr><td class="c">15</td><td class="l">- 감리보고서 기준<br>&nbsp;현장감리시 지적사항 항목적용<br><span class="s">평가자 : 감리담당, 부서장.</span></td><td colspan="2" class="c v">{{o.s3}}</td><td class="l">※ 전체 공종 본사기준시방에 따른 품질평가</td><td colspan="2"></td></tr>
+              <tr><td class="c">5</td><td class="l">- 품질관리<br>&nbsp;현장감리시 지적사항 항목적용<br><span class="s">평가자 : 감리담당, 부서장.</span></td><td colspan="2" class="c v">{{o.s10}}</td><td class="l">※ 전체 공종 본사기준시방에 따른 품질평가</td><td colspan="2"></td></tr>
+              <tr><td class="c">15</td><td class="l">- 감리보고서 기준<br>&nbsp;현장감리시 지적사항 항목적용<br><span class="s">평가자 : 감리담당, 부서장.</span></td><td colspan="2" class="c v">{{o.s3}}</td><td class="l">- 감리보고서 작성 기준에 따른 평가</td><td colspan="2"></td></tr>
               <tr><td class="c">5</td><td class="l">- 엔딩점검 및 건축주 만족도<br>&nbsp;건축주만족도 + 엔딩점검표<br><span class="s">평가자 : 감리담당, 부서장.</span></td><td colspan="2" class="c v">{{o.s4}}</td><td class="l">- 건축주 만족도 1등급~15등급.<br>- 감리자 현장, 소장평가 1~15등급</td><td colspan="2"></td></tr>
               <tr><td class="c">5</td><td class="l">- 근태관리<br>&nbsp;(주간업무등록, 밴드, 공사일보)</td><td colspan="2" class="c v">{{o.s5}}</td><td rowspan="2" class="l">- 주간업무 미등록 1회 -3점 (월요일기준)<br>- 밴드, 공사일보 미등록 1회 -3<br>- 어플근태관리 1일당 -1점</td><td colspan="2" rowspan="2"></td></tr>
               <tr><td class="c">5</td><td class="l">- 어플근태관리<br><span class="s">평가자 : 감리담당, 부서장, 공무담당자</span></td><td colspan="2" class="c v">{{o.s6}}</td></tr>
@@ -325,7 +365,6 @@ button{font-family:inherit}
               <tr><td class="c">5</td><td class="l">- 공사완료 확인서 및 기성업무<br>&nbsp;(계약서, 산출내역서, 추가내역서 기준)<br>- 대관업무 준공서류<br><span class="s">평가자 : 공무담당, 부서장.</span></td><td colspan="2" class="c v">{{o.s8}}</td><td class="l">- 계약서, 산출내역서, 추가내역서, 도면에 근거하여 기성업무 작성기준.<br>- 내역 외 공사시 -10만원당 -2점</td><td colspan="2"></td></tr>
               <tr><td rowspan="2" class="c">10</td><td rowspan="2" class="l">- 폐기물처리<br>&nbsp;(공사부 원가절감방안기준)<br><span class="s">평가자 : 공무담당, 부서장</span></td><td rowspan="2" colspan="2" class="c v">{{o.s9}}</td><td rowspan="2" class="l">- 기준 이상 청구시 -10만원당 -1점<br>- 기준 미만 정산시 +10만원당 +1점<br>- 목조 : 평당 2.5만원<br>- R.C : 평당 3.5만원</td><td class="c">폐기물<br>처리비</td><td class="c v">{{o.wasteTxt}}</td></tr>
               <tr><td class="c">평당</td><td class="c v">{{o.wastePy}}</td></tr>
-              <tr><td class="c">5</td><td class="l">- 완공현장 AS처리<br><span class="s">평가자 : 감리담당, 부서장.</span></td><td colspan="2" class="c v">{{o.s10}}</td><td class="l">- 하자처리기한 15일 초과시 -5점, 1일 초과마다 -1점</td><td colspan="2"></td></tr>
               <tr><td></td><td class="l" style="color:#C00">경위서 및 시말서 작성</td><td colspan="2"></td><td class="l" style="color:#C00">- 경위서 작성 시 1회 : -3 / 2회 : -5<br>&nbsp;시말서 작성 시 : 미지급</td><td colspan="2"></td></tr>
               <tr><td class="c">100</td><td></td><td colspan="2" class="c v" style="font-size:13px">합계 : {{o.total}}</td><td colspan="3" class="l">가감·가산 반영 최종 점수 : <b>{{o.finalScore}}</b><br><span class="s">{{o.adjNote}}</span></td></tr>
               <tr><td colspan="7" class="c" style="color:#C00;font-weight:700">평가 항목 중 최저점수 발생 시 인센티브 대상에서 제외</td></tr>
@@ -335,7 +374,7 @@ button{font-family:inherit}
               <tr><td colspan="4" class="c" style="height:20px">공무평가</td></tr>
               <tr><td colspan="4" class="l" style="height:34px;vertical-align:top">{{o.cGong}}</td></tr>
               <tr><td colspan="4" class="c" style="height:20px">감리팀장 평가</td><th colspan="3">인센티브 지급방안 (완료현장 실행분석 회의, 점수책정)</th></tr>
-              <tr><td colspan="4" class="l" style="vertical-align:top">{{o.cCeo}}</td><td colspan="3" class="l" style="vertical-align:top;font-size:9px;line-height:1.5">
+              <tr><td colspan="4" class="l" style="vertical-align:top">{{o.cCeo}}<br><span class="s">{{o.asTxt}}</span></td><td colspan="3" class="l" style="vertical-align:top;font-size:9px;line-height:1.5">
                 <table style="width:100%;border-collapse:collapse;font-size:9px"><tr><th style="border:0;background:none;text-align:left">▶ 기준 이윤 달성 시</th><th style="border:0;background:none;text-align:left">▶ 기준 이윤 미달 시</th></tr>
                 <sc-for list="{{o.tiers}}" as="p" hint-placeholder-count="5"><tr><td style="border:0;padding:1px 2px;{{p.okSt}}">- {{p.tier}} : {{p.ok}}</td><td style="border:0;padding:1px 2px;{{p.badSt}}">- {{p.tier}} : {{p.bad}}</td></tr></sc-for></table>
                 ▶ R.C현장 100% 추가적용<br>▶ 70점 미만 페널티 적용 (시말서 · 상여금 미지급)<br>※ 특별 상여금 기준<br>&nbsp;- 특수 현장 및 어려운 현장임에도 불구하고, 열정을 다해 원만한 현장진행으로 책임을 다해 임무완수를 위해 힘써준 소장님들을 위한 상여금 (해당 감리담당 및 공무담당자들의 추천을 통해 대표이사 승인 후 지급)
@@ -388,10 +427,15 @@ button{font-family:inherit}
         </div>
         <div class="noprint" style="max-width:794px;margin:22px auto 0;border-top:1px solid #E2DED3;padding-top:16px;display:flex;flex-direction:column;gap:10px">
           <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center">
-            <div style="font-weight:700;font-size:16px">소장 결과 공개 (이 현장 소장 링크)</div>
+            <div style="font-weight:700;font-size:16px">평가 확정 · 소장 공개 (이 현장 소장 링크)</div>
             <span class="chip {{sel.pubCls}}" style="padding:5px 12px">{{sel.pubText}}</span>
           </div>
-          <div style="font-size:13px;color:#4A5163;line-height:1.6">감리팀장 확정 후 소장이 같은 링크에서 이 현장의 점수·인센티브 금액·평가표를 볼 수 있습니다. 확정 전에는 "평가 진행 중"만 표시됩니다.</div>
+          <div style="font-size:13px;color:#4A5163;line-height:1.6">확정해도 소장에게는 아무것도 보이지 않습니다. 아래에서 평가 완료 상태·점수·인센티브를 각각 공개하면 소장 링크에 반영됩니다.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button onClick="{{sel.confirmGo}}" style="{{sel.confirmStyle}}">{{sel.confirmLabel}}</button>
+            <sc-for list="{{sel.chips}}" as="c" hint-placeholder-count="3"><button onClick="{{c.click}}" style="{{c.style}}">{{c.label}}</button></sc-for>
+            <span style="font-size:12px;color:#8A6D1F">{{sel.chipNote}}</span>
+          </div>
           <sc-if value="{{sel.hasViews}}" hint-placeholder-val="{{false}}">
             <table class="list" style="border-collapse:collapse;width:100%;min-width:420px">
               <thead><tr><th>열람 시각</th><th>열람자</th><th>내용</th></tr></thead>
@@ -636,6 +680,25 @@ class Component extends DCLogic {
     const fb = () => { try { const t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;top:0;left:0;opacity:0'; document.body.appendChild(t); t.focus(); t.select(); t.setSelectionRange(0, text.length); const ok = document.execCommand('copy'); document.body.removeChild(t); if (!ok) window.prompt('아래 링크를 복사(Ctrl+C)하세요', text); } catch (e) { try { window.prompt('아래 링크를 복사(Ctrl+C)하세요', text); } catch (e2) {} } };
     try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(fb); else fb(); } catch (e) { fb(); }
   }
+  /* ---- 평가 확정 · 소장 공개 ---- */
+  pubOf(r) { return r.pub || { status: true, score: true, inc: true }; }   // 공개 설정이 없는 기존 확정 건은 이미 공개 상태로 간주
+  confirmIds(ids) {
+    const S = this.state.set; let n = 0, skip = 0;
+    const sites = this.state.sites.map(r => { if (!ids.has(r.id) || r.stage >= 5) return r; const rr = r.stage === 4 ? { ...r, stage: 3 } : r;
+      if (rr.stage !== 3 || !Array.isArray(rr.sc) || rr.sc.some(v => v == null)) { skip++; return r; }
+      const sn = this.mkSnap(rr, S); if (!sn) { skip++; return r; } n++; return { ...rr, stage: 5, snap: sn, pub: rr.pub || { status: false, score: false, inc: false } }; });
+    if (n) this.setState({ sites });
+    this.showToast(n ? '평가 ' + n + '건 확정 완료 (소장 공개는 별도로 선택)' + (skip ? ' · ' + skip + '건은 공무 평가 전이라 제외' : '') : '확정할 수 있는 현장이 없습니다. (공무 평가 제출 후 확정 가능)');
+  }
+  unconfirmIds(ids) {
+    let n = 0; const sites = this.state.sites.map(r => { if (!ids.has(r.id) || r.stage !== 5) return r; n++; const o = { ...r, stage: 3 }; delete o.snap; return o; });
+    if (n) this.setState({ sites }); this.showToast(n ? '확정 ' + n + '건을 취소했습니다. (소장 화면은 다시 평가 진행 중으로 표시)' : '확정 취소할 현장이 없습니다.');
+  }
+  setPubIds(ids, field, val) {
+    let n = 0; const sites = this.state.sites.map(r => { if (!ids.has(r.id) || r.stage !== 5) return r; const p = { ...this.pubOf(r) }; p[field] = val;
+      if (field === 'all') { p.status = val; p.score = val; p.inc = val; } else if (field === 'status' && !val) { p.score = false; p.inc = false; } if ((field === 'score' || field === 'inc') && val) p.status = true; n++; return { ...r, pub: p }; });
+    if (n) this.setState({ sites }); else this.showToast('확정된 현장만 공개 설정을 바꿀 수 있습니다.');
+  }
   pwHash(s) { let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for (let i = 0, ch; i < s.length; i++) { ch = s.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return 4294967296 * (2097151 & h2) + (h1 >>> 0); }
   pwTry(v) { if (this.pwHash(String(v || '').trim()) === 4970403443833395) { try { sessionStorage.setItem('adm_ok', '1'); sessionStorage.setItem('adm_pw', String(v || '').trim()); } catch (e) {} this.setState({ authed: true, pw: '', pwErr: '' }, () => { if (this.state.gsUrl) this.gsLoad(true); }); } else this.setState({ pwErr: '비밀번호가 맞지 않습니다.' }); }
   showToast(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '', flash: '' }), 2200); }
@@ -678,7 +741,7 @@ class Component extends DCLogic {
     const part = (r, idx) => idx.every(i => r.sc[i] != null) ? idx.reduce((a, i) => a + r.sc[i], 0) : null;
     const evOf = (r) => { const all = (() => { const sg = (v, mx) => v === null ? '—' : v + ' / ' + mx + '점', a = part(r, [0,1,2,3,4,5,10]), g = part(r, [6,7,8,9]);
       return [{ label: '소장 (자가평가)', score: r.selfScore == null ? '—' : r.selfScore + '점', note: '' }, { label: '감리', score: sg(a, 70), note: r.cGam || '—' }, { label: '가점·감점 (감리 확인)', score: (this.adjOf(r) > 0 ? '+' : '') + this.adjOf(r) + '점', note: '' }, { label: '현장 조건 가산점 (감리)', score: ((r.structPt || 0) + (r.regionPt || 0)) > 0 ? '+' + ((r.structPt || 0) + (r.regionPt || 0)) + '점' : '0점', note: [r.struct && (r.struct + ' +' + (r.structPt || 0)), r.region && (r.region + ' +' + (r.regionPt || 0))].filter(Boolean).join(' · ') || '—' }, { label: '공무', score: sg(g, 30), note: r.cGong || '—' },
-                { label: '감리팀장 (추가평가)', score: r.stage === 5 ? ((r.ceoAdj || 0) > 0 ? '+' : '') + (r.ceoAdj || 0) + '점' : '—', note: r.cCeo || '—' }]; })(); return all.filter(e => !(e.label.startsWith('공사 부장') && !S.useBu) && !(e.label.startsWith('부사장') && !S.useCeo)); };
+                { label: '감리팀장 (추가평가·AS처리 가감)', score: r.stage === 5 ? ((r.ceoAdj || 0) > 0 ? '+' : '') + (r.ceoAdj || 0) + '점' : '—', note: r.cCeo || '—' }]; })(); return all.filter(e => !(e.label.startsWith('공사 부장') && !S.useBu) && !(e.label.startsWith('부사장') && !S.useCeo)); };
     const ROLES = [['in', '소장'], ['gam', '감리'], ['gong', '공무'], ['lead', '감리팀장']];
     const STEPS = ['소장 입력', '감리 평가', '공무 평가', '감리팀장 확정', '감리팀장 확정', '완료'];
     const STCLS = ['wait', 'prog', 'prog', 'prog', 'prog', 'done'];
@@ -713,14 +776,14 @@ class Component extends DCLogic {
       ['공기', 20, '감리담당', '준공청소~잔손보기 완료 기준 · 5일 단축 +1 / 3일 초과 −1'],
       ['안전관리', 10, '감리담당', '안전모 미착용, 추락방지 안전난간 미설치 등 지적사항 적용'],
       ['안전서류 작성', 10, '감리담당', 'TBM, 신규채용장, 특별안전교육, 위험성평가'],
-      ['감리보고서', 15, '감리담당', '본사 기준시방에 따른 품질평가'],
+      ['감리보고서', 15, '감리담당', '감리보고서 작성 기준 · 현장감리 지적사항 적용'],
       ['엔딩점검·건축주 만족도', 5, '감리담당', '만족도 1~15등급 · 감리자 소장평가 1~15등급'],
       ['근태관리', 5, '감리담당', '주간업무·밴드·공사일보 미등록 1회 −3점'],
       ['어플근태관리', 5, '공무담당', '1일당 −1점'],
       ['인력·잡자재·잔여자재', 10, '공무담당', '인력 10평당 1품 · 1인 추가 −2 / 미사용 +2'],
       ['공사완료확인서·기성·대관', 5, '공무담당', '내역 외 공사 10만원당 −2점'],
       ['폐기물처리', 10, '공무담당', '목조 평당 2.5만원 · RC 평당 3.5만원 기준, ±10만원당 1점'],
-      ['AS처리', 5, '감리담당', '완공현장 AS 하자처리기한 15일 초과 −5점, 1일 초과마다 −1점']
+      ['품질관리', 5, '감리담당', '본사 기준시방에 따른 품질평가']
     ];
     const infoOf = (r) => ({ struct: r.struct || '—', region: r.region || '—', pyung: r.pyung ? r.pyung + '평' : '—', cost: r.cost ? Number(r.cost).toLocaleString('ko-KR') + '원' : '—', finalCost: r.finalCost ? Number(r.finalCost).toLocaleString('ko-KR') + '원' : '—', arch: r.arch || '—', interior: r.interior || '—' });
     const mkSheet = (r) => { const t = fin(r); return { ...infoOf(r), type: r.type, addr: r.addr, mgr: r.mgr, insp: r.insp, grade: r.grade,
@@ -734,13 +797,29 @@ class Component extends DCLogic {
       const sum = r.sc.every(v => v != null) ? r.sc.reduce((a, b) => a + b, 0) : null, cond = (r.structPt || 0) + (r.regionPt || 0), sg = (v) => (v > 0 ? '+' : '') + v;
       const o = { type: r.type, addr: r.addr, mgr: r.mgr, grade: r.grade || '', airAdj: airAdj ? sg(airAdj) : 0, absAir: abs != null ? abs + '일' : '', doneAir: done != null ? done + '일' : '', airDiff: diff != null ? sg(diff) + '일' : '',
         manTxt: man != null ? man + '품' + (py ? ' (기준 ' + Math.max(1, Math.round(py / 10 * (rc ? 2 : 1))) + '품)' : '') : '', wasteTxt: waste != null ? fmt(waste) + '원' : '', wastePy: waste != null && py ? fmt(Math.round(waste / py)) + '원' : '',
-        total: sum === null ? '집계 중' : sum + '점', finalScore: t === null ? '—' : t + '점', adjNote: t === null ? '' : '가점·감점 ' + sg(this.adjOf(r)) + ' · 현장 조건 가산 ' + sg(cond) + ' · 감리팀장 추가 ' + sg(r.ceoAdj || 0),
-        cGam: r.cGam || '', cGong: r.cGong || '', cCeo: r.cCeo || '',
+        total: sum === null ? '집계 중' : sum + '점', finalScore: t === null ? '—' : t + '점', adjNote: t === null ? '' : '가점·감점 ' + sg(this.adjOf(r)) + ' · 현장 조건 가산 ' + sg(cond) + ' · 감리팀장 추가(AS처리 포함) ' + sg(r.ceoAdj || 0),
+        cGam: r.cGam || '', cGong: r.cGong || '', cCeo: r.cCeo || '', asTxt: 'AS처리 가감 : ' + (r.asAdj ? r.asAdj + '점' : '없음') + ' (하자처리기한 15일 초과 −5점, 1일 초과마다 −1점)',
         tiers: SC.map((x, i) => ({ tier: x === 100 ? '100점' : x + '점~', ok: fmt(T[i] * 2) + '원', bad: fmt(T[i]) + '원', okSt: hit === i && ok ? B : '', badSt: hit === i && !ok ? B : '' })),
         resultTxt: t === null ? '평가 집계 중' : t + '점 · ' + this.incT(r, t) + ' · 기준 이윤 ' + (ok ? '달성' : '미달') };
       for (let k = 0; k < 11; k++) o['s' + k] = r.sc[k] == null ? '' : r.sc[k];
       return o; };
     const cur = nsites.find(r => r.id === st.sel) || null;
+    /* ---- 평가 확정 · 소장 공개 패널 ---- */
+    const PF = st.pubFilter || '전체', selIds = st.pubSel || {};
+    const pubList = vis.filter(r => r.stage >= 3 && (PF === '전체' || (PF === '확정 대기' && r.stage === 3) || (PF === '확정 완료' && r.stage === 5)));
+    const chipSt = (on, dis) => 'cursor:' + (dis ? 'default' : 'pointer') + ';height:30px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid ' + (on ? '#14583A' : '#BDB7A6') + ';background:' + (on ? '#E4F2EA' : '#fff') + ';color:' + (on ? '#14583A' : '#6B6F7A') + (dis ? ';opacity:.5' : '');
+    const mkChips = (r) => { const p = this.pubOf(r), c = r.stage === 5; return [['status', '평가 완료 상태'], ['score', '점수'], ['inc', '인센티브']].map(([f, lb]) => ({ label: lb + ' ' + (c && p[f] ? '공개' : '비공개'), style: chipSt(c && p[f], !c), click: () => { if (!c) { this.showToast('먼저 평가를 확정해 주세요.'); return; } this.setPubIds(new Set([r.id]), f, !p[f]); } })); };
+    const confirmBtn = (r) => { const c = r.stage === 5; return { confirmLabel: c ? '확정 취소' : '평가 확정', confirmStyle: 'cursor:pointer;height:34px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #14213D;background:' + (c ? '#fff' : '#14213D') + ';color:' + (c ? '#14213D' : '#fff'), confirmGo: () => (c ? this.unconfirmIds(new Set([r.id])) : this.confirmIds(new Set([r.id]))) }; };
+    const pubRows = pubList.map(r => { const t = fin(r), on = !!selIds[r.id], c = r.stage === 5; return { addr: r.addr, mgr: r.mgr, type: r.type, typeCls: r.type === '직영' ? 't-d' : 't-m', stLabel: c ? '확정 완료' : '확정 대기', stCls: c ? 'done' : 'prog', score: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(r, t),
+      box: on ? '☑' : '☐', boxStyle: 'cursor:pointer;border:0;background:transparent;font-size:22px;line-height:1;color:' + (on ? '#14213D' : '#8A8F9C'), tog: () => this.setState({ pubSel: { ...selIds, [r.id]: !on } }),
+      chips: mkChips(r), chipNote: c ? '' : '확정 후 설정', ...confirmBtn(r), open: () => this.setState({ sel: r.id, bulk: '' }) }; });
+    const pickedIds = () => pubList.filter(r => selIds[r.id]).map(r => r.id);
+    const needSel = (fn) => () => { const ids = pickedIds(); if (!ids.length) { this.showToast('먼저 현장을 선택해 주세요.'); return; } fn(new Set(ids)); };
+    const allOn = pubList.length > 0 && pubList.every(r => selIds[r.id]);
+    const btnL = 'cursor:pointer;height:34px;padding:0 14px;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #14213D;background:#fff;color:#14213D';
+    const offS = 'cursor:pointer;height:28px;padding:0 10px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid #8A1F17;background:#fff;color:#8A1F17', onS = 'cursor:pointer;height:28px;padding:0 10px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid #14583A;background:#14583A;color:#fff';
+    const pubBulk = [['status', '평가 완료 상태'], ['score', '점수'], ['inc', '인센티브']].map(([f, lb]) => ({ label: lb, onStyle: onS, offStyle: offS, on: needSel(ids => this.setPubIds(ids, f, true)), off: needSel(ids => this.setPubIds(ids, f, false)) }));
+    pubBulk.unshift({ label: '전체(3가지)', onStyle: onS, offStyle: offS, on: needSel(ids => this.setPubIds(ids, 'all', true)), off: needSel(ids => this.setPubIds(ids, 'all', false)) });
     let sheetRows = [], sel = {};
     if (cur) {
       sheetRows = ITEMS.map((it, i) => ({ max: it[1], name: it[0], who: it[2], detail: it[3], score: cur.sc[i] == null ? '—' : cur.sc[i] }));
@@ -748,7 +827,7 @@ class Component extends DCLogic {
       sel = { ...cur, ...infoOf(cur), insp: cur.insp, ev: evOf(cur), finalScore: (fin(cur) === null ? '—' : fin(cur) + '점'), total: t === null ? '집계 중' : t + '점', totalNote: t === null ? '모든 평가 완료 후 자동 합산' : '',
         final: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(cur, t),
         cGam: cur.cGam || '—', cGong: cur.cGong || '—', cBu: cur.cBu || '—', cCeo: cur.cCeo || '—',
-        pubCls: pub ? 'done' : 'wait', pubText: pub ? '공개됨' : '비공개 (확정 대기)', hasViews: false, noViews: true,
+        pubCls: pub ? 'done' : 'wait', pubText: pub ? (this.pubOf(cur).status ? '확정 · 소장 공개 일부/전체' : '확정 · 소장 비공개') : '확정 대기', ...confirmBtn(cur), chips: mkChips(cur), chipNote: pub ? '' : '확정 후 설정할 수 있습니다', hasViews: false, noViews: true,
         views: [{ at: '10/27 09:12', who: cur.mgr, what: '결과 조회' }, { at: '10/27 09:15', who: cur.mgr, what: '평가표 PDF 저장' }] };
     }
     const lnkSite = (st.lnk && st.selMgr) ? vis.find(r => r.id === st.lnk) : null;
@@ -786,13 +865,17 @@ class Component extends DCLogic {
         style: 'cursor:pointer;height:44px;padding:0 16px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (st.bulkMode === k ? '#C8A24A' : '#D9D4C6') + ';background:' + (st.bulkMode === k ? '#FFF7E0' : '#fff') + ';color:#1B2333' })),
       bulkDetail: st.bulkMode === '상세', bulkSimple: st.bulkMode === '간편', modeNote: st.bulkMode === '상세' ? '상세: 기준안 원본 양식 · 현장별 1페이지' : '간편: 한 줄 요약표 + 현장별 평가표',
       origSheets: st.bulk ? confirmed(st.bulk).map(mkOrig) : [],
-      lineHeads: ['공기', '안전관리', '안전서류', '감리보고서', '엔딩점검', '근태관리', '어플근태', '인력·자재', '완료확인서', '폐기물', 'AS처리'].map((name, i) => ({ name, max: ITEMS[i][1] })),
+      lineHeads: ['공기', '안전관리', '안전서류', '감리보고서', '엔딩점검', '근태관리', '어플근태', '인력·자재', '완료확인서', '폐기물', '품질관리'].map((name, i) => ({ name, max: ITEMS[i][1] })),
       lineRows: st.bulk ? confirmed(st.bulk).map((r, i) => { const t = fin(r); return { no: i + 1, addr: r.addr, mgr: r.mgr, type: r.type, grade: r.grade || '—', pyung: r.pyung ? r.pyung + '평' : '—', cells: ITEMS.map((it, k) => ({ v: r.sc[k] == null ? '—' : r.sc[k] })), total: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(r, t) }; }) : [],
       simpleRows: st.bulk ? confirmed(st.bulk).map((r, i) => ({ no: i + 1, mgr: r.mgr, addr: r.addr, score: fin(r) + '점', inc: this.incT(r, fin(r)) })) : [],
       simpleTotal: st.bulk ? confirmed(st.bulk).reduce((a, r) => a + (this.incR(r, fin(r)) || 0), 0).toLocaleString('ko-KR') + '원' : '',
       catRows: [['직영', 't-d'], ['관리소장', 't-m']].map(([k, cls]) => { const rs = vis.filter(r => r.type === k), dn = rs.filter(r => r.stage === 5), ts = dn.map(r => fin(r));
         return { name: k, cls, sites: rs.length, done: dn.length, avg: ts.length ? Math.round(ts.reduce((a, b) => a + b, 0) / ts.length * 10) / 10 + '점' : '—',
           amt: dn.length ? dn.reduce((a, r) => a + (this.incR(r, fin(r)) || 0), 0).toLocaleString('ko-KR') + '원' : '—', print: () => this.setState({ bulk: k, sel: null }) }; }),
+      pubRows, pubEmpty: pubRows.length === 0, pubBulk, pubSelN: pubList.filter(r => selIds[r.id]).length, pubBtn: btnL, pubBtnDark: btnL.replace('background:#fff;color:#14213D', 'background:#14213D;color:#fff'), pubAllLabel: allOn ? '전체 선택 해제' : '전체 선택',
+      pubAll: () => { const m = { ...selIds }; pubList.forEach(r => { m[r.id] = !allOn; }); this.setState({ pubSel: m }); },
+      pubConfirmSel: needSel(ids => this.confirmIds(ids)), pubUnconfirmSel: needSel(ids => this.unconfirmIds(ids)),
+      pubFilters: ['전체', '확정 대기', '확정 완료'].map(k => ({ label: k, style: btnL.replace('background:#fff;color:#14213D', PF === k ? 'background:#14213D;color:#fff' : 'background:#fff;color:#14213D'), pick: () => this.setState({ pubFilter: k }) })),
       isDash: st.view === 'dash', isSet: st.view === 'set' && lead, isLead: lead,
       dashTitle: lead ? '완료현장 평가 대시보드 · 통합 (감리팀장)' : '소장 평가 대시보드 · 감리 ' + st.viewer + ' 담당',
       accounts: [['ALL', '통합 (감리팀장)'], ...S.insp.map(n => [n, '감리 ' + n])].map(([k, label]) => ({ label, pick: () => this.setState({ viewer: k, selMgr: null, sel: null, bulk: '', view: 'dash', msg: '' }),
