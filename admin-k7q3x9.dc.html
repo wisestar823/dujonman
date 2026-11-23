@@ -303,43 +303,14 @@ button{font-family:inherit}
           <div style="text-align:center;font-weight:700;font-size:19px;padding:6px 0 4px">현장소장 공사완료평가 한 줄 요약표</div>
           <div style="text-align:center;font-size:12px;color:#555;margin-bottom:10px">{{bulkTitle}} · 감리팀장 확정 {{bulkCount}}건</div>
           <table class="ln" style="border-collapse:collapse;width:100%">
-            <tr><th rowspan="2">번호</th><th rowspan="2">현장 주소</th><th rowspan="2">소장</th><th rowspan="2">구분</th><th rowspan="2">등급</th><th rowspan="2">평수</th><th colspan="11">항목별 점수</th><th rowspan="2">최종<br>점수</th><th rowspan="2">인센티브<br>금액</th></tr>
+            <tr><th rowspan="2">번호</th><th rowspan="2">현장 주소</th><th rowspan="2">소장</th><th rowspan="2">구분</th><th rowspan="2">등급</th><th rowspan="2">평수</th><th colspan="11">항목별 점수</th><th rowspan="2">기타<br>가감점</th><th rowspan="2">최종<br>점수</th><th rowspan="2">인센티브<br>금액</th></tr>
             <tr><sc-for list="{{lineHeads}}" as="h" hint-placeholder-count="11"><th>{{h.name}}<br>({{h.max}})</th></sc-for></tr>
             <sc-for list="{{lineRows}}" as="l" hint-placeholder-count="3">
-              <tr><td>{{l.no}}</td><td style="text-align:left">{{l.addr}}</td><td>{{l.mgr}}</td><td>{{l.type}}</td><td>{{l.grade}}</td><td>{{l.pyung}}</td><sc-for list="{{l.cells}}" as="c" hint-placeholder-count="11"><td>{{c.v}}</td></sc-for><td style="font-weight:700">{{l.total}}</td><td style="font-weight:700;text-align:right">{{l.inc}}</td></tr>
+              <tr><td>{{l.no}}</td><td style="text-align:left">{{l.addr}}</td><td>{{l.mgr}}</td><td>{{l.type}}</td><td>{{l.grade}}</td><td>{{l.pyung}}</td><sc-for list="{{l.cells}}" as="c" hint-placeholder-count="11"><td>{{c.v}}</td></sc-for><td>{{l.etc}}</td><td style="font-weight:700">{{l.total}}</td><td style="font-weight:700;text-align:right">{{l.inc}}</td></tr>
             </sc-for>
-            <tr><th colspan="18">인센티브 합계 ({{bulkCount}}건)</th><td style="font-weight:700;text-align:right">{{simpleTotal}}</td></tr>
+            <tr><th colspan="19">인센티브 합계 ({{bulkCount}}건)</th><td style="font-weight:700;text-align:right">{{simpleTotal}}</td></tr>
           </table>
         </div>
-        <sc-for list="{{bulkSheets}}" as="b" hint-placeholder-count="2">
-          <div class="pb" style="max-width:794px;margin:0 auto 28px;display:flex;flex-direction:column">
-            <div style="text-align:center;font-weight:700;font-size:19px;padding:6px 0 10px">현장소장 공사완료평가 및 인센티브지급 기준안 <span style="font-size:14px">({{b.type}})</span></div>
-            <table class="sh" style="border-collapse:collapse;width:100%">
-              <tr><th style="width:14%">현장 주소</th><td style="width:46%">{{b.addr}}</td><th style="width:12%">현장소장</th><td>{{b.mgr}}</td></tr>
-              <tr><th>건축 종류</th><td>{{b.struct}}</td><th>지역</th><td>{{b.region}}</td></tr>
-              <tr><th>실평형수</th><td>{{b.pyung}}</td><th>총 공사 금액</th><td>{{b.cost}}</td></tr>
-              <tr><th>공사 최종 금액 (소장 입력)</th><td colspan="3">{{b.finalCost}}</td></tr>
-              <tr><th>건축 등급</th><td>{{b.arch}}</td><th>인테리어 등급</th><td>{{b.interior}}</td></tr>
-              <tr><th>등급(기준)</th><td>{{b.grade}}</td><th>담당 감리</th><td>{{b.insp}}</td></tr>
-            </table>
-            <table class="sh" style="border-collapse:collapse;width:100%;margin-top:6px">
-              <tr><th style="width:6%">배점</th><th style="width:30%">평가 항목</th><th style="width:16%">평가자</th><th style="width:9%">점수</th><th>상세 내용</th></tr>
-              <sc-for list="{{b.rows}}" as="s" hint-placeholder-count="10">
-                <tr><td style="text-align:center">{{s.max}}</td><td>{{s.name}}</td><td style="text-align:center">{{s.who}}</td><td style="text-align:center;font-weight:700">{{s.score}}</td><td>{{s.detail}}</td></tr>
-              </sc-for>
-              <tr><th colspan="3">합계 (100점)</th><td style="text-align:center;font-weight:700">{{b.total}}</td><td></td></tr>
-            </table>
-            <table class="sh" style="border-collapse:collapse;width:100%;margin-top:6px">
-              <tr><th style="width:24%">평가자</th><th style="width:20%">평가 점수</th><th>평가 의견</th></tr>
-              <sc-for list="{{b.ev}}" as="e" hint-placeholder-count="6">
-                <tr><th style="text-align:left">{{e.label}}</th><td style="text-align:center;font-weight:700">{{e.score}}</td><td style="height:30px">{{e.note}}</td></tr>
-              </sc-for>
-              <tr><th>최종 점수</th><td style="text-align:center;font-weight:700;font-size:15px">{{b.finalScore}}</td><td></td></tr>
-              <tr><th>최종 인센티브 금액</th><td colspan="2" style="text-align:center;font-weight:700;font-size:15px">{{b.inc}}</td></tr>
-            </table>
-            <div style="font-size:11px;color:#555;margin-top:8px">평가 항목 중 최저점수 발생 시 인센티브 대상에서 제외 · 70점 미만 페널티 적용</div>
-          </div>
-        </sc-for>
         </sc-if>
         <sc-if value="{{bulkDetail}}" hint-placeholder-val="{{true}}">
         <sc-for list="{{origSheets}}" as="o" hint-placeholder-count="2">
@@ -684,7 +655,7 @@ class Component extends DCLogic {
     try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(fb); else fb(); } catch (e) { fb(); }
   }
   /* ---- 평가 확정 · 소장 공개 ---- */
-  pubOf(r) { return r.pub || { status: true, score: true, inc: true }; }   // 공개 설정이 없는 기존 확정 건은 이미 공개 상태로 간주
+  pubOf(r) { return r.pub || { status: true, score: true, inc: false }; }   // 공개 설정이 없는 기존 확정 건: 상태·점수는 현재대로 공개, 인센티브만 비공개
   confirmIds(ids) {
     if (this.state.viewer !== 'ALL') { this.showToast('평가 확정·공개 설정은 감리팀장 통합 화면에서만 가능합니다.'); return; }
     const S = this.state.set; let n = 0, skip = 0;
@@ -702,7 +673,8 @@ class Component extends DCLogic {
   setPubIds(ids, field, val) {
     if (this.state.viewer !== 'ALL') { this.showToast('평가 확정·공개 설정은 감리팀장 통합 화면에서만 가능합니다.'); return; }
     let n = 0; const sites = this.state.sites.map(r => { if (!ids.has(r.id) || r.stage !== 5) return r; const p = { ...this.pubOf(r) }; p[field] = val;
-      if (field === 'all') { p.status = val; p.score = val; p.inc = val; } else if (field === 'status' && !val) { p.score = false; p.inc = false; } if ((field === 'score' || field === 'inc') && val) p.status = true; n++; return { ...r, pub: p }; });
+      if (field === 'all') { p.status = val; p.score = val; if (!val) p.inc = false; }   // '상태·점수' 한 번에: 공개 시 인센티브는 건드리지 않음(기본 비공개, 따로 공개)
+       else if (field === 'status' && !val) { p.score = false; p.inc = false; } if ((field === 'score' || field === 'inc') && val) p.status = true; n++; return { ...r, pub: p }; });
     if (n) this.setState({ sites }); else this.showToast('확정된 현장만 공개 설정을 바꿀 수 있습니다.');
   }
   pwHash(s) { let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for (let i = 0, ch; i < s.length; i++) { ch = s.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return 4294967296 * (2097151 & h2) + (h1 >>> 0); }
@@ -743,6 +715,7 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state, S = { ...st.set, useBu: true, useCeo: true, w: { in: 0, gam: 70, gong: 30, bu: 0, ceo: 0 } };
     const lead = st.viewer === 'ALL';
+    const sgn = (v) => (v > 0 ? '+' : '') + v + '점';
     const norm = (r) => { const g = r.stage === 4 ? 3 : r.stage; return g === r.stage ? r : { ...r, stage: g }; };
     const nsites = st.sites.map(norm);
     const vis = lead ? nsites : nsites.filter(r => r.insp === st.viewer);
@@ -830,8 +803,13 @@ class Component extends DCLogic {
     const nSel = pubList.filter(r => selIds[r.id]).length, dim = nSel === 0 ? ';opacity:.55' : '';
     const btnL = 'cursor:pointer;height:34px;padding:0 14px;border-radius:8px;font-size:13px;font-weight:700;border:1px solid #14213D;background:#fff;color:#14213D';
     const big = 'cursor:pointer;min-height:46px;padding:0 12px;border-radius:10px;font-size:14px;font-weight:700;border:1px solid #14213D' + dim;
-    const segOn = 'cursor:pointer;min-width:72px;height:38px;padding:0 12px;font-size:13px;font-weight:700;border:1px solid #14583A;background:#14583A;color:#fff;border-radius:8px 0 0 8px' + dim, segOff = 'cursor:pointer;min-width:72px;height:38px;padding:0 12px;font-size:13px;font-weight:700;border:1px solid #8A1F17;background:#fff;color:#8A1F17;border-radius:0 8px 8px 0;margin-left:-1px' + dim;
-    const pubBulk = [['all', '전체 (3가지 한 번에)'], ['status', '평가 완료 상태'], ['score', '점수'], ['inc', '인센티브']].map(([f, lb], i) => ({ label: lb, lab: i === 0 ? 'font-weight:700' : '', line: i === 0 ? 'border-bottom:1px solid #EFEBE1;padding-bottom:8px;margin-bottom:2px' : '', onStyle: segOn, offStyle: segOff, on: needSel(ids => this.setPubIds(ids, f, true)), off: needSel(ids => this.setPubIds(ids, f, false)) }));
+    const selSites = pubList.filter(r => selIds[r.id] && r.stage === 5);
+    const segSt = (isOn, active) => 'cursor:pointer;min-width:72px;height:38px;padding:0 12px;font-size:13px;font-weight:700;border-radius:' + (isOn ? '8px 0 0 8px' : '0 8px 8px 0') + ';' + (isOn ? '' : 'margin-left:-1px;') + 'border:1px solid ' + (isOn ? '#14583A' : '#8A1F17') + ';background:' + (active ? (isOn ? '#14583A' : '#8A1F17') : '#fff') + ';color:' + (active ? '#fff' : (isOn ? '#14583A' : '#8A1F17')) + dim;
+    const pubBulk = [['all', '상태 · 점수 한 번에'], ['status', '평가 완료 상태'], ['score', '점수'], ['inc', '인센티브 (기본 비공개)']].map(([f, lb], i) => {
+      const vals = selSites.map(r => { const p = this.pubOf(r); return f === 'all' ? !!(p.status && p.score) : !!p[f]; });
+      const st3 = !vals.length ? 'none' : vals.every(v => v) ? 'on' : vals.every(v => !v) ? 'off' : 'mix';
+      return { label: lb + (st3 === 'mix' ? '  (일부 공개)' : ''), lab: i === 0 ? 'font-weight:700' : '', line: i === 0 ? 'border-bottom:1px solid #EFEBE1;padding-bottom:8px;margin-bottom:2px' : '', onStyle: segSt(true, st3 === 'on'), offStyle: segSt(false, st3 === 'off'), on: needSel(ids => this.setPubIds(ids, f, true)), off: needSel(ids => this.setPubIds(ids, f, false)) };
+    });
     const printSel = (mode) => needSel(() => { const n = vis.filter(r => r.stage === 5 && selIds[r.id]).length; if (!n) { this.showToast('선택한 현장 중 확정된 현장이 없습니다. 먼저 평가를 확정해 주세요.'); return; } this.setState({ bulk: 'sel', bulkMode: mode, sel: null }); setTimeout(() => { try { const el = document.getElementById('sheetwrap'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }, 150); });
     let sheetRows = [], sel = {};
     if (cur) {
@@ -876,10 +854,10 @@ class Component extends DCLogic {
       isIns: !lead,
       modeBtns: ['상세', '간편'].map(k => ({ label: k + ' 출력', pick: () => this.setState({ bulkMode: k }),
         style: 'cursor:pointer;height:44px;padding:0 16px;border-radius:8px;font-size:14px;font-weight:700;border:2px solid ' + (st.bulkMode === k ? '#C8A24A' : '#D9D4C6') + ';background:' + (st.bulkMode === k ? '#FFF7E0' : '#fff') + ';color:#1B2333' })),
-      bulkDetail: st.bulkMode === '상세', bulkSimple: st.bulkMode === '간편', modeNote: st.bulkMode === '상세' ? '상세: 기준안 원본 양식 · 현장별 1페이지' : '간편: 한 줄 요약표 + 현장별 평가표',
+      bulkDetail: st.bulkMode === '상세', bulkSimple: st.bulkMode === '간편', modeNote: st.bulkMode === '상세' ? '상세: 기준안 원본 양식 · 현장별 1페이지' : '간편: 한 줄 요약표',
       origSheets: st.bulk ? confirmed(st.bulk).map(mkOrig) : [],
-      lineHeads: ['공기', '안전관리', '안전서류', '감리보고서', '엔딩점검', '근태관리', '어플근태', '인력·자재', '완료확인서', '폐기물', '품질관리'].map((name, i) => ({ name, max: ITEMS[i][1] })),
-      lineRows: st.bulk ? confirmed(st.bulk).map((r, i) => { const t = fin(r); return { no: i + 1, addr: r.addr, mgr: r.mgr, type: r.type, grade: r.grade || '—', pyung: r.pyung ? r.pyung + '평' : '—', cells: ITEMS.map((it, k) => ({ v: r.sc[k] == null ? '—' : r.sc[k] })), total: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(r, t) }; }) : [],
+      lineHeads: [[0, '공기'], [1, '안전관리'], [2, '안전서류'], [10, '품질'], [3, '감리보고서'], [4, '엔딩점검'], [5, '근태관리'], [6, '어플근태'], [7, '인력·자재'], [8, '완료확인서'], [9, '폐기물']].map(([i, name]) => ({ name, max: ITEMS[i][1] })),
+      lineRows: st.bulk ? confirmed(st.bulk).map((r, i) => { const t = fin(r); return { no: i + 1, addr: r.addr, mgr: r.mgr, type: r.type, grade: r.grade || '—', pyung: r.pyung ? r.pyung + '평' : '—', cells: [0, 1, 2, 10, 3, 4, 5, 6, 7, 8, 9].map((k) => ({ v: r.sc[k] == null ? '—' : r.sc[k] })), etc: t === null ? '—' : sgn(t - r.sc.reduce((a, b) => a + b, 0)), total: t === null ? '—' : t + '점', inc: t === null ? '—' : this.incT(r, t) }; }) : [],
       simpleRows: st.bulk ? confirmed(st.bulk).map((r, i) => ({ no: i + 1, mgr: r.mgr, addr: r.addr, score: fin(r) + '점', inc: this.incT(r, fin(r)) })) : [],
       simpleTotal: st.bulk ? confirmed(st.bulk).reduce((a, r) => a + (this.incR(r, fin(r)) || 0), 0).toLocaleString('ko-KR') + '원' : '',
       catRows: [['직영', 't-d'], ['관리소장', 't-m']].map(([k, cls]) => { const rs = vis.filter(r => r.type === k), dn = rs.filter(r => r.stage === 5), ts = dn.map(r => fin(r));
