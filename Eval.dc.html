@@ -44,6 +44,14 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
 
     <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
       <sc-if value="{{roleOff}}" hint-placeholder-val="{{false}}"><section class="card" style="flex:1 1 100%;padding:32px;text-align:center;font-size:16px"><b>{{offMsg}}</b></section></sc-if>
+      <sc-if value="{{lockOn}}" hint-placeholder-val="{{false}}">
+<div style="flex:1 1 100%;background:#fff;border:1px solid #D9D4C6;border-radius:14px;padding:36px 20px;text-align:center;font-family:inherit">
+  <div style="font-size:34px">🔒</div>
+  <div style="font-size:18px;font-weight:700;margin:6px 0">아직 평가할 수 없습니다</div>
+  <div style="font-size:14px;line-height:1.6;color:#4A5163;margin-bottom:14px">{{lockMsg}}<br>이 화면은 20초마다 자동으로 확인합니다.</div>
+  <button onClick="{{retryGo}}" style="min-height:46px;padding:0 22px;border-radius:10px;border:0;background:#14213D;color:#fff;font-weight:700;font-size:15px;cursor:pointer">지금 다시 확인</button>
+</div>
+</sc-if>
       <!-- 블록 B: 항목별 점수 -->
       <sc-if value="{{showTable}}" hint-placeholder-val="{{true}}">
       <section class="card" style="flex:1 1 620px;min-width:0;overflow:hidden">
@@ -51,7 +59,7 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <sc-for list="{{roleBtns}}" as="r" hint-placeholder-count="3"><button onClick="{{r.pick}}" style="{{r.style}}">{{r.label}}</button></sc-for>
           </div>
-          <div style="font-size:13px;color:#4A5163;max-width:420px;text-align:right">{{roleNote}}</div>
+          <div style="font-size:13px;color:#4A5163;max-width:420px;text-align:left">{{roleNote}}</div>
         </div>
         <div style="overflow-x:auto">
           <table class="evt" style="border-collapse:collapse;width:100%;min-width:680px">
@@ -229,14 +237,6 @@ td{padding:8px 12px;border-bottom:1px solid #EFEBE1;font-size:14px}
   <div style="font-size:14px;line-height:1.6;color:#D9DEE8">이 창을 닫고 바탕 화면(카카오톡 등)으로 돌아가 주세요.<br>다시 입력하려면 받으신 링크를 다시 눌러 주세요.</div>
 </div>
 </sc-if>
-<sc-if value="{{lockOn}}" hint-placeholder-val="{{false}}">
-<div style="margin:24px 16px;background:#fff;border:1px solid #D9D4C6;border-radius:14px;padding:28px 20px;text-align:center;font-family:inherit">
-  <div style="font-size:34px">🔒</div>
-  <div style="font-size:18px;font-weight:700;margin:6px 0">아직 평가할 수 없습니다</div>
-  <div style="font-size:14px;line-height:1.6;color:#4A5163;margin-bottom:14px">{{lockMsg}}<br>이 화면은 20초마다 자동으로 확인합니다.</div>
-  <button onClick="{{retryGo}}" style="min-height:46px;padding:0 22px;border-radius:10px;border:0;background:#14213D;color:#fff;font-weight:700;font-size:15px;cursor:pointer">지금 다시 확인</button>
-</div>
-</sc-if>
 <sc-if value="{{showRetry}}" hint-placeholder-val="{{false}}">
 <div style="position:fixed;left:16px;right:16px;bottom:24px;z-index:40;background:#fff;border:1px solid #D9D4C6;border-radius:12px;padding:14px;box-shadow:0 6px 24px rgba(0,0,0,.18);font-family:inherit">
   <div style="font-size:13px;line-height:1.5;color:#4A5163;margin-bottom:10px;word-break:break-all;white-space:pre-line">{{diag}}</div>
@@ -360,7 +360,7 @@ class Component extends DCLogic {
     const chips = STG.map((t, i) => ({ text: t + (i < gg ? ' 완료' : (i === gg ? ' 진행' : ' 대기')), cls: i < gg ? 's-gam' : (i === gg ? 's-in' : 's-gong') }));
     return {
       title: site ? site.addr + ' · ' + site.mgr : (s.loadMsg ? '현장 정보 확인 중' : '샘플 주소 2 · 소장 나'), chips,
-      subtitle: s.loadMsg || (locked ? '앞 단계 입력 완료 후 열립니다' : null) || (site ? site.type + (s.region ? ' · ' + s.region : '') + (s.struct ? ' · ' + s.struct : '') + (site.pyung ? ' · ' + site.pyung + '평' : '') + ' · ' + (site.grade || '') : '샘플 데이터 (링크로 접속하면 해당 현장이 표시됩니다)'),
+      subtitle: s.loadMsg || (locked ? '앞 단계 입력 완료 후 열립니다' : null) || (site ? site.type + (s.region ? ' · ' + s.region : '') + (s.struct ? ' · ' + s.struct : '') + (site.pyung ? ' · ' + site.pyung + '평' : '') + (site.grade ? ' · ' + site.grade : '') : '샘플 데이터 (링크로 접속하면 해당 현장이 표시됩니다)'),
       roleOff, offMsg: R + ' 평가는 현재 사용하지 않도록 설정되어 있습니다.', showTable: !roleOff && !isCeo && !wait, isGam: R === '감리', isGong: R === '공무', rightStyle: roleOff || wait ? 'display:none' : isCeo || R === '감리' || R === '공무' ? 'flex:1 1 360px;min-width:0;display:flex;flex-direction:column;gap:20px' : 'display:none',
       confirmLabel: s.done ? '✓ 감리팀장 확정 완료 (소장 공개는 관리자 대시보드에서 설정)' : '최종 점수 ' + final + '점 · ' + amount + ' 확인 후 감리팀장 확정', confirmGo: () => { if (!s.done) { if (typeof window !== 'undefined' && window.confirm && !window.confirm('평가를 최종 확정할까요? (소장 공개는 관리자 대시보드에서 따로 설정합니다)')) return; this.post(true, true); } else this.post(false, false); },
       confirmStyle: 'margin-top:14px;width:100%;min-height:48px;border-radius:10px;border:0;background:' + (s.done ? '#14583A' : '#C8A24A') + ';color:' + (s.done ? '#fff' : '#14213D') + ';font-weight:700;font-size:15px;cursor:pointer;padding:8px 12px',
@@ -389,7 +389,7 @@ class Component extends DCLogic {
       onContract: (e) => this.setState({ contract: Number(String(e.target.value).replace(/[^0-9]/g, '')) || 0 }), onSpent: (e) => this.setState({ spent: Number(String(e.target.value).replace(/[^0-9]/g, '')) || 0 }), spUp: () => this.setState({ spent: s.spent + 10000000 }), spDown: () => this.setState({ spent: Math.max(0, s.spent - 10000000) }),
       showSave: !!s.site && !roleOff && !locked, backOpen: !!s.backOpen, exited: !!s.exited, backSubmit: () => this.backSubmit(), backCancel: () => this.exitApp(), backStay: () => this.setState({ backOpen: false }),
       lockOn: locked, lockMsg: locked ? ({ 1: '소장 입력이 완료되면 감리 평가가 열립니다.', 2: '감리 평가가 제출되면 공무 평가가 열립니다.', 3: '공무 평가가 제출되면 감리팀장 확정이 열립니다.' }[s.site.locked] || '앞 단계가 완료되면 열립니다.') : '', showRetry: !!s.retry, diag: s.diag || '', retryGo: () => this.loadSite(1),
-      showSubmitBtn: !s.confirming, submitLabel: s.submitted ? '수정 후 다시 제출' : '평가 제출', showConfirm: s.confirming, saveMsg: s.saveMsg, saveColor: s.saveOk ? '#14583A' : '#8A1F17', saveGo: () => this.post(false), submitGo: () => { if (this.q && this.roleKey() === 'gong' && !(s.spent > 0 && s.contract > 0)) { this.setState({ saveOk: false, saveMsg: '공사 최종 금액과 실행금액을 먼저 입력해 주세요. (수익률 계산에 필요합니다)' }); return; } this.setState({ confirming: true, saveMsg: '' }); }, doSubmit: () => { this.setState({ confirming: false }); this.post(true); }, cancelSubmit: () => this.setState({ confirming: false }),
+      showSubmitBtn: !s.confirming && !isCeo, submitLabel: s.submitted ? '수정 후 다시 제출' : '평가 제출', showConfirm: s.confirming, saveMsg: s.saveMsg, saveColor: s.saveOk ? '#14583A' : '#8A1F17', saveGo: () => this.post(false), submitGo: () => { if (this.q && this.roleKey() === 'gong' && !(s.spent > 0 && s.contract > 0)) { this.setState({ saveOk: false, saveMsg: '공사 최종 금액과 실행금액을 먼저 입력해 주세요. (수익률 계산에 필요합니다)' }); return; } this.setState({ confirming: true, saveMsg: '' }); }, doSubmit: () => { this.setState({ confirming: false }); this.post(true); }, cancelSubmit: () => this.setState({ confirming: false }),
       finalCostTxt: s.site && s.site.finalCost ? Number(s.site.finalCost).toLocaleString('ko-KR') + '원' : '소장 미입력', profitRes: profit, profitColor: profit === '달성' ? '#14583A' : '#8A1F17', marginTxt: spentOk && s.contract > 0 ? margin.toFixed(1) + '%' : '실행금액 입력 필요', targetTxt: s.target + '%'
     };
   }
