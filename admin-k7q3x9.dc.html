@@ -682,7 +682,9 @@ class Component extends DCLogic {
   showToast(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '', flash: '' }), 2200); }
   token(id, k) { return 'x' + (46656 + id * 7919).toString(36) + '-' + k; }
   link(id, k) { return 'https://wisestar823.github.io/dujonman/' + (k === 'in' ? 'Manager' : 'Eval') + '.dc.html?e=' + this.token(id, k); }
-  profitOk(r) { const S = this.state.set; if (r && r.stage >= 5 && r.snap) return !!r.snap.profitOk; return !!(r && (r.margin != null ? r.margin : (r.cost > 0 && r.spent != null ? (r.cost - r.spent) / r.cost * 100 : -1e9)) >= (typeof S.profitTarget === 'number' ? S.profitTarget : 20)); }
+  mgOf(r) { if (!r) return -1e9; if (r.margin != null) return r.margin; const c = r.finalCost || r.cost; return c > 0 && r.spent != null ? (c - r.spent) / c * 100 : -1e9; }
+  mgTxt(r) { const m = this.mgOf(r); return m <= -1e8 ? '수익률 미입력' : '수익률 ' + (Math.round(m * 100) / 100) + '%'; }
+  profitOk(r) { const S = this.state.set; if (r && r.stage >= 5 && r.snap) return !!r.snap.profitOk; return !!(r && this.mgOf(r) >= (typeof S.profitTarget === 'number' ? S.profitTarget : 20)); }
   incOf(type, score, r) {   // 기본 지급액(기준표) — 공무 실행입력에서 기준 이윤 달성 시 ×2
     const S = this.state.set, SC = [100, 95, 90, 85, 80], T = S.T[type + '|미달'], m = this.profitOk(r) ? 2 : 1;
     if (score < S.minScore) return null;
@@ -692,7 +694,7 @@ class Component extends DCLogic {
   mkSnap(r, S) {
     if (!Array.isArray(r.sc) || r.sc.some(v => v == null)) return null;
     const t = r.sc.reduce((a, b) => a + b, 0) + this.adjOf(r) + (r.structPt || 0) + (r.regionPt || 0) + (r.ceoAdj || 0);
-    const zero = !!(S.zeroOut && r.sc.some(v => v === 0)), profitOk = !!((r.margin != null ? r.margin : (r.cost > 0 && r.spent != null ? (r.cost - r.spent) / r.cost * 100 : -1e9)) >= (typeof S.profitTarget === 'number' ? S.profitTarget : 20)), T = S.T && S.T[r.type + '|미달'], SC = [100, 95, 90, 85, 80];
+    const zero = !!(S.zeroOut && r.sc.some(v => v === 0)), profitOk = !!(this.mgOf(r) >= (typeof S.profitTarget === 'number' ? S.profitTarget : 20)), T = S.T && S.T[r.type + '|미달'], SC = [100, 95, 90, 85, 80];
     let amt = null; if (!zero && T && t >= S.minScore) for (let i = 0; i < SC.length; i++) { if (t >= SC[i]) { amt = T[i] * (profitOk ? 2 : 1); break; } }
     return { score: t, kind: zero ? 'zero' : (amt !== null ? 'pay' : (t < S.penScore ? 'pen' : 'none')), amt, x2: amt !== null && profitOk, profitOk, at: Date.now() };
   }
@@ -784,7 +786,7 @@ class Component extends DCLogic {
         total: sum === null ? '집계 중' : sum + '점', finalScore: t === null ? '—' : t + '점', adjNote: t === null ? '' : '가점·감점 ' + sg(this.adjOf(r)) + ' · 현장 조건 가산 ' + sg(cond) + ' · 감리팀장 추가(AS처리 포함) ' + sg(r.ceoAdj || 0),
         cGam: r.cGam || '', cGong: r.cGong || '', cCeo: r.cCeo || '', adjDetail: '가점·감점 내역 : ' + (this.adjDetail(r).join(' / ') || '해당 없음') + ((r.structPt || r.regionPt) ? ' · 현장 조건 가산 : ' + [r.struct && r.struct + ' +' + (r.structPt || 0), r.region && r.region + ' +' + (r.regionPt || 0)].filter(Boolean).join(', ') : ''), asTxt: 'AS처리 가감 : ' + (r.asAdj ? r.asAdj + '점' : '없음') + ' (하자처리기한 15일 초과 −5점, 1일 초과마다 −1점)',
         tiers: SC.map((x, i) => ({ tier: x === 100 ? '100점' : x + '점~', ok: fmt(T[i] * 2) + '원', bad: fmt(T[i]) + '원', okSt: hit === i && ok ? B : '', badSt: hit === i && !ok ? B : '' })),
-        resultTxt: t === null ? '평가 집계 중' : t + '점 · ' + this.incT(r, t) + ' · 기준 이윤 ' + (ok ? '달성' : '미달') };
+        resultTxt: t === null ? '평가 집계 중' : t + '점 · ' + this.incT(r, t) + ' · 기준 이윤 ' + (ok ? '달성' : '미달') + ' (' + this.mgTxt(r) + ')' };
       for (let k = 0; k < 11; k++) o['s' + k] = r.sc[k] == null ? '' : r.sc[k];
       return o; };
     const cur = nsites.find(r => r.id === st.sel) || null;
