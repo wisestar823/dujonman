@@ -180,7 +180,8 @@ button{font-family:inherit}
       </section>
     </sc-if>
 
-    <!-- 평가 확정 · 소장 공개 관리 -->
+    <!-- 평가 확정 · 소장 공개 관리 (감리팀장 통합 화면 전용) -->
+    <sc-if value="{{isLead}}" hint-placeholder-val="{{true}}">
     <section class="card noprint" style="overflow:hidden;border:2px solid #14213D">
       <div style="padding:14px 18px;background:#14213D;color:#fff"><b style="font-size:16px">평가 확정 · 소장 공개 관리</b><div style="font-size:12px;color:#D9DEE8;margin-top:3px;line-height:1.5">공무 평가까지 끝난 현장을 선택해 확정·공개·인쇄합니다</div></div>
       <div style="padding:12px 16px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid #E2DED3;background:#FAF8F3">
@@ -218,6 +219,7 @@ button{font-family:inherit}
       </sc-for>
       <sc-if value="{{pubEmpty}}" hint-placeholder-val="{{false}}"><div style="padding:18px;font-size:13px;color:#4A5163">공무 평가까지 끝난 현장이 아직 없습니다.</div></sc-if>
     </section>
+    </sc-if>
 
     <!-- 소장 (터치) : 개별 감리 전용 -->
     <sc-if value="{{isIns}}" hint-placeholder-val="{{false}}">
@@ -428,12 +430,15 @@ button{font-family:inherit}
             <div style="font-weight:700;font-size:16px">평가 확정 · 소장 공개 (이 현장 소장 링크)</div>
             <span class="chip {{sel.pubCls}}" style="padding:5px 12px">{{sel.pubText}}</span>
           </div>
+          <sc-if value="{{isLead}}" hint-placeholder-val="{{true}}">
           <div style="font-size:13px;color:#4A5163;line-height:1.6">확정해도 소장에게는 아무것도 보이지 않습니다. 아래에서 평가 완료 상태·점수·인센티브를 각각 공개하면 소장 링크에 반영됩니다.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <button onClick="{{sel.confirmGo}}" style="{{sel.confirmStyle}}">{{sel.confirmLabel}}</button>
             <sc-for list="{{sel.chips}}" as="c" hint-placeholder-count="3"><button onClick="{{c.click}}" style="{{c.style}}">{{c.label}}</button></sc-for>
             <span style="font-size:12px;color:#8A6D1F">{{sel.chipNote}}</span>
           </div>
+          </sc-if>
+          <sc-if value="{{notLead}}" hint-placeholder-val="{{false}}"><div style="font-size:13px;color:#8A6D1F;line-height:1.6;background:#FFF7E0;border-radius:8px;padding:8px 12px">평가 확정과 소장 공개 설정은 감리팀장 통합 화면에서만 할 수 있습니다.</div></sc-if>
           <sc-if value="{{sel.hasViews}}" hint-placeholder-val="{{false}}">
             <table class="list" style="border-collapse:collapse;width:100%;min-width:420px">
               <thead><tr><th>열람 시각</th><th>열람자</th><th>내용</th></tr></thead>
@@ -681,6 +686,7 @@ class Component extends DCLogic {
   /* ---- 평가 확정 · 소장 공개 ---- */
   pubOf(r) { return r.pub || { status: true, score: true, inc: true }; }   // 공개 설정이 없는 기존 확정 건은 이미 공개 상태로 간주
   confirmIds(ids) {
+    if (this.state.viewer !== 'ALL') { this.showToast('평가 확정·공개 설정은 감리팀장 통합 화면에서만 가능합니다.'); return; }
     const S = this.state.set; let n = 0, skip = 0;
     const sites = this.state.sites.map(r => { if (!ids.has(r.id) || r.stage >= 5) return r; const rr = r.stage === 4 ? { ...r, stage: 3 } : r;
       if (rr.stage !== 3 || !Array.isArray(rr.sc) || rr.sc.some(v => v == null)) { skip++; return r; }
@@ -689,10 +695,12 @@ class Component extends DCLogic {
     this.showToast(n ? '평가 ' + n + '건 확정 완료 (소장 공개는 별도로 선택)' + (skip ? ' · ' + skip + '건은 공무 평가 전이라 제외' : '') : '확정할 수 있는 현장이 없습니다. (공무 평가 제출 후 확정 가능)');
   }
   unconfirmIds(ids) {
+    if (this.state.viewer !== 'ALL') { this.showToast('평가 확정·공개 설정은 감리팀장 통합 화면에서만 가능합니다.'); return; }
     let n = 0; const sites = this.state.sites.map(r => { if (!ids.has(r.id) || r.stage !== 5) return r; n++; const o = { ...r, stage: 3 }; delete o.snap; return o; });
     if (n) this.setState({ sites }); this.showToast(n ? '확정 ' + n + '건을 취소했습니다. (소장 화면은 다시 평가 진행 중으로 표시)' : '확정 취소할 현장이 없습니다.');
   }
   setPubIds(ids, field, val) {
+    if (this.state.viewer !== 'ALL') { this.showToast('평가 확정·공개 설정은 감리팀장 통합 화면에서만 가능합니다.'); return; }
     let n = 0; const sites = this.state.sites.map(r => { if (!ids.has(r.id) || r.stage !== 5) return r; const p = { ...this.pubOf(r) }; p[field] = val;
       if (field === 'all') { p.status = val; p.score = val; p.inc = val; } else if (field === 'status' && !val) { p.score = false; p.inc = false; } if ((field === 'score' || field === 'inc') && val) p.status = true; n++; return { ...r, pub: p }; });
     if (n) this.setState({ sites }); else this.showToast('확정된 현장만 공개 설정을 바꿀 수 있습니다.');
@@ -877,7 +885,7 @@ class Component extends DCLogic {
       pubAll: () => { const m = { ...selIds }; pubList.forEach(r => { m[r.id] = !allOn; }); this.setState({ pubSel: m }); },
       pubConfirmSel: needSel(ids => this.confirmIds(ids)), pubUnconfirmSel: needSel(ids => this.unconfirmIds(ids)),
       pubFilters: ['전체', '확정 대기', '확정 완료'].map(k => ({ label: k, style: btnL.replace('background:#fff;color:#14213D', PF === k ? 'background:#14213D;color:#fff' : 'background:#fff;color:#14213D'), pick: () => this.setState({ pubFilter: k }) })),
-      isDash: st.view === 'dash', isSet: st.view === 'set' && lead, isLead: lead,
+      isDash: st.view === 'dash', isSet: st.view === 'set' && lead, isLead: lead, notLead: !lead,
       dashTitle: lead ? '완료현장 평가 대시보드 · 통합 (감리팀장)' : '소장 평가 대시보드 · 감리 ' + st.viewer + ' 담당',
       accounts: [['ALL', '통합 (감리팀장)'], ...S.insp.map(n => [n, '감리 ' + n])].map(([k, label]) => ({ label, pick: () => this.setState({ viewer: k, selMgr: null, sel: null, bulk: '', view: 'dash', msg: '' }),
         style: 'background:' + (st.viewer === k ? '#C8A24A' : 'transparent') + ';color:' + (st.viewer === k ? '#14213D' : '#D7DCE8') + ';font-weight:' + (st.viewer === k ? '700' : '400') + ';border:1px solid ' + (st.viewer === k ? '#C8A24A' : '#3A4A74') + ';margin-bottom:4px' })),
