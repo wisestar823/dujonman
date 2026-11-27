@@ -48,11 +48,12 @@ button{font-family:inherit}
   html,body{height:auto!important;min-height:0!important;overflow:visible!important}
   .pb{page-break-after:auto;page-break-inside:avoid;break-inside:avoid}
   .pb ~ .pb{page-break-before:always;break-before:page}
-  .pb:not(.wide){width:100%!important;max-width:none!important;margin:0!important}
+  .pb{box-sizing:border-box;padding:10mm!important;margin:0!important}
+  .pb:not(.wide){width:100%!important;max-width:none!important}
   .pb:not(.wide) .og{zoom:.8}   /* 상세 출력: A4 1장에 맞춤 */
-  @page{size:A4;margin:10mm}
-  @page wide{size:A4 landscape;margin:10mm}
-  .wide{page:wide;overflow:visible!important;width:275mm!important;max-width:275mm!important}
+  @page{size:A4;margin:0}   /* 여백 0 → 브라우저 머리글·바닥글(날짜·주소·쪽번호) 미출력, 여백은 .pb 패딩으로 */
+  @page wide{size:A4 landscape;margin:0}
+  .wide{page:wide;overflow:visible!important;width:297mm!important;max-width:297mm!important}
   .ln{table-layout:auto}
 }
 @media(max-width:760px){aside.nav{flex:0 0 100% !important;flex-direction:row !important;flex-wrap:wrap !important;padding:12px !important}main{padding:16px !important}}
@@ -304,8 +305,8 @@ button{font-family:inherit}
         </div>
         <sc-if value="{{bulkSimple}}" hint-placeholder-val="{{false}}">
         <div class="pb wide" style="margin:0 auto 28px;overflow-x:auto;max-width:100%">
-          <div style="text-align:center;font-weight:700;font-size:19px;padding:6px 0 4px">현장소장 공사완료평가 한 줄 요약표</div>
-          <div style="text-align:center;font-size:12px;color:#555;margin-bottom:10px">{{bulkTitle}} · 감리팀장 확정 {{bulkCount}}건</div>
+          <div style="text-align:center;font-weight:700;font-size:19px;padding:6px 0 4px">현장소장 공사완료평가</div>
+          <div style="text-align:center;font-size:12px;color:#555;margin-bottom:10px">총 {{bulkCount}}건</div>
           <table class="ln" style="border-collapse:collapse;width:100%">
             <tr><th rowspan="2">번호</th><th rowspan="2">현장 주소</th><th rowspan="2">소장</th><th rowspan="2">구분</th><th rowspan="2">등급</th><th rowspan="2">평수</th><th colspan="11">항목별 점수</th><th rowspan="2">기타<br>가감점</th><th rowspan="2">최종<br>점수</th><th rowspan="2">인센티브<br>금액</th></tr>
             <tr><sc-for list="{{lineHeads}}" as="h" hint-placeholder-count="11"><th>{{h.name}}<br>({{h.max}})</th></sc-for></tr>
