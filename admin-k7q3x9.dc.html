@@ -44,9 +44,13 @@ button{font-family:inherit}
   body{background:#fff}
   main{padding:0!important}
   #sheetwrap{border:0!important;box-shadow:none!important;padding:0!important}
-  .pb{page-break-after:always}
-  .pb:last-child{page-break-after:auto}
-  @page{size:A4;margin:12mm}
+  *:not(:has(#sheetwrap)):not(#sheetwrap):not(#sheetwrap *){display:none!important}   /* 출력물 외 화면 요소는 인쇄에서 완전히 제외(빈 페이지 방지) */
+  html,body{height:auto!important;min-height:0!important;overflow:visible!important}
+  .pb{page-break-after:auto;page-break-inside:avoid;break-inside:avoid}
+  .pb ~ .pb{page-break-before:always;break-before:page}
+  .pb:not(.wide){width:100%!important;max-width:none!important;margin:0!important}
+  .pb:not(.wide) .og{zoom:.8}   /* 상세 출력: A4 1장에 맞춤 */
+  @page{size:A4;margin:10mm}
   @page wide{size:A4 landscape;margin:10mm}
   .wide{page:wide;overflow:visible!important;width:275mm!important;max-width:275mm!important}
   .ln{table-layout:auto}
