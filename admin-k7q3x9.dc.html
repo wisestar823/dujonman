@@ -337,7 +337,11 @@ button{font-family:inherit}
               <tr><td rowspan="2" class="c">10</td><td rowspan="2" class="l">- 폐기물처리<br>&nbsp;(공사부 원가절감방안기준)<br><span class="s">평가자 : 공무담당, 부서장</span></td><td rowspan="2" colspan="2" class="c v">{{o.s9}}</td><td rowspan="2" class="l">- 기준 이상 청구시 -10만원당 -1점<br>- 기준 미만 정산시 +10만원당 +1점<br>- 목조 : 평당 2.5만원<br>- R.C : 평당 3.5만원</td><td class="c">폐기물<br>처리비<br><span class="s">합계</span></td><td class="c v">{{o.wasteTxt}}<br><span class="s" style="font-weight:400">{{o.wasteSub}}</span></td></tr>
               <tr><td class="c">평당</td><td class="c v">{{o.wastePy}}</td></tr>
               <tr><td></td><td class="l" style="color:#C00">경위서 및 시말서 작성</td><td colspan="2"></td><td class="l" style="color:#C00">- 경위서 작성 시 1회 : -3 / 2회 : -5<br>&nbsp;시말서 작성 시 : 미지급</td><td colspan="2"></td></tr>
-              <tr><td class="c">100</td><td></td><td colspan="2" class="c v" style="font-size:13px">합계 : {{o.total}}</td><td colspan="3" class="l">가감·가산 반영 최종 점수 : <b>{{o.finalScore}}</b><br><span class="s">{{o.adjNote}}</span><br><span class="s">{{o.adjDetail}}</span></td></tr>
+              <tr><td class="c" style="background:#FFF7E0">±</td><td colspan="6" class="l" style="background:#FFF7E0;padding:4px 6px">
+                <div style="font-weight:700;font-size:11px;margin-bottom:2px">가감점 내역 <span style="float:right">가감점 합계 : <b>{{o.adjTot}}</b></span></div>
+                <sc-if test="{{o.noAdj}}"><div class="s">해당 없음</div></sc-if>
+                <table style="width:100%;border-collapse:collapse;font-size:10px"><sc-for list="{{o.adjRows}}" as="q" hint-placeholder-count="3"><tr><td style="border:0;border-bottom:1px dotted #bbb;padding:1px 3px;width:15%;color:#555">{{q.grp}}</td><td style="border:0;border-bottom:1px dotted #bbb;padding:1px 3px;font-weight:600">{{q.nm}}</td><td style="border:0;border-bottom:1px dotted #bbb;padding:1px 3px;color:#555">{{q.calc}}</td><td style="border:0;border-bottom:1px dotted #bbb;padding:1px 3px;text-align:right;font-weight:700;color:{{q.col}};width:12%">{{q.pt}}</td></tr></sc-for></table></td></tr>
+              <tr><td class="c">100</td><td class="l" style="font-size:10px;color:#444;vertical-align:middle">항목 점수 합계 : {{o.total}}<br>가감점 합계 : <b>{{o.adjTot}}</b></td><td colspan="2" class="c" style="background:#FFF7E0;vertical-align:middle"><div style="font-size:10px;color:#555">최종 점수 (가감점 반영)</div><div style="font-size:24px;font-weight:800;line-height:1.2">{{o.finalScore}}</div></td><td colspan="3" class="l" style="font-size:9px;color:#555"><span class="s">{{o.adjNote}}</span><br><span class="s">{{o.adjDetail}}</span></td></tr>
               <tr><td colspan="7" class="c" style="color:#C00;font-weight:700">평가 항목 중 최저점수 발생 시 인센티브 대상에서 제외</td></tr>
               <tr><th colspan="4">담당자 평가</th><th colspan="3">가점 및 감점 항목</th></tr>
               <tr><td colspan="4" class="c" style="height:20px">감리평가</td><td colspan="3" rowspan="4" class="l s" style="vertical-align:top;font-size:9px;line-height:1.5">▶ 가점 항목<br>&nbsp;1. 공사이윤 (기준 이윤 이상 시 1%당 +1점)<br>&nbsp;2. 공기달성 (5일 단축 +1 / 3일 초과 -1점)<br>▶ 감점 항목<br>&nbsp;1. 안전관리 항목 지적사항 발생시<br>&nbsp;&nbsp;- 안전관련 정부기관 지적(고발) -5점<br>&nbsp;&nbsp;- 적발 범칙금 부과시 -20점<br>&nbsp;&nbsp;- 내부감리 지적사항 건당 -2점<br>&nbsp;2. 안전사고<br>&nbsp;&nbsp;- 경미한 안전사고 -5점<br>&nbsp;&nbsp;- 산재사고접수 인센티브 제외<br>&nbsp;3. 완공현장 AS발생<br>&nbsp;&nbsp;- 하자처리기한 15일 초과시 -5, 1일 초과시마다 -1점</td></tr>
@@ -703,6 +707,17 @@ class Component extends DCLogic {
     const sg = (v) => (v > 0 ? '+' : '') + v + '점';
     return Object.entries(L).filter(([k]) => (r.adj || {})[k]).map(([k, [nm, p, u]]) => { const n = r.adj[k]; return k === 'air' ? nm + ' ' + sg(n * p) + ' (5일 단축당 +1점)' : nm + ' ' + n + u + ' × ' + (p > 0 ? '+' : '') + p + ' = ' + sg(n * p); });
   }
+  adjRows(r) {   // 상세출력 '가감점' 표 — 항목별 근거와 점수
+    const sg = (v) => (v > 0 ? '+' : '') + v + '점', row = (grp, nm, calc, pt) => ({ grp, nm, calc, pt: sg(pt), col: pt < 0 ? '#C00' : '#146B3A' }), out = [];
+    const L = { air: ['공기 단축·지연', 1], wcomp: ['안전 정부기관 지적(고발)', -5], fine: ['적발 범칙금 부과', -20], inner: ['내부 감리 지적', -2], acc: ['경미한 안전사고', -5], as: ['중대 안전사고', -20] };
+    Object.entries(L).forEach(([k, [nm, p]]) => { const n = (r.adj || {})[k]; if (!n) return; out.push(row('감리 확인', nm, k === 'air' ? (n > 0 ? '5일 단축당 +1점' : '공기 지연 −1점') : n + '건 × ' + (p > 0 ? '+' : '') + p + '점', n * p)); });
+    if (r.structPt) out.push(row('현장 조건', '구조 가산' + (r.struct ? ' (' + r.struct + ')' : ''), '', r.structPt));
+    if (r.regionPt) out.push(row('현장 조건', '지역 가산' + (r.region ? ' (' + r.region + ')' : ''), '', r.regionPt));
+    const asA = Number(r.asAdj) || 0, base = (r.ceoAdj || 0) - asA, nmC = ['회사 충성도', '근무 태도', '협업·조직 기여', '위기 대응·문제 해결', '고객·현장 평판'];
+    if (Array.isArray(r.ceo)) [0, 2].forEach(i => { if (r.ceo[i]) out.push(row('감리팀장', nmC[i], '', r.ceo[i])); }); else if (base) out.push(row('감리팀장', '추가 가감', '', base));
+    if (asA) out.push(row('감리팀장', 'AS처리 (하자처리기한 초과)', '15일 초과 −5점, 1일 초과마다 −1점', asA));
+    return out;
+  }
   adjOf(r) { const P = { air: 1, intro: 3, wcomp: -5, fine: -20, inner: -2, acc: -5, as: -20 }; return Object.entries(r.adj || {}).reduce((a, [k, n]) => a + (P[k] || 0) * (n || 0), 0); }
   zeroHit(r) { return !!(this.state.set.zeroOut && r.sc.some(v => v === 0)); }
   incR(r, score) { if (r.stage >= 5 && r.snap) return r.snap.kind === 'pay' ? r.snap.amt : null; if (this.zeroHit(r)) return null; return this.incOf(r.type, score, r); }
@@ -784,7 +799,7 @@ class Component extends DCLogic {
       const o = { type: r.type, addr: r.addr, mgr: r.mgr, grade: r.grade || '', airAdj: airAdj ? sg(airAdj) : 0, absAir: abs != null ? abs + '일' : '', doneAir: done != null ? done + '일' : '', airDiff: diff != null ? sg(diff) + '일' : '',
         manTxt: man != null ? man + '품' + (py ? ' (기준 ' + Math.max(1, Math.round(py / 10 * (rc ? 2 : 1))) + '품)' : '') : '', wasteTxt: (waste != null || r.hqWaste) ? fmt((waste || 0) + (r.hqWaste || 0)) + '원' : '', wasteSub: (waste != null || r.hqWaste) ? '현장 ' + fmt(waste || 0) + ' + 본사 ' + fmt(r.hqWaste || 0) : '', wastePy: (waste != null || r.hqWaste) && py ? fmt(Math.round(((waste || 0) + (r.hqWaste || 0)) / py)) + '원' : '',
         total: sum === null ? '집계 중' : sum + '점', finalScore: t === null ? '—' : t + '점', adjNote: t === null ? '' : '가점·감점 ' + sg(this.adjOf(r)) + ' · 현장 조건 가산 ' + sg(cond) + ' · 감리팀장 추가(AS처리 포함) ' + sg(r.ceoAdj || 0),
-        cGam: r.cGam || '', cGong: r.cGong || '', cCeo: r.cCeo || '', adjDetail: '가점·감점 내역 : ' + (this.adjDetail(r).join(' / ') || '해당 없음') + ((r.structPt || r.regionPt) ? ' · 현장 조건 가산 : ' + [r.struct && r.struct + ' +' + (r.structPt || 0), r.region && r.region + ' +' + (r.regionPt || 0)].filter(Boolean).join(', ') : ''), asTxt: 'AS처리 가감 : ' + (r.asAdj ? r.asAdj + '점' : '없음') + ' (하자처리기한 15일 초과 −5점, 1일 초과마다 −1점)',
+        cGam: r.cGam || '', cGong: r.cGong || '', cCeo: r.cCeo || '', adjRows: this.adjRows(r), adjTot: sg(this.adjOf(r) + cond + (r.ceoAdj || 0)), noAdj: this.adjRows(r).length === 0, adjDetail: '가점·감점 내역 : ' + (this.adjDetail(r).join(' / ') || '해당 없음') + ((r.structPt || r.regionPt) ? ' · 현장 조건 가산 : ' + [r.struct && r.struct + ' +' + (r.structPt || 0), r.region && r.region + ' +' + (r.regionPt || 0)].filter(Boolean).join(', ') : ''), asTxt: 'AS처리 가감 : ' + (r.asAdj ? r.asAdj + '점' : '없음') + ' (하자처리기한 15일 초과 −5점, 1일 초과마다 −1점)',
         tiers: SC.map((x, i) => ({ tier: x === 100 ? '100점' : x + '점~', ok: fmt(T[i] * 2) + '원', bad: fmt(T[i]) + '원', okSt: hit === i && ok ? B : '', badSt: hit === i && !ok ? B : '' })),
         resultTxt: t === null ? '평가 집계 중' : t + '점 · ' + this.incT(r, t) + ' · 기준 이윤 ' + (ok ? '달성' : '미달') + ' (' + this.mgTxt(r) + ')' };
       for (let k = 0; k < 11; k++) o['s' + k] = r.sc[k] == null ? '' : r.sc[k];
